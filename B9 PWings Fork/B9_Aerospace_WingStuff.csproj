@@ -24,7 +24,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\..\Kerbal Space Program Dev\GameData\B9_Aerospace\Plugins\</OutputPath>
+    <OutputPath>..\..\..\Desktop\Kerbal Space Program Dev\GameData\B9_Aerospace\Plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

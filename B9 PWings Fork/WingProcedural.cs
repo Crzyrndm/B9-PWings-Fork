@@ -1468,8 +1468,7 @@ namespace WingProcedural
 
         public void SetupRecurring ()
         {
-            if (HighLogic.LoadedSceneIsEditor) // just being careful here
-                FuelOnStart(); // shifted from Setup() to fix NRE caused by reattaching a part adding mirror symmetry. May need a check to only be run in the editor
+            FuelOnStart(); // shifted from Setup() to fix NRE caused by reattaching a part adding mirror symmetry. May need a check to only be run in the editor
             UpdateMaterials ();
             UpdateGeometry (true);
             UpdateCollidersForFAR ();
@@ -1952,9 +1951,9 @@ namespace WingProcedural
         {
             if (isWingAsCtrlSrf || isCtrlSrf || isPanel) return;
             aeroStatVolume = (sharedBaseWidthTip * sharedBaseThicknessTip * sharedBaseLength) +
-            ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * sharedBaseThicknessTip * sharedBaseLength) +
-            (sharedBaseWidthTip * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength) +
-            ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength);
+                ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * sharedBaseThicknessTip * sharedBaseLength) +
+                (sharedBaseWidthTip * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength) +
+                ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength);
             FuelUpdateAmountsFromVolume (aeroStatVolume, true);
         }
 
@@ -2351,20 +2350,14 @@ namespace WingProcedural
                 DrawFieldGroupHeader (ref sharedFieldGroupBaseStatic, "Base");
                 if (sharedFieldGroupBaseStatic)
                 {
-                    bool volChanged = false;
-                    volChanged |= DrawField (ref sharedBaseLength, sharedIncrementMain, 1f, GetLimitsFromType (sharedBaseLengthLimits), "Length", uiColorSliderBase, 0, 0);
-                    volChanged |= DrawField (ref sharedBaseWidthRoot, sharedIncrementMain, 1f, GetLimitsFromType (sharedBaseWidthLimits), "Width (root)", uiColorSliderBase, 1, 0);
-                    volChanged |= DrawField(ref sharedBaseWidthTip, sharedIncrementMain, 1f, GetLimitsFromType(sharedBaseWidthLimits), "Width (tip)", uiColorSliderBase, 2, 0);
-                    if (isCtrlSrf) volChanged |= DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (root)", uiColorSliderBase, 3, 0);
-                    volChanged |= DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0);
-                    volChanged |= DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, sharedBaseThicknessLimits, "Thickness (root)", uiColorSliderBase, 5, 0);
-                    volChanged |= DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, sharedBaseThicknessLimits, "Thickness (tip)", uiColorSliderBase, 6, 0);
-
-                    if (volChanged)
-                    {
-                        Debug.Log("recalc fuel");
-                        CalculateVolume();
-                    }
+                    DrawField (ref sharedBaseLength, sharedIncrementMain, 1f, GetLimitsFromType (sharedBaseLengthLimits), "Length", uiColorSliderBase, 0, 0);
+                    DrawField(ref sharedBaseWidthRoot, sharedIncrementMain, 1f, GetLimitsFromType(sharedBaseWidthLimits), "Width (root)", uiColorSliderBase, 1, 0);
+                    DrawField(ref sharedBaseWidthTip, sharedIncrementMain, 1f, GetLimitsFromType(sharedBaseWidthLimits), "Width (tip)", uiColorSliderBase, 2, 0);
+                    if (isCtrlSrf)
+                        DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (root)", uiColorSliderBase, 3, 0);
+                    DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0);
+                    DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, sharedBaseThicknessLimits, "Thickness (root)", uiColorSliderBase, 5, 0);
+                    DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, sharedBaseThicknessLimits, "Thickness (tip)", uiColorSliderBase, 6, 0);
                 }
 
                 if (!isCtrlSrf)
@@ -2457,24 +2450,27 @@ namespace WingProcedural
             }
             else
             {
-                if (uiEditModeTimeout) GUILayout.Label ("Exiting edit mode...\n", WingProceduralManager.uiStyleLabelMedium);
+                if (uiEditModeTimeout)
+                {
+                    GUILayout.Label("Exiting edit mode...\n", WingProceduralManager.uiStyleLabelMedium);
+                }
                 else
                 {
-                    GUILayout.BeginHorizontal ();
-                    GUILayout.Label ("Press J while pointing at a\nprocedural part to edit it", WingProceduralManager.uiStyleLabelHint);
-                    if (GUILayout.Button ("Close", WingProceduralManager.uiStyleButton, GUILayout.MaxWidth (50f)))
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Press J while pointing at a\nprocedural part to edit it", WingProceduralManager.uiStyleLabelHint);
+                    if (GUILayout.Button("Close", WingProceduralManager.uiStyleButton, GUILayout.MaxWidth(50f)))
                     {
                         uiWindowActive = false;
                         uiAdjustWindow = true;
-                        EditorLogic.fetch.Unlock ("WingProceduralWindow");
+                        EditorLogic.fetch.Unlock("WingProceduralWindow");
                     }
-                    GUILayout.EndHorizontal ();
+                    GUILayout.EndHorizontal();
                 }
             }
             GUI.DragWindow ();
         }
 
-        private bool DrawField (ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType)
+        private void DrawField (ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType)
         {
             bool changed = false;
             float value = UIUtility.FieldSlider (field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB (hsbColor), fieldType);
@@ -2484,7 +2480,6 @@ namespace WingProcedural
                 uiLastFieldName = name;
                 uiLastFieldTooltip = UpdateTooltipText (fieldID);
             }
-            return changed;
         }
 
         private void DrawFieldGroupHeader (ref bool fieldGroupBoolStatic, string header)
@@ -3010,8 +3005,9 @@ namespace WingProcedural
                             }
                             else
                             {
-                                if (WPDebug.logFuel) DebugLogWithID ("FuelSetResourcesToPart", "Setting amount from stored value of " + FuelGetResource (resourceIndex));
-                                newResourceNode.AddValue ("amount", FuelGetResource (resourceIndex));
+                                if (WPDebug.logFuel)
+                                    DebugLogWithID("FuelSetResourcesToPart", "Setting amount from stored value of " + fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
+                                newResourceNode.AddValue("amount", fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount); //FuelGetResource(resourceIndex));
                             }
                             newResourceNode.AddValue ("maxAmount", fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
                             currentPart.AddResource (newResourceNode);
