@@ -20,7 +20,8 @@ namespace WingProcedural
 
         public static bool GetEmbeddedContents (string resource, System.Reflection.Assembly assembly, out string contents)
         {
-            Debug.Log ("ResourceExtractor | GetEmbeddedContents | Resource: " + resource);
+            if (WPDebug.logFuel)
+                Debug.Log ("ResourceExtractor | GetEmbeddedContents | Resource: " + resource);
             contents = string.Empty;
             try
             {
