@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace WingProcedural
 {
-    public class WingProcedural : PartModule, IPartCostModifier
+    public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier 
     {
         // Some handy bools
 
@@ -665,11 +665,15 @@ namespace WingProcedural
         {
             if (HighLogic.LoadedSceneIsEditor)
             {
-                if (CachedOnEditorAttach == null) CachedOnEditorAttach = new Callback (UpdateOnEditorAttach);
-                if (!this.part.OnEditorAttach.GetInvocationList ().Contains (CachedOnEditorAttach)) this.part.OnEditorAttach += CachedOnEditorAttach;
+                if (CachedOnEditorAttach == null)
+                    CachedOnEditorAttach = new Callback(UpdateOnEditorAttach);
+                if (!this.part.OnEditorAttach.GetInvocationList().Contains(CachedOnEditorAttach))
+                    this.part.OnEditorAttach += CachedOnEditorAttach;
 
-                if (CachedOnEditorDetach == null) CachedOnEditorDetach = new Callback (UpdateOnEditorDetach);
-                if (!this.part.OnEditorDetach.GetInvocationList ().Contains (CachedOnEditorDetach)) this.part.OnEditorDetach += CachedOnEditorDetach;
+                if (CachedOnEditorDetach == null)
+                    CachedOnEditorDetach = new Callback (UpdateOnEditorDetach);
+                if (!this.part.OnEditorDetach.GetInvocationList ().Contains (CachedOnEditorDetach))
+                    this.part.OnEditorDetach += CachedOnEditorDetach;
 
                 DebugTimerUpdate ();
                 UpdateUI ();
@@ -796,6 +800,7 @@ namespace WingProcedural
         {
             isAttached = true;
             if (WPDebug.logEvents) DebugLogWithID ("UpdateOnEditorAttach", "Setup started");
+
             Setup ();
             isStarted = true;
             if (WPDebug.logEvents) DebugLogWithID ("UpdateOnEditorAttach", "Setup ended");
@@ -2957,8 +2962,10 @@ namespace WingProcedural
 
         private void FuelSetConfigurationToParts (bool calledByPlayer)
         {
-            if (WPDebug.logFuel) DebugLogWithID ("FuelAssignResourcesToPart", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed) return;
+            if (WPDebug.logFuel)
+                DebugLogWithID ("FuelAssignResourcesToPart", "Started");
+            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed)
+                return;
 
             FuelSetResourcesToPart (part, calledByPlayer);
             if (HighLogic.LoadedSceneIsEditor)
@@ -2976,16 +2983,34 @@ namespace WingProcedural
             updateRequiredOnWindow = true;
         }
 
+        /// <summary>
+        /// Nullref in here somewhere
+        /// 
+        /// 1) Attach girder with no sym
+        /// 2) Attach wings to girder with mirr sym
+        /// 3) remove girder and drop in editor somewhere
+        /// 4) pick up again with mirror sym still active
+        /// 5) Hover over attach location
+        /// 6) deactivate mirror sym and try attach
+        /// 
+        /// it would seem the ghost parts are not properly destroyed when sym is deactivated.
+        /// Nullref appears after end of function, but try-catch trips on currentPart.GetComponents*PartResource*() (doesn't catch it either). Removing it doesn't stop the error
+        /// </summary>
         private void FuelSetResourcesToPart (Part currentPart, bool calledByPlayer)
         {
-            if (WPDebug.logFuel) DebugLogWithID ("FuelSetupTankInPart", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed) return;
+            if (WPDebug.logFuel)
+                DebugLogWithID ("FuelSetupTankInPart", "Started");
+            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed)
+                return;
 
-            currentPart.Resources.list.Clear ();
-            PartResource[] partResources = currentPart.GetComponents<PartResource> ();
-            for (int i = 0; i < partResources.Length; i++) DestroyImmediate (partResources[i]);
+            currentPart.Resources.list.Clear();
+            PartResource[] partResources = currentPart.GetComponents<PartResource>();
+            for (int i = 0; i < partResources.Length; i++)
+                DestroyImmediate(partResources[i]);
 
-            if (fuelVolumeOld != aeroStatVolume) FuelUpdateAmountsFromVolume (aeroStatVolume, false);
+
+            if (fuelVolumeOld != aeroStatVolume)
+                FuelUpdateAmountsFromVolume (aeroStatVolume, false);
             for (int tankIndex = 0; tankIndex < fuelConfigurationsList.Count; tankIndex++)
             {
                 if (fuelSelectedTankSetup == tankIndex)
@@ -2994,28 +3019,25 @@ namespace WingProcedural
                     {
                         if (fuelConfigurationsList[tankIndex].resources[resourceIndex].name != "Structural")
                         {
-                            if (WPDebug.logFuel) DebugLogWithID ("FuelSetResourcesToPart", "Found wing with fuel | Stored amounts: " + fuelCurrentAmount);
+                            if (WPDebug.logFuel)
+                                DebugLogWithID ("FuelSetResourcesToPart", "Found wing with fuel | Stored amounts: " + fuelCurrentAmount);
+
                             ConfigNode newResourceNode = new ConfigNode ("RESOURCE");
                             newResourceNode.AddValue ("name", fuelConfigurationsList[tankIndex].resources[resourceIndex].name);
                             if (calledByPlayer) // || fuelBrandNewPart)
                             {
-                                if (WPDebug.logFuel) DebugLogWithID ("FuelSetResourcesToPart", "CBP, setting amount from max of " + fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
-                                newResourceNode.AddValue ("amount", fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
+                                if (WPDebug.logFuel)
+                                    DebugLogWithID ("FuelSetResourcesToPart", "CBP, setting amount from max of " + fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
                                 FuelSetResource (resourceIndex, fuelConfigurationsList[tankIndex].resources[resourceIndex].amount);
                             }
-                            else
-                            {
-                                if (WPDebug.logFuel)
-                                    DebugLogWithID("FuelSetResourcesToPart", "Setting amount from stored value of " + fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
-                                newResourceNode.AddValue("amount", fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount); //FuelGetResource(resourceIndex));
-                            }
+                            newResourceNode.AddValue("amount", fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
                             newResourceNode.AddValue ("maxAmount", fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
                             currentPart.AddResource (newResourceNode);
                         }
                     }
                 }
             }
-            currentPart.Resources.UpdateList ();
+            currentPart.Resources.UpdateList();
             fuelAddedCost = FuelGetAddedCost ();
         }
 
@@ -3143,87 +3165,54 @@ namespace WingProcedural
 
         public float GetModuleCost ()
         {
-            if (assemblyRFUsed || assemblyMFTUsed) return aeroUICost;
-            else return FuelGetAddedCost () + aeroUICost;
+            if (assemblyRFUsed || assemblyMFTUsed)
+                return aeroUICost;
+            else
+                return FuelGetAddedCost () + aeroUICost;
         }
 
         public float GetModuleCost (float modifier)
         {
-            if (assemblyRFUsed || assemblyMFTUsed) return aeroUICost;
-            else return FuelGetAddedCost () + aeroUICost;
+            if (assemblyRFUsed || assemblyMFTUsed)
+                return aeroUICost;
+            else return
+                FuelGetAddedCost () + aeroUICost;
         }
 
-        /*
-
         private Renderer meshRendererForBounds = null;
-
+        private Vector3 sizeMod = Vector3.zero;
         // This interface is completely undocumented and results fetched through it are used in bizarre ways
         // My current assumption is that KSP expects a scale multiplier through current size / default size, but who knows
         // Axis order is not documented either, no idea whether it's right
 
         public Vector3 GetModuleSize (Vector3 defaultSize)
         {
-            Vector3 size = Vector3.zero;
-            if (!isCtrlSrf)
-            {
-                if (meshFilterWingSection != null)
-                {
-                    if (meshRendererForBounds == null) meshRendererForBounds = meshFilterWingSection.gameObject.GetComponent<Renderer> ();
-                    if (meshRendererForBounds != null)
-                    {
-                        Vector3 extents = meshRendererForBounds.bounds.extents; // x - length, y - thickness, z - width, divide all by 2
-                        size = new Vector3 
-                        (
-                            defaultSize.x * extents.x * 2f / sharedBaseLengthDefaults.x,
-                            defaultSize.y * extents.y * 2f / sharedBaseThicknessRootDefaults.x,
-                            defaultSize.z * extents.z * 2f / sharedBaseWidthRootDefaults.x
-                        );
-                        DebugLogWithID ("GetModuleSize", "Wing extents and resulting output:" + DebugVectorToString (extents) + " / " + DebugVectorToString (size));
-                    }
-                }
-                if (size == Vector3.zero)
-                {
-                    size = new Vector3
-                    (
-                        Mathf.Max (sharedBaseThicknessRoot, sharedBaseThicknessTip) / sharedBaseThicknessRootDefaults.x,
-                        sharedBaseLength / sharedBaseLengthDefaults.x,
-                        Mathf.Max (sharedBaseWidthRoot, sharedBaseWidthTip) / sharedBaseWidthRootDefaults.x
-                    );
-                    DebugLogWithID ("GetModuleSize", "Wing bounds not found, falling back to rough guess: " + size.ToString ());
-                }
-            }
-            else
-            {
-                if (meshFilterCtrlFrame != null)
-                {
-                    if (meshRendererForBounds == null) meshRendererForBounds = meshFilterCtrlFrame.gameObject.GetComponent<Renderer> ();
-                    if (meshRendererForBounds != null)
-                    {
-                        Vector3 extents = meshRendererForBounds.bounds.extents; // x - length, y - thickness, z - width
-                        size = new Vector3 
-                        (
-                            defaultSize.x * extents.y * 2f / sharedBaseThicknessRootDefaults.y,
-                            defaultSize.y * extents.x * 2f / sharedBaseLengthDefaults.y,
-                            defaultSize.z * Mathf.Max (sharedBaseWidthRoot, sharedBaseWidthTip) / sharedBaseWidthRootDefaults.y // frame is not fully displaced with width, Z bounds might be useless // extents.z / sharedBaseWidthRootDefaults.y
-                        );
-                        DebugLogWithID ("GetModuleSize", "Surface extents and resulting output:" + DebugVectorToString (extents) + " / " + DebugVectorToString (size));
-                    }
-                }
-                if (size == Vector3.zero)
-                {
-                    size = new Vector3 
-                    (
-                        Mathf.Max (sharedBaseThicknessRoot, sharedBaseThicknessTip) / sharedBaseThicknessRootDefaults.y,
-                        sharedBaseLength / sharedBaseLengthDefaults.y,
-                        Mathf.Max (sharedBaseWidthRoot, sharedBaseWidthTip) / sharedBaseWidthRootDefaults.y
-                    );
-                    DebugLogWithID ("GetModuleSize", "Surface bounds not found, falling back to rough guess: " + size.ToString ());
-                }
-            }
-            return size;
-        }
-        */
+            // This is a seriously stupid Interface
+            // it is called 4(!) times per part, the first two the vessel size has not changed, the second two it has changed
+            // the return value is # meters to add/subtract from that, which happens even if the part is completely occluded by other parts (seriously, wtf)
+            // The simplest approach would be to ensure that the change in ship size is not greater than the size of the part
+            Debug.Log("compare");
+            Debug.Log(defaultSize);
+            Debug.Log(EditorLogic.fetch.ship.shipSize);
 
+
+            if (defaultSize.x > EditorLogic.fetch.ship.shipSize.x + 0.1)
+            {
+                Vector3 sizeDiff = defaultSize - EditorLogic.fetch.ship.shipSize;
+                Debug.Log("sizediff:" + sizeDiff);
+                sizeMod = Vector3.zero;
+                if (!isCtrlSrf)
+                {
+                    if (meshRendererForBounds == null)
+                        meshRendererForBounds = meshFilterWingSection.gameObject.GetComponent<Renderer>();
+
+                    if (sizeDiff.x > 2 * meshRendererForBounds.bounds.extents.x) // resizing is reasonable for getting larger
+                        sizeMod.x = 2 * meshRendererForBounds.bounds.extents.x - sizeDiff.x;
+                }
+                Debug.Log(sizeMod);
+            }
+            return sizeMod;
+        }
 
 
 
@@ -3250,7 +3239,8 @@ namespace WingProcedural
         {
             bool stockButtonCanBeRemoved = true;
             WingProcedural[] components = GameObject.FindObjectsOfType<WingProcedural> ();
-            if (WPDebug.logEvents) DebugLogWithID ("OnDestroy", "Invoked, with " + components.Length + " remaining components in the scene");
+            if (WPDebug.logEvents)
+                DebugLogWithID ("OnDestroy", "Invoked, with " + components.Length + " remaining components in the scene");
             for (int i = 0; i < components.Length; ++i)
             {
                 if (components[i] != null) stockButtonCanBeRemoved = false;
@@ -3258,7 +3248,8 @@ namespace WingProcedural
             if (stockButtonCanBeRemoved)
             {
                 uiInstanceIDTarget = 0;
-                ApplicationLauncher.Instance.RemoveModApplication (stockButton);
+                if (stockButton != null)
+                    ApplicationLauncher.Instance.RemoveModApplication (stockButton);
             }
         }
 
