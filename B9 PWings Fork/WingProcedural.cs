@@ -22,13 +22,9 @@ namespace WingProcedural
         [KSPField (isPersistant = true)] public bool isSetToDefaultValues = false;
 
         public bool isStarted = false;
-        public bool isStartingNow = false;
         public bool justDetached = false;
 
-
-
-
-        // Debug
+        #region Debug
 
         private struct DebugMessage
         {
@@ -65,11 +61,9 @@ namespace WingProcedural
         {
             return v.x.ToString ("F2") + ", " + v.y.ToString ("F2") + ", " + v.z.ToString ("F2");
         }
+        #endregion
 
-
-
-
-        // Mesh properties
+        #region Mesh properties
 
         [System.Serializable]
         public class MeshReference
@@ -98,12 +92,9 @@ namespace WingProcedural
 
         private static int meshTypeCountEdgeWing = 4;
         private static int meshTypeCountEdgeCtrl = 3;
+        #endregion
 
-
-
-
-        // Shared properties / Limits and increments
-
+        #region Shared properties / Limits and increments
         private Vector2 GetLimitsFromType (Vector4 set)
         {
             if (WPDebug.logLimits) DebugLogWithID ("GetLimitsFromType", "Using set: " + set);
@@ -131,11 +122,9 @@ namespace WingProcedural
         private static float sharedIncrementMain = 0.125f;
         private static float sharedIncrementSmall = 0.04f;
         private static float sharedIncrementInt = 1f;
+        #endregion
 
-
-
-
-        // Shared properties / Base
+        #region Shared properties / Base
 
         [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Base")]
         public static bool sharedFieldGroupBaseStatic = true;
@@ -177,10 +166,9 @@ namespace WingProcedural
         public float sharedBaseThicknessTipCached = 0.24f;
         public static Vector4 sharedBaseThicknessTipDefaults = new Vector4 (0.24f, 0.24f, 0.24f, 0.24f);
 
+        #endregion
 
-
-
-        // Shared properties / Edge / Leading
+        #region Shared properties / Edge / Leading
 
         [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Lead. edge")] 
         public static bool sharedFieldGroupEdgeLeadingStatic = false;
@@ -201,10 +189,9 @@ namespace WingProcedural
         public float sharedEdgeWidthLeadingTipCached = 0.24f;
         public static Vector4 sharedEdgeWidthLeadingTipDefaults = new Vector4 (0.24f, 0.24f, 0.24f, 0.24f);
 
+        #endregion
 
-
-
-        // Shared properties / Edge / Trailing
+        #region Shared properties / Edge / Trailing
 
         [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Trail. edge")]
         public static bool sharedFieldGroupEdgeTrailingStatic = false;
@@ -225,9 +212,9 @@ namespace WingProcedural
         public float sharedEdgeWidthTrailingTipCached = 0.48f;
         public static Vector4 sharedEdgeWidthTrailingTipDefaults = new Vector4 (0.48f, 0.48f, 0.48f, 0.48f);
 
+        #endregion
 
-
-        // Shared properties / Surface / Top
+        #region Shared properties / Surface / Top
 
         [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Material A")]
         public static bool sharedFieldGroupColorSTStatic = false;
@@ -258,10 +245,9 @@ namespace WingProcedural
         public float sharedColorSTBrightnessCached = 0.6f;
         public static Vector4 sharedColorSTBrightnessDefaults = new Vector4 (0.6f, 0.6f, 0.6f, 0.6f);
 
+        #endregion
 
-
-
-        // Shared properties / Surface / bottom
+        #region Shared properties / Surface / bottom
 
         [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Material B")]
         public static bool sharedFieldGroupColorSBStatic = false;
@@ -291,11 +277,9 @@ namespace WingProcedural
         public float sharedColorSBBrightness = 0.6f;
         public float sharedColorSBBrightnessCached = 0.6f;
         public static Vector4 sharedColorSBBrightnessDefaults = new Vector4 (0.6f, 0.6f, 0.6f, 0.6f);
+        #endregion
 
-
-
-
-        // Shared properties / Surface / trailing edge
+        #region Shared properties / Surface / trailing edge
 
         [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Material T")]
         public static bool sharedFieldGroupColorETStatic = false;
@@ -326,10 +310,9 @@ namespace WingProcedural
         public float sharedColorETBrightnessCached = 0.6f;
         public static Vector4 sharedColorETBrightnessDefaults = new Vector4 (0.6f, 0.6f, 0.6f, 0.6f);
 
+        #endregion
 
-
-
-        // Shared properties / Surface / leading edge
+        #region Shared properties / Surface / leading edge
 
         [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Material L")]
         public static bool sharedFieldGroupColorELStatic = false;
@@ -360,10 +343,9 @@ namespace WingProcedural
         public float sharedColorELBrightnessCached = 0.6f;
         public static Vector4 sharedColorELBrightnessDefaults = new Vector4 (0.6f, 0.6f, 0.6f, 0.6f);
 
+        #endregion
 
-
-
-        // Default values
+        #region Default values
         // Vector4 (defaultWing, defaultCtrl, defaultWingBackup, defaultCtrlBackup)
 
         private void ReplaceDefaults ()
@@ -411,8 +393,10 @@ namespace WingProcedural
 
         private void ReplaceDefault (ref Vector4 set, float value)
         {
-            if (!isCtrlSrf) set = new Vector4 (value, set.w, set.z, set.w);
-            else set = new Vector4 (set.z, value, set.z, set.w);
+            if (!isCtrlSrf)
+                set = new Vector4 (value, set.w, set.z, set.w);
+            else
+                set = new Vector4 (set.z, value, set.z, set.w);
         }
 
         private void RestoreDefaults ()
@@ -468,9 +452,7 @@ namespace WingProcedural
             if (!isCtrlSrf) return set.x;
             else return set.y;
         }
-
-
-
+        #endregion
 
         // Fuel configuration switching
         // Has to be situated here as this KSPEvent is not correctly added Part.Events otherwise
@@ -478,23 +460,25 @@ namespace WingProcedural
         [KSPEvent (guiActive = false, guiActiveEditor = false, guiName = "Next configuration", active = false)]
         public void NextConfiguration ()
         {
-            if (WPDebug.logFuel) DebugLogWithID ("NextConfiguration", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed) return;
+            if (WPDebug.logFuel)
+                DebugLogWithID ("NextConfiguration", "Started");
+            
+            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed)
+                return;
+            
             fuelSelectedTankSetup++;
 
-            if (fuelSelectedTankSetup >= fuelConfigurationsList.Count) fuelSelectedTankSetup = 0;
-            if (HighLogic.LoadedSceneIsFlight) fuelCurrentAmount = Vector4.zero;
+            if (fuelSelectedTankSetup >= fuelConfigurationsList.Count)
+                fuelSelectedTankSetup = 0;
+            if (HighLogic.LoadedSceneIsFlight)
+                fuelCurrentAmount = Vector4.zero;
+
             FuelSetConfigurationToParts (true);
         }
 
-
-
-
-        // Inheritance
-
+        #region Inheritance
         private bool inheritancePossibleOnShape = false;
         private bool inheritancePossibleOnMaterials = false;
-
         private void InheritanceStatusUpdate ()
         {
             if (this.part.parent != null)
@@ -580,10 +564,9 @@ namespace WingProcedural
             }
         }
 
+        #endregion
 
-
-
-        // Mod detection
+        #region Mod detection
 
         public static bool assembliesChecked = false;
         public static bool assemblyFARUsed = false;
@@ -607,30 +590,34 @@ namespace WingProcedural
                     ConfigNode[] nodes = GameDatabase.Instance.GetConfigNodes ("FARAeroData");
                     for (int i = 0; i < nodes.Length; ++i)
                     {
-                        if (nodes[i] == null) continue;
-                        if (nodes[i].HasValue ("massPerWingAreaSupported")) assemblyFARMass = true;
+                        if (nodes[i] == null)
+                            continue;
+                        if (nodes[i].HasValue ("massPerWingAreaSupported"))
+                            assemblyFARMass = true;
                     }
                 }
-                if (WPDebug.logEvents) DebugLogWithID ("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | NEAR: " + assemblyNEARUsed + " | FAR mass: " + assemblyFARMass + " | DRE: " + assemblyDREUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
-                if (isCtrlSrf && isWingAsCtrlSrf && WPDebug.logEvents) DebugLogWithID ("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
-                if (isCtrlSrf && isWingAsCtrlSrf && WPDebug.logEvents) DebugLogWithID ("CheckAssemblies", "WARNING | Both RF and MFT mods detected, this should not be the case");
+                if (WPDebug.logEvents)
+                    DebugLogWithID ("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | NEAR: " + assemblyNEARUsed + " | FAR mass: " + assemblyFARMass + " | DRE: " + assemblyDREUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
+                if (isCtrlSrf && isWingAsCtrlSrf && WPDebug.logEvents)
+                    DebugLogWithID ("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
+                if (assemblyRFUsed && assemblyMFTUsed && WPDebug.logEvents) 
+                    DebugLogWithID ("CheckAssemblies", "WARNING | Both RF and MFT mods detected, this should not be the case");
                 assembliesChecked = true;
             }
         }
-
-
-
+        #endregion
 
         // Startup
 
         public override void OnStart (PartModule.StartState state)
         {
-            if (WPDebug.logEvents) DebugLogWithID ("OnStart", "Invoked");
+            if (WPDebug.logEvents)
+                DebugLogWithID ("OnStart", "Invoked");
             base.OnStart (state);
-            CheckAssemblies (true);
+            CheckAssemblies (true); // why force the check to be run for every part?
             if (HighLogic.LoadedSceneIsFlight)
             {
-                if (!isStarted && isAttached && !isStartingNow)
+                if (!isStarted && isAttached)
                 {
                     DebugLogWithID ("OnStart", "Setup started");
                     StartCoroutine (SetupReorderedForFlight ());
@@ -641,25 +628,33 @@ namespace WingProcedural
 
         public void Start ()
         {
-            if (WPDebug.logEvents) DebugLogWithID ("Start", "Invoked");
+            if (WPDebug.logEvents)
+                DebugLogWithID ("Start", "Invoked");
+
             if (HighLogic.LoadedSceneIsEditor)
             {
                 uiInstanceIDLocal = uiInstanceIDTarget = 0;
-                if (!WingProceduralManager.uiStyleConfigured) WingProceduralManager.ConfigureStyles ();
+                if (!WingProceduralManager.uiStyleConfigured)
+                    WingProceduralManager.ConfigureStyles ();
                 RenderingManager.AddToPostDrawQueue (0, OnDraw);
             }
         }
 
 
+        public override void OnSave(ConfigNode node)
+        {
+            WingProceduralManager.SaveConfigs();
+        }
 
+        public override void OnLoad(ConfigNode node)
+        {
+            WingProceduralManager.LoadConfigs();
+        }
 
-        // Update
-
-        public  bool updateCounterpartsAllowed = true;
-        private bool updateRequiredOnGeometry = false;
-        private bool updateRequiredOnAerodynamics = false;
-        private bool updateRequiredOnWindow = false;
-        private bool updateCounterparts = false;
+        public void OnDestroy()
+        {
+            editorAppDestroy();
+        }
 
         public void Update ()
         {
@@ -667,7 +662,7 @@ namespace WingProcedural
             {
                 if (CachedOnEditorAttach == null)
                     CachedOnEditorAttach = new Callback(UpdateOnEditorAttach);
-                if (!this.part.OnEditorAttach.GetInvocationList().Contains(CachedOnEditorAttach))
+                if (!this.part.OnEditorAttach.GetInvocationList().Contains(CachedOnEditorAttach)) // seems unnecesary, why not just have it inside the previous null check?
                     this.part.OnEditorAttach += CachedOnEditorAttach;
 
                 if (CachedOnEditorDetach == null)
@@ -680,85 +675,31 @@ namespace WingProcedural
 
                 if (isStarted)
                 {
-                    // Compare the properties to cached values
-                    // If there is a mismatch, then update is required
+                    bool updateGeo, updateAero;
+                    CheckAllFieldValues(out updateGeo, out updateAero);
 
-                    CheckFieldValue (sharedBaseLength, ref sharedBaseLengthCached, true);
-                    CheckFieldValue (sharedBaseWidthRoot, ref sharedBaseWidthRootCached, true);
-                    CheckFieldValue (sharedBaseWidthTip, ref sharedBaseWidthTipCached, true);
-                    CheckFieldValue (sharedBaseThicknessRoot, ref sharedBaseThicknessRootCached, true);
-                    CheckFieldValue (sharedBaseThicknessTip, ref sharedBaseThicknessTipCached, true);
-                    CheckFieldValue (sharedBaseOffsetRoot, ref sharedBaseOffsetRootCached, true);
-                    CheckFieldValue (sharedBaseOffsetTip, ref sharedBaseOffsetTipCached, true);
-
-                    CheckFieldValue (sharedEdgeTypeTrailing, ref sharedEdgeTypeTrailingCached, false);
-                    CheckFieldValue (sharedEdgeWidthTrailingRoot, ref sharedEdgeWidthTrailingRootCached, true);
-                    CheckFieldValue (sharedEdgeWidthTrailingTip, ref sharedEdgeWidthTrailingTipCached, true);
-
-                    CheckFieldValue (sharedEdgeTypeLeading, ref sharedEdgeTypeLeadingCached, false);
-                    CheckFieldValue (sharedEdgeWidthLeadingRoot, ref sharedEdgeWidthLeadingRootCached, true);
-                    CheckFieldValue (sharedEdgeWidthLeadingTip, ref sharedEdgeWidthLeadingTipCached, true);
-
-                    CheckFieldValue (sharedMaterialST, ref sharedMaterialSTCached, false);
-                    CheckFieldValue (sharedColorSTOpacity, ref sharedColorSTOpacityCached, false);
-                    CheckFieldValue (sharedColorSTHue, ref sharedColorSTHueCached, false);
-                    CheckFieldValue (sharedColorSTSaturation, ref sharedColorSTSaturationCached, false);
-                    CheckFieldValue (sharedColorSTBrightness, ref sharedColorSTBrightnessCached, false);
-
-                    CheckFieldValue (sharedMaterialSB, ref sharedMaterialSBCached, false);
-                    CheckFieldValue (sharedColorSBOpacity, ref sharedColorSBOpacityCached, false);
-                    CheckFieldValue (sharedColorSBHue, ref sharedColorSBHueCached, false);
-                    CheckFieldValue (sharedColorSBSaturation, ref sharedColorSBSaturationCached, false);
-                    CheckFieldValue (sharedColorSBBrightness, ref sharedColorSBBrightnessCached, false);
-
-                    CheckFieldValue (sharedMaterialET, ref sharedMaterialETCached, false);
-                    CheckFieldValue (sharedColorETOpacity, ref sharedColorETOpacityCached, false);
-                    CheckFieldValue (sharedColorETHue, ref sharedColorETHueCached, false);
-                    CheckFieldValue (sharedColorETSaturation, ref sharedColorETSaturationCached, false);
-                    CheckFieldValue (sharedColorETBrightness, ref sharedColorETBrightnessCached, false);
-
-                    CheckFieldValue (sharedMaterialEL, ref sharedMaterialELCached, false);
-                    CheckFieldValue (sharedColorELOpacity, ref sharedColorELOpacityCached, false);
-                    CheckFieldValue (sharedColorELHue, ref sharedColorELHueCached, false);
-                    CheckFieldValue (sharedColorELSaturation, ref sharedColorELSaturationCached, false);
-                    CheckFieldValue (sharedColorELBrightness, ref sharedColorELBrightnessCached, false);
-
-                    // Trigger update of the counterparts
-                    // Has to be done through a special method that overrides their cached values, preventing feedback loop
-                    // Also, a somewhat strange check for attachment after detachment, seems to help in a certain case
-
-                    if (updateRequiredOnGeometry) updateCounterparts = true;
-                    else if (justDetached)
+                    if (updateGeo)
                     {
+                        UpdateCounterparts();
+                        UpdateGeometry(updateAero);
+                    }
+                    else if (justDetached)
+                    { // a somewhat strange check for attachment after detachment, seems to help in a certain case
                         justDetached = false;
                         if (isAttached)
                         {
-                            CalculateVolume ();
-                            CalculateAerodynamicValues ();
+                            CalculateVolume();
+                            CalculateAerodynamicValues();
                         }
                     }
 
-                    // If some updates were marked, execute them
-                    // Updates are split into groups to prevent unnecessary use
-
-                    if (updateRequiredOnGeometry)
-                    {
-                        updateRequiredOnGeometry = false;
-                        UpdateGeometry (updateRequiredOnAerodynamics);
-                        updateRequiredOnAerodynamics = false;
-                    }
-                    if (updateCounterparts && updateCounterpartsAllowed)
-                    {
-                        updateCounterparts = false;
-                        UpdateCounterparts ();
-                    }
                     if (updateRequiredOnWindow)
                     {
                         updateRequiredOnWindow = false;
                         UpdateWindow ();
                     }
                 }
-                else if (isAttached && !isStartingNow)
+                else if (isAttached)
                 {
                     DebugLogWithID ("Update", "Setup started in absense of attachment event");
                     Setup ();
@@ -774,22 +715,11 @@ namespace WingProcedural
                     isStarted = true;
                 }
             }
-            if (!isCtrlSrf && !isWingAsCtrlSrf) FuelOnUpdate ();
+            if (!isCtrlSrf && !isWingAsCtrlSrf)
+                FuelOnUpdate ();
         }
 
-        private void CheckFieldValue (float fieldValue, ref float fieldCache, bool affectsAerodynamics)
-        {
-            if (fieldValue != fieldCache)
-            {
-                if (WPDebug.logUpdate) DebugLogWithID ("Update", "Detected value change");
-                updateRequiredOnGeometry = true;
-                if (affectsAerodynamics) updateRequiredOnAerodynamics = true;
-                fieldCache = fieldValue;
-            }
-        }
-
-
-
+        
 
         // Attachment handling
 
@@ -816,14 +746,31 @@ namespace WingProcedural
             if (uiEditMode) uiEditMode = false;
         }
 
+        public void Setup()
+        {
+            SetupMeshFilters();
+            SetupFields();
+            SetupMeshReferences();
+            ReportOnMeshReferences();
+            SetupRecurring();
+        }
+
+        public void SetupRecurring()
+        {
+            FuelOnStart(); // shifted from Setup() to fix NRE caused by reattaching a single part that wasn't originally mirrored
+            UpdateMaterials();
+            UpdateGeometry(true);
+            UpdateCollidersForFAR();
+            UpdateWindow();
+        }
 
 
-
-        // Geometry
+        #region Geometry
 
         public void UpdateGeometry (bool updateAerodynamics)
         {
-            if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Started | isCtrlSrf: " + isCtrlSrf);
+            if (WPDebug.logUpdateGeometry)
+                DebugLogWithID ("UpdateGeometry", "Started | isCtrlSrf: " + isCtrlSrf);
             if (!isCtrlSrf)
             {
                 float wingThicknessDeviationRoot = sharedBaseThicknessRoot / 0.24f;
@@ -880,11 +827,14 @@ namespace WingProcedural
                     meshFilterWingSection.mesh.RecalculateBounds ();
 
                     MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider> ();
-                    if (meshCollider == null) meshCollider = meshFilterWingSection.gameObject.AddComponent<MeshCollider> ();
+                    if (meshCollider == null)
+                        meshCollider = meshFilterWingSection.gameObject.AddComponent<MeshCollider> ();
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterWingSection.mesh;
                     meshCollider.convex = true;
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Wing section | Finished");
+                    
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Wing section | Finished");
                 }
 
                 // Second, wing surfaces
@@ -1332,7 +1282,56 @@ namespace WingProcedural
             }
         }
 
+        public void UpdateCounterparts()
+        {
+            for (int i = 0; i < this.part.symmetryCounterparts.Count; ++i)
+            {
+                WingProcedural clone = this.part.symmetryCounterparts[i].Modules.OfType<WingProcedural>().FirstOrDefault();
 
+                clone.sharedBaseLength = clone.sharedBaseLengthCached = sharedBaseLength;
+                clone.sharedBaseWidthRoot = clone.sharedBaseWidthRootCached = sharedBaseWidthRoot;
+                clone.sharedBaseWidthTip = clone.sharedBaseWidthTipCached = sharedBaseWidthTip;
+                clone.sharedBaseThicknessRoot = clone.sharedBaseThicknessRootCached = sharedBaseThicknessRoot;
+                clone.sharedBaseThicknessTip = clone.sharedBaseThicknessTipCached = sharedBaseThicknessTip;
+                clone.sharedBaseOffsetRoot = clone.sharedBaseOffsetRootCached = sharedBaseOffsetRoot;
+                clone.sharedBaseOffsetTip = clone.sharedBaseOffsetTipCached = sharedBaseOffsetTip;
+
+                clone.sharedEdgeTypeLeading = clone.sharedEdgeTypeLeadingCached = sharedEdgeTypeLeading;
+                clone.sharedEdgeWidthLeadingRoot = clone.sharedEdgeWidthLeadingRootCached = sharedEdgeWidthLeadingRoot;
+                clone.sharedEdgeWidthLeadingTip = clone.sharedEdgeWidthLeadingTipCached = sharedEdgeWidthLeadingTip;
+
+                clone.sharedEdgeTypeTrailing = clone.sharedEdgeTypeTrailingCached = sharedEdgeTypeTrailing;
+                clone.sharedEdgeWidthTrailingRoot = clone.sharedEdgeWidthTrailingRootCached = sharedEdgeWidthTrailingRoot;
+                clone.sharedEdgeWidthTrailingTip = clone.sharedEdgeWidthTrailingTipCached = sharedEdgeWidthTrailingTip;
+
+                clone.sharedMaterialST = clone.sharedMaterialSTCached = sharedMaterialST;
+                clone.sharedMaterialSB = clone.sharedMaterialSBCached = sharedMaterialSB;
+                clone.sharedMaterialET = clone.sharedMaterialETCached = sharedMaterialET;
+                clone.sharedMaterialEL = clone.sharedMaterialELCached = sharedMaterialEL;
+
+                clone.sharedColorSTBrightness = clone.sharedColorSTBrightnessCached = sharedColorSTBrightness;
+                clone.sharedColorSBBrightness = clone.sharedColorSBBrightnessCached = sharedColorSBBrightness;
+                clone.sharedColorETBrightness = clone.sharedColorETBrightnessCached = sharedColorETBrightness;
+                clone.sharedColorELBrightness = clone.sharedColorELBrightnessCached = sharedColorELBrightness;
+
+                clone.sharedColorSTOpacity = clone.sharedColorSTOpacityCached = sharedColorSTOpacity;
+                clone.sharedColorSBOpacity = clone.sharedColorSBOpacityCached = sharedColorSBOpacity;
+                clone.sharedColorETOpacity = clone.sharedColorETOpacityCached = sharedColorETOpacity;
+                clone.sharedColorELOpacity = clone.sharedColorELOpacityCached = sharedColorELOpacity;
+
+                clone.sharedColorSTHue = clone.sharedColorSTHueCached = sharedColorSTHue;
+                clone.sharedColorSBHue = clone.sharedColorSBHueCached = sharedColorSBHue;
+                clone.sharedColorETHue = clone.sharedColorETHueCached = sharedColorETHue;
+                clone.sharedColorELHue = clone.sharedColorELHueCached = sharedColorELHue;
+
+                clone.sharedColorSTSaturation = clone.sharedColorSTSaturationCached = sharedColorSTSaturation;
+                clone.sharedColorSBSaturation = clone.sharedColorSBSaturationCached = sharedColorSBSaturation;
+                clone.sharedColorETSaturation = clone.sharedColorETSaturationCached = sharedColorETSaturation;
+                clone.sharedColorELSaturation = clone.sharedColorELSaturationCached = sharedColorELSaturation;
+
+                clone.SetupRecurring();
+            }
+        }
 
 
         // Edge geometry
@@ -1351,10 +1350,9 @@ namespace WingProcedural
             return positions;
         }
 
+        #endregion
 
-
-
-        // Materials
+        #region Materials
 
 
         public static Material materialLayeredSurface;
@@ -1455,85 +1453,9 @@ namespace WingProcedural
             }
         }
 
+        #endregion
 
-
-
-        // Setup
-
-        public void Setup ()
-        {
-            isStartingNow = true;
-            SetupMeshFilters ();
-            SetupFields ();
-            SetupMeshReferences ();
-            ReportOnMeshReferences ();
-            SetupRecurring ();
-            isStartingNow = false;
-        }
-
-        public void SetupRecurring ()
-        {
-            FuelOnStart(); // shifted from Setup() to fix NRE caused by reattaching a part adding mirror symmetry. May need a check to only be run in the editor
-            UpdateMaterials ();
-            UpdateGeometry (true);
-            UpdateCollidersForFAR ();
-            UpdateWindow ();
-        }
-
-        public void UpdateCounterparts ()
-        {
-            // Woah, looks like this is unnecessary
-            for (int i = 0; i < this.part.symmetryCounterparts.Count; ++i)
-            {
-                var clone = this.part.symmetryCounterparts[i].Modules.OfType<WingProcedural> ().FirstOrDefault ();
-                clone.updateCounterpartsAllowed = false;
-
-                clone.sharedBaseLength = clone.sharedBaseLengthCached = sharedBaseLength;
-                clone.sharedBaseWidthRoot = clone.sharedBaseWidthRootCached = sharedBaseWidthRoot;
-                clone.sharedBaseWidthTip = clone.sharedBaseWidthTipCached = sharedBaseWidthTip;
-                clone.sharedBaseThicknessRoot = clone.sharedBaseThicknessRootCached = sharedBaseThicknessRoot;
-                clone.sharedBaseThicknessTip = clone.sharedBaseThicknessTipCached = sharedBaseThicknessTip;
-                clone.sharedBaseOffsetRoot = clone.sharedBaseOffsetRootCached = sharedBaseOffsetRoot;
-                clone.sharedBaseOffsetTip = clone.sharedBaseOffsetTipCached = sharedBaseOffsetTip;
-
-                clone.sharedEdgeTypeLeading = clone.sharedEdgeTypeLeadingCached = sharedEdgeTypeLeading;
-                clone.sharedEdgeWidthLeadingRoot = clone.sharedEdgeWidthLeadingRootCached = sharedEdgeWidthLeadingRoot;
-                clone.sharedEdgeWidthLeadingTip = clone.sharedEdgeWidthLeadingTipCached = sharedEdgeWidthLeadingTip;
-
-                clone.sharedEdgeTypeTrailing = clone.sharedEdgeTypeTrailingCached = sharedEdgeTypeTrailing;
-                clone.sharedEdgeWidthTrailingRoot = clone.sharedEdgeWidthTrailingRootCached = sharedEdgeWidthTrailingRoot;
-                clone.sharedEdgeWidthTrailingTip = clone.sharedEdgeWidthTrailingTipCached = sharedEdgeWidthTrailingTip;
-
-                clone.sharedMaterialST = clone.sharedMaterialSTCached = sharedMaterialST;
-                clone.sharedMaterialSB = clone.sharedMaterialSBCached = sharedMaterialSB;
-                clone.sharedMaterialET = clone.sharedMaterialETCached = sharedMaterialET;
-                clone.sharedMaterialEL = clone.sharedMaterialELCached = sharedMaterialEL;
-
-                clone.sharedColorSTBrightness = clone.sharedColorSTBrightnessCached = sharedColorSTBrightness;
-                clone.sharedColorSBBrightness = clone.sharedColorSBBrightnessCached = sharedColorSBBrightness;
-                clone.sharedColorETBrightness = clone.sharedColorETBrightnessCached = sharedColorETBrightness;
-                clone.sharedColorELBrightness = clone.sharedColorELBrightnessCached = sharedColorELBrightness;
-
-                clone.sharedColorSTOpacity = clone.sharedColorSTOpacityCached = sharedColorSTOpacity;
-                clone.sharedColorSBOpacity = clone.sharedColorSBOpacityCached = sharedColorSBOpacity;
-                clone.sharedColorETOpacity = clone.sharedColorETOpacityCached = sharedColorETOpacity;
-                clone.sharedColorELOpacity = clone.sharedColorELOpacityCached = sharedColorELOpacity;
-
-                clone.sharedColorSTHue = clone.sharedColorSTHueCached = sharedColorSTHue;
-                clone.sharedColorSBHue = clone.sharedColorSBHueCached = sharedColorSBHue;
-                clone.sharedColorETHue = clone.sharedColorETHueCached = sharedColorETHue;
-                clone.sharedColorELHue = clone.sharedColorELHueCached = sharedColorELHue;
-
-                clone.sharedColorSTSaturation = clone.sharedColorSTSaturationCached = sharedColorSTSaturation;
-                clone.sharedColorSBSaturation = clone.sharedColorSBSaturationCached = sharedColorSBSaturation;
-                clone.sharedColorETSaturation = clone.sharedColorETSaturationCached = sharedColorETSaturation;
-                clone.sharedColorELSaturation = clone.sharedColorELSaturationCached = sharedColorELSaturation;
-
-                clone.SetupRecurring ();
-                clone.updateCounterpartsAllowed = true;
-            }
-        }
-
+        #region Mesh
         private void SetupMeshFilters ()
         {
             if (!isCtrlSrf)
@@ -1559,73 +1481,6 @@ namespace WingProcedural
                     meshFiltersCtrlEdge.Add (meshFilterCtrlEdge);
                 }
             }
-        }
-
-        private int GetFieldMode ()
-        {
-            if (!isCtrlSrf) return 1;
-            else return 2;
-        }
-
-        private void SetupFields ()
-        {
-            // SetFieldVisibility ("sharedFieldGroupBase", true);
-            SetFieldType ("sharedBaseLength", 1, GetLimitsFromType (sharedBaseLengthLimits), sharedIncrementMain, false, GetDefault (sharedBaseLengthDefaults));
-            SetFieldType ("sharedBaseWidthRoot", GetFieldMode (), GetLimitsFromType (sharedBaseWidthLimits), sharedIncrementMain, false, GetDefault (sharedBaseWidthRootDefaults));
-            SetFieldType ("sharedBaseWidthTip", GetFieldMode (), GetLimitsFromType (sharedBaseWidthLimits), sharedIncrementMain, false, GetDefault (sharedBaseWidthTipDefaults));
-            SetFieldType ("sharedBaseThicknessRoot", 2, sharedBaseThicknessLimits, sharedIncrementSmall, false, GetDefault (sharedBaseThicknessRootDefaults));
-            SetFieldType ("sharedBaseThicknessTip", 2, sharedBaseThicknessLimits, sharedIncrementSmall, false, GetDefault (sharedBaseThicknessTipDefaults));
-            SetFieldType ("sharedBaseOffsetRoot", GetFieldMode (), GetLimitsFromType (sharedBaseOffsetLimits), GetIncrementFromType (sharedIncrementMain, sharedIncrementSmall), false, GetDefault (sharedBaseOffsetRootDefaults));
-            SetFieldType ("sharedBaseOffsetTip", GetFieldMode (), GetLimitsFromType (sharedBaseOffsetLimits), GetIncrementFromType (sharedIncrementMain, sharedIncrementSmall), false, GetDefault (sharedBaseOffsetTipDefaults));
-
-            // SetFieldVisibility ("sharedFieldGroupEdgeTrailing", true);
-            SetFieldType ("sharedEdgeTypeTrailing", 2, GetLimitsFromType (sharedEdgeTypeLimits), sharedIncrementInt, false, GetDefault (sharedEdgeTypeTrailingDefaults));
-            SetFieldType ("sharedEdgeWidthTrailingRoot", 2, GetLimitsFromType (sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault (sharedEdgeWidthTrailingRootDefaults));
-            SetFieldType ("sharedEdgeWidthTrailingTip", 2, GetLimitsFromType (sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault (sharedEdgeWidthTrailingTipDefaults));
-
-            // SetFieldVisibility ("sharedFieldGroupEdgeLeading", !isCtrlSrf);
-            SetFieldType ("sharedEdgeTypeLeading", 2, GetLimitsFromType (sharedEdgeTypeLimits), sharedIncrementInt, false, GetDefault (sharedEdgeTypeLeadingDefaults));
-            SetFieldType ("sharedEdgeWidthLeadingRoot", 2, GetLimitsFromType (sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault (sharedEdgeWidthLeadingRootDefaults));
-            SetFieldType ("sharedEdgeWidthLeadingTip", 2, GetLimitsFromType (sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault (sharedEdgeWidthLeadingTipDefaults));
-
-            // SetFieldVisibility ("sharedFieldGroupColorST", true);
-            SetFieldType ("sharedMaterialST", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault (sharedMaterialSTDefaults));
-            SetFieldType ("sharedColorSTOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorSTOpacityDefaults));
-            SetFieldType ("sharedColorSTHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorSTHueDefaults));
-            SetFieldType ("sharedColorSTSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorSTSaturationDefaults));
-            SetFieldType ("sharedColorSTBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorSTBrightnessDefaults));
-
-            // SetFieldVisibility ("sharedFieldGroupColorSB", true);
-            SetFieldType ("sharedMaterialSB", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault (sharedMaterialSBDefaults));
-            SetFieldType ("sharedColorSBOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorSBOpacityDefaults));
-            SetFieldType ("sharedColorSBHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorSBHueDefaults));
-            SetFieldType ("sharedColorSBSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorSBSaturationDefaults));
-            SetFieldType ("sharedColorSBBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorSBBrightnessDefaults));
-
-            // SetFieldVisibility ("sharedFieldGroupColorET", true);
-            SetFieldType ("sharedMaterialET", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault (sharedMaterialETDefaults));
-            SetFieldType ("sharedColorETOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorETOpacityDefaults));
-            SetFieldType ("sharedColorETHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorETHueDefaults));
-            SetFieldType ("sharedColorETSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorETSaturationDefaults));
-            SetFieldType ("sharedColorETBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorETBrightnessDefaults));
-
-            // SetFieldVisibility ("sharedFieldGroupColorEL", !isCtrlSrf);
-            SetFieldType ("sharedMaterialEL", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault (sharedMaterialELDefaults));
-            SetFieldType ("sharedColorELOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorELOpacityDefaults));
-            SetFieldType ("sharedColorELHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorELHueDefaults));
-            SetFieldType ("sharedColorELSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorELSaturationDefaults));
-            SetFieldType ("sharedColorELBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault (sharedColorELBrightnessDefaults));
-
-            updateRequiredOnWindow = true;
-            isSetToDefaultValues = true;
-        }
-
-        private void SetFieldType (string name, int type, Vector2 limits, float increment, bool visible, float defaultValue)
-        {
-            FieldInfo field = this.GetType ().GetField (name);
-            float value = (float) field.GetValue (this);
-            if (!isSetToDefaultValues) field.SetValue (this, defaultValue);
-            else field.SetValue (this, Mathf.Clamp (value, limits.x, limits.y));
         }
 
         public void SetupMeshReferences ()
@@ -1666,29 +1521,23 @@ namespace WingProcedural
         {
             if (isCtrlSrf)
             {
-                if (WPDebug.logMeshReferences) DebugLogWithID
-                (
-                    "ReportOnMeshReferences",
-                    "Control surface reference length check"
-                    + " | Edge: " + meshReferenceCtrlFrame.vp.Length
-                    + " | Surface: " + meshReferenceCtrlSurface.vp.Length
-                );
+                if (WPDebug.logMeshReferences)
+                    DebugLogWithID("ReportOnMeshReferences", "Control surface reference length check" + " | Edge: " + meshReferenceCtrlFrame.vp.Length
+                                        + " | Surface: " + meshReferenceCtrlSurface.vp.Length);
             }
             else
             {
-                if (WPDebug.logMeshReferences) DebugLogWithID
-                (
-                    "ReportOnMeshReferences",
-                    "Wing reference length check"
-                    + " | Section: " + meshReferenceWingSection.vp.Length
-                    + " | Surface: " + meshReferenceWingSurface.vp.Length
+                if (WPDebug.logMeshReferences)
+                    DebugLogWithID("ReportOnMeshReferences", "Wing reference length check" + " | Section: " + meshReferenceWingSection.vp.Length
+                                        + " | Surface: " + meshReferenceWingSurface.vp.Length
                 );
             }
         }
 
         private void SetupMeshReferencesFromScratch ()
         {
-            if (WPDebug.logMeshReferences) DebugLogWithID ("SetupMeshReferencesFromScratch", "No sources found, creating new references");
+            if (WPDebug.logMeshReferences)
+                DebugLogWithID ("SetupMeshReferencesFromScratch", "No sources found, creating new references");
             if (!isCtrlSrf)
             {
                 WingProcedural.meshReferenceWingSection = FillMeshRefererence (meshFilterWingSection);
@@ -1710,37 +1559,6 @@ namespace WingProcedural
                 }
             }
         }
-
-
-
-
-        // Supposed to fix context menu updates
-        // Proposed by NathanKell, if I'm not mistaken
-
-        UIPartActionWindow _myWindow = null;
-        UIPartActionWindow myWindow
-        {
-            get
-            {
-                if (_myWindow == null)
-                {
-                    UIPartActionWindow[] windows = (UIPartActionWindow[]) FindObjectsOfType (typeof (UIPartActionWindow));
-                    for (int i = 0; i < windows.Length; ++i)
-                    {
-                        if (windows[i].part == part) _myWindow = windows[i];
-                    }
-                }
-                return _myWindow;
-            }
-        }
-
-        private void UpdateWindow ()
-        {
-            if (myWindow != null) myWindow.displayDirty = true;
-        }
-
-
-
 
         // Reference fetching
 
@@ -1786,10 +1604,9 @@ namespace WingProcedural
             else if (WPDebug.logMeshReferences) DebugLogWithID ("FillMeshReference", "Mesh filter reference is null, unable to set up reference arrays");
             return reference;
         }
+        #endregion
 
-
-
-
+        #region Aero
         // Delayed aero value setup
         // Must be run after all geometry setups, otherwise FAR checks will be done before surrounding parts take shape, producing incorrect results
 
@@ -1820,7 +1637,8 @@ namespace WingProcedural
             {
                 if (vesselList[i].vessel.GetInstanceID () == vesselID)
                 {
-                    if (WPDebug.logFlightSetup) DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " found in the status list");
+                    if (WPDebug.logFlightSetup)
+                        DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " found in the status list");
                     vesselListInclusive = true;
                     vesselStatusIndex = i;
                 }
@@ -1858,7 +1676,8 @@ namespace WingProcedural
                 // After that we make two separate runs through that list
                 // First one setting up all geometry and second one setting up aerodynamic values
 
-                if (WPDebug.logFlightSetup) DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " contained " + vesselPartsCount + " parts, of which " + moduleList.Count + " should be set up");
+                if (WPDebug.logFlightSetup)
+                    DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " contained " + vesselPartsCount + " parts, of which " + moduleList.Count + " should be set up");
                 int moduleListCount = moduleList.Count;
                 for (int i = 0; i < moduleListCount; ++i)
                 {
@@ -1869,12 +1688,12 @@ namespace WingProcedural
                 yield return new WaitForFixedUpdate ();
                 yield return new WaitForFixedUpdate ();
 
-                if (WPDebug.logFlightSetup) DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " waited for updates, starting aero value calculation");
+                if (WPDebug.logFlightSetup)
+                    DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " waited for updates, starting aero value calculation");
                 for (int i = 0; i < moduleListCount; ++i)
                 {
                     moduleList[i].CalculateAerodynamicValues ();
                 }
-                yield return null;
             }
         }
 
@@ -1955,10 +1774,9 @@ namespace WingProcedural
         public void CalculateVolume ()
         {
             if (isWingAsCtrlSrf || isCtrlSrf || isPanel) return;
-            aeroStatVolume = (sharedBaseWidthTip * sharedBaseThicknessTip * sharedBaseLength) +
-                ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * sharedBaseThicknessTip * sharedBaseLength) +
-                (sharedBaseWidthTip * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength) +
-                ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength);
+            aeroStatVolume = (sharedBaseWidthTip * sharedBaseThicknessTip * sharedBaseLength) + ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * sharedBaseThicknessTip * sharedBaseLength)
+                                + (sharedBaseWidthTip * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength)
+                                + ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength);
             FuelUpdateAmountsFromVolume (aeroStatVolume, true);
         }
 
@@ -1966,7 +1784,8 @@ namespace WingProcedural
         {
             if (isAttached || HighLogic.LoadedSceneIsFlight)
             {
-                if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "Started");
+                if (WPDebug.logCAV)
+                    DebugLogWithID ("CalculateAerodynamicValues", "Started");
                 CheckAssemblies (false);
 
                 float sharedWidthTipSum = sharedBaseWidthTip;
@@ -2015,7 +1834,8 @@ namespace WingProcedural
                     aeroStatMeanAerodynamicChord = (double) (sharedWidthTipSum + sharedWidthRootSum) / 2.0;
                     aeroStatMidChordSweep = MathD.Atan ((double) Mathf.Abs (sharedWidthRootSum - sharedWidthTipSum) / (double) sharedBaseLength) * MathD.Rad2Deg;
                 }
-                if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "Passed B2/TR/MAC/MCS");
+                if (WPDebug.logCAV)
+                    DebugLogWithID ("CalculateAerodynamicValues", "Passed B2/TR/MAC/MCS");
 
                 // Derived values
 
@@ -2030,7 +1850,8 @@ namespace WingProcedural
                 aeroStatCd = aeroConstDragBaseValue / aeroStatAspectRatioSweepScale * aeroConstDragMultiplier;
                 aeroStatCl = aeroConstLiftFudgeNumber * aeroStatSurfaceArea * aeroStatAspectRatioSweepScale;
                 aeroStatConnectionForce = MathD.Round (MathD.Clamp (MathD.Sqrt (aeroStatCl + aeroStatClChildren) * (double) aeroConstConnectionFactor, (double) aeroConstConnectionMinimum, double.MaxValue));
-                if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "Passed SR/AR/ARSS/mass/Cl/Cd/connection");
+                if (WPDebug.logCAV)
+                    DebugLogWithID ("CalculateAerodynamicValues", "Passed SR/AR/ARSS/mass/Cl/Cd/connection");
 
                 // Shared parameters
 
@@ -2049,65 +1870,87 @@ namespace WingProcedural
                 }
                 part.breakingForce = Mathf.Round ((float) aeroStatConnectionForce);
                 part.breakingTorque = Mathf.Round ((float) aeroStatConnectionForce);
-                if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "Passed cost/force/torque");
+                if (WPDebug.logCAV)
+                    DebugLogWithID ("CalculateAerodynamicValues", "Passed cost/force/torque");
 
                 // Stock-only values
 
                 if ((!assemblyFARUsed && !assemblyNEARUsed) || !assemblyFARMass)
                 {
-                    if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive or FAR mass is not enabled, calculating stock part mass");
+                    if (WPDebug.logCAV)
+                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive or FAR mass is not enabled, calculating stock part mass");
                     part.mass = Mathf.Round ((float) aeroStatMass * 100f) / 100f;
                 }
                 if (!assemblyFARUsed && !assemblyNEARUsed)
                 {
                     if (!isCtrlSrf && !isWingAsCtrlSrf)
                     {
-                        if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
+                        if (WPDebug.logCAV)
+                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
                         ((Winglet) this.part).deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
                         ((Winglet) this.part).dragCoeff = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
                     }
                     else
                     {
-                        if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
+                        if (WPDebug.logCAV)
+                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
                         var mCtrlSrf = part.Modules.OfType<ModuleControlSurface> ().FirstOrDefault ();
                         mCtrlSrf.deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
                         mCtrlSrf.dragCoeff = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
                         mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
                     }
                 }
-                if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
+                if (WPDebug.logCAV)
+                    DebugLogWithID ("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
 
                 // FAR values
 
                 if (assemblyFARUsed || assemblyNEARUsed)
                 {
-                    if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Entered segment");
+                    if (WPDebug.logCAV)
+                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Entered segment");
                     if (aeroFARModuleReference == null)
                     {
-                        if (part.Modules.Contains ("FARControllableSurface")) aeroFARModuleReference = part.Modules["FARControllableSurface"];
-                        else if (part.Modules.Contains ("FARWingAerodynamicModel")) aeroFARModuleReference = part.Modules["FARWingAerodynamicModel"];
-                        if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module reference was null, search performed, recheck result was " + (aeroFARModuleReference == null).ToString ());
+                        if (part.Modules.Contains ("FARControllableSurface"))
+                            aeroFARModuleReference = part.Modules["FARControllableSurface"];
+                        else if (part.Modules.Contains ("FARWingAerodynamicModel"))
+                            aeroFARModuleReference = part.Modules["FARWingAerodynamicModel"];
+                        if (WPDebug.logCAV)
+                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module reference was null, search performed, recheck result was " + (aeroFARModuleReference == null).ToString ());
                     }
                     if (aeroFARModuleReference != null)
                     {
-                        if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module reference present");
-                        if (aeroFARModuleType == null) aeroFARModuleType = aeroFARModuleReference.GetType ();
+                        if (WPDebug.logCAV)
+                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module reference present");
+                        if (aeroFARModuleType == null)
+                            aeroFARModuleType = aeroFARModuleReference.GetType ();
                         if (aeroFARModuleType != null) 
                         {
-                            if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module type present");
-                            if (aeroFARFieldInfoSemispan == null) aeroFARFieldInfoSemispan = aeroFARModuleType.GetField ("b_2");
-                            if (aeroFARFieldInfoMAC == null) aeroFARFieldInfoMAC = aeroFARModuleType.GetField ("MAC");
-                            if (aeroFARFieldInfoSurfaceArea == null) aeroFARFieldInfoSurfaceArea = aeroFARModuleType.GetField ("S");
-                            if (aeroFARFieldInfoMidChordSweep == null) aeroFARFieldInfoMidChordSweep = aeroFARModuleType.GetField ("MidChordSweep");
-                            if (aeroFARFieldInfoTaperRatio == null) aeroFARFieldInfoTaperRatio = aeroFARModuleType.GetField ("TaperRatio");
-                            if (aeroFARFieldInfoControlSurfaceFraction == null && isCtrlSrf) aeroFARFieldInfoControlSurfaceFraction = aeroFARModuleType.GetField ("ctrlSurfFrac");
-                            if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Field checks and fetching passed");
+                            if (WPDebug.logCAV)
+                                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module type present");
+                            if (aeroFARFieldInfoSemispan == null)
+                                aeroFARFieldInfoSemispan = aeroFARModuleType.GetField ("b_2");
+                            if (aeroFARFieldInfoMAC == null)
+                                aeroFARFieldInfoMAC = aeroFARModuleType.GetField ("MAC");
+                            if (aeroFARFieldInfoSurfaceArea == null)
+                                aeroFARFieldInfoSurfaceArea = aeroFARModuleType.GetField ("S");
+                            if (aeroFARFieldInfoMidChordSweep == null)
+                                aeroFARFieldInfoMidChordSweep = aeroFARModuleType.GetField ("MidChordSweep");
+                            if (aeroFARFieldInfoTaperRatio == null)
+                                aeroFARFieldInfoTaperRatio = aeroFARModuleType.GetField ("TaperRatio");
+                            if (aeroFARFieldInfoControlSurfaceFraction == null && isCtrlSrf)
+                                aeroFARFieldInfoControlSurfaceFraction = aeroFARModuleType.GetField ("ctrlSurfFrac");
+                            if (WPDebug.logCAV)
+                                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Field checks and fetching passed");
 
                             if (aeroFARMethodInfoUsed == null)
                             {
-                                if (assemblyNEARUsed) aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("MathAndFunctionInitialization");
-                                else aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("StartInitialization");
-                                if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info was null, search performed, recheck result was " + (aeroFARMethodInfoUsed == null).ToString ());
+                                if (assemblyNEARUsed)
+                                    aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("MathAndFunctionInitialization");
+                                else
+                                    aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("StartInitialization");
+                                if (WPDebug.logCAV)
+                                    DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info was null, search performed, recheck result was " + (aeroFARMethodInfoUsed == null).ToString ());
                             }
                             if (aeroFARMethodInfoUsed != null)
                             {
@@ -2134,7 +1977,8 @@ namespace WingProcedural
                     aeroUICd = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
                     aeroUICl = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
                 }
-                if ((!assemblyFARUsed && !assemblyNEARUsed) || !assemblyFARMass) aeroUIMass = part.mass;
+                if ((!assemblyFARUsed && !assemblyNEARUsed) || !assemblyFARMass)
+                    aeroUIMass = part.mass;
 
                 aeroUIMeanAerodynamicChord = (float) aeroStatMeanAerodynamicChord;
                 aeroUISemispan = (float) aeroStatSemispan;
@@ -2142,8 +1986,11 @@ namespace WingProcedural
                 aeroUITaperRatio = (float) aeroStatTaperRatio;
                 aeroUISurfaceArea = (float) aeroStatSurfaceArea;
                 aeroUIAspectRatio = (float) aeroStatAspectRatio;
-                if (HighLogic.LoadedSceneIsEditor) GameEvents.onEditorShipModified.Fire (EditorLogic.fetch.ship);
-                if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "Finished");
+
+                if (HighLogic.LoadedSceneIsEditor)
+                    GameEvents.onEditorShipModified.Fire (EditorLogic.fetch.ship);
+                if (WPDebug.logCAV)
+                    DebugLogWithID ("CalculateAerodynamicValues", "Finished");
             }
         }
 
@@ -2185,10 +2032,7 @@ namespace WingProcedural
 
             // If parent is a pWing, trickle the call to gather ChildrenCl down to them.
             if (this.part.parent != null && this.part.parent.Modules.Contains ("WingProcedural"))
-            {
-                var Parent = this.part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ();
-                Parent.GatherChildrenCl ();
-            }
+                this.part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ().GatherChildrenCl();
         }
 
 
@@ -2265,10 +2109,9 @@ namespace WingProcedural
             else DebugLogWithID ("DumpInteractionData", "FAR module not found, report failed");
         }
 
+        #endregion
 
-
-
-        // Alternative UI/input
+        #region Alternative UI/input
 
         public KeyCode uiKeyCodeEdit = KeyCode.J;
         public static bool uiWindowActive = true;
@@ -2285,6 +2128,34 @@ namespace WingProcedural
         public static bool uiEditModeTimeout = false;
         private float uiEditModeTimeoutDuration = 0.25f;
         private float uiEditModeTimer = 0f;
+
+        private bool updateRequiredOnWindow = false;
+
+        // Supposed to fix context menu updates
+        // Proposed by NathanKell, if I'm not mistaken
+        UIPartActionWindow _myWindow = null;
+        UIPartActionWindow myWindow
+        {
+            get
+            {
+                if (_myWindow == null)
+                {
+                    UIPartActionWindow[] windows = (UIPartActionWindow[])FindObjectsOfType(typeof(UIPartActionWindow));
+                    for (int i = 0; i < windows.Length; ++i)
+                    {
+                        if (windows[i].part == part)
+                            _myWindow = windows[i];
+                    }
+                }
+                return _myWindow;
+            }
+        }
+
+        private void UpdateWindow()
+        {
+            if (myWindow != null)
+                myWindow.displayDirty = true;
+        }
 
         private void OnDraw ()
         {
@@ -2450,15 +2321,11 @@ namespace WingProcedural
                     if (inheritancePossibleOnMaterials) { if (GUILayout.Button ("Color", WingProceduralManager.uiStyleButton)) InheritParentValues (3); }
                     GUILayout.EndHorizontal ();
                 }
-                // if (GUILayout.Button ("Dump state", WingProceduralManager.uiStyleButton)) DumpState ();
-                // if (GUILayout.Button ("Dump intervals", WingProceduralManager.uiStyleButton)) DumpExecutionTimes ();
             }
             else
             {
                 if (uiEditModeTimeout)
-                {
                     GUILayout.Label("Exiting edit mode...\n", WingProceduralManager.uiStyleLabelMedium);
-                }
                 else
                 {
                     GUILayout.BeginHorizontal();
@@ -2473,6 +2340,75 @@ namespace WingProcedural
                 }
             }
             GUI.DragWindow ();
+        }
+
+        private void SetupFields()
+        {
+            // SetFieldVisibility ("sharedFieldGroupBase", true);
+            SetFieldType("sharedBaseLength", 1, GetLimitsFromType(sharedBaseLengthLimits), sharedIncrementMain, false, GetDefault(sharedBaseLengthDefaults));
+            SetFieldType("sharedBaseWidthRoot", GetFieldMode(), GetLimitsFromType(sharedBaseWidthLimits), sharedIncrementMain, false, GetDefault(sharedBaseWidthRootDefaults));
+            SetFieldType("sharedBaseWidthTip", GetFieldMode(), GetLimitsFromType(sharedBaseWidthLimits), sharedIncrementMain, false, GetDefault(sharedBaseWidthTipDefaults));
+            SetFieldType("sharedBaseThicknessRoot", 2, sharedBaseThicknessLimits, sharedIncrementSmall, false, GetDefault(sharedBaseThicknessRootDefaults));
+            SetFieldType("sharedBaseThicknessTip", 2, sharedBaseThicknessLimits, sharedIncrementSmall, false, GetDefault(sharedBaseThicknessTipDefaults));
+            SetFieldType("sharedBaseOffsetRoot", GetFieldMode(), GetLimitsFromType(sharedBaseOffsetLimits), GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), false, GetDefault(sharedBaseOffsetRootDefaults));
+            SetFieldType("sharedBaseOffsetTip", GetFieldMode(), GetLimitsFromType(sharedBaseOffsetLimits), GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), false, GetDefault(sharedBaseOffsetTipDefaults));
+
+            // SetFieldVisibility ("sharedFieldGroupEdgeTrailing", true);
+            SetFieldType("sharedEdgeTypeTrailing", 2, GetLimitsFromType(sharedEdgeTypeLimits), sharedIncrementInt, false, GetDefault(sharedEdgeTypeTrailingDefaults));
+            SetFieldType("sharedEdgeWidthTrailingRoot", 2, GetLimitsFromType(sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault(sharedEdgeWidthTrailingRootDefaults));
+            SetFieldType("sharedEdgeWidthTrailingTip", 2, GetLimitsFromType(sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault(sharedEdgeWidthTrailingTipDefaults));
+
+            // SetFieldVisibility ("sharedFieldGroupEdgeLeading", !isCtrlSrf);
+            SetFieldType("sharedEdgeTypeLeading", 2, GetLimitsFromType(sharedEdgeTypeLimits), sharedIncrementInt, false, GetDefault(sharedEdgeTypeLeadingDefaults));
+            SetFieldType("sharedEdgeWidthLeadingRoot", 2, GetLimitsFromType(sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault(sharedEdgeWidthLeadingRootDefaults));
+            SetFieldType("sharedEdgeWidthLeadingTip", 2, GetLimitsFromType(sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault(sharedEdgeWidthLeadingTipDefaults));
+
+            // SetFieldVisibility ("sharedFieldGroupColorST", true);
+            SetFieldType("sharedMaterialST", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault(sharedMaterialSTDefaults));
+            SetFieldType("sharedColorSTOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSTOpacityDefaults));
+            SetFieldType("sharedColorSTHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSTHueDefaults));
+            SetFieldType("sharedColorSTSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSTSaturationDefaults));
+            SetFieldType("sharedColorSTBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSTBrightnessDefaults));
+
+            // SetFieldVisibility ("sharedFieldGroupColorSB", true);
+            SetFieldType("sharedMaterialSB", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault(sharedMaterialSBDefaults));
+            SetFieldType("sharedColorSBOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSBOpacityDefaults));
+            SetFieldType("sharedColorSBHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSBHueDefaults));
+            SetFieldType("sharedColorSBSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSBSaturationDefaults));
+            SetFieldType("sharedColorSBBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSBBrightnessDefaults));
+
+            // SetFieldVisibility ("sharedFieldGroupColorET", true);
+            SetFieldType("sharedMaterialET", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault(sharedMaterialETDefaults));
+            SetFieldType("sharedColorETOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorETOpacityDefaults));
+            SetFieldType("sharedColorETHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorETHueDefaults));
+            SetFieldType("sharedColorETSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorETSaturationDefaults));
+            SetFieldType("sharedColorETBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorETBrightnessDefaults));
+
+            // SetFieldVisibility ("sharedFieldGroupColorEL", !isCtrlSrf);
+            SetFieldType("sharedMaterialEL", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault(sharedMaterialELDefaults));
+            SetFieldType("sharedColorELOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorELOpacityDefaults));
+            SetFieldType("sharedColorELHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorELHueDefaults));
+            SetFieldType("sharedColorELSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorELSaturationDefaults));
+            SetFieldType("sharedColorELBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorELBrightnessDefaults));
+
+            updateRequiredOnWindow = true;
+            isSetToDefaultValues = true;
+        }
+
+        private int GetFieldMode()
+        {
+            if (!isCtrlSrf) return 1;
+            else return 2;
+        }
+
+        private void SetFieldType(string name, int type, Vector2 limits, float increment, bool visible, float defaultValue)
+        {
+            FieldInfo field = this.GetType().GetField(name);
+            float value = (float)field.GetValue(this);
+            if (!isSetToDefaultValues)
+                field.SetValue(this, defaultValue);
+            else
+                field.SetValue(this, Mathf.Clamp(value, limits.x, limits.y));
         }
 
         private void DrawField (ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType)
@@ -2671,6 +2607,68 @@ namespace WingProcedural
             }
         }
 
+        private void CheckAllFieldValues(out bool geometryUpdate, out bool aeroUpdate)
+        {
+            geometryUpdate = aeroUpdate = false;
+
+            // all the fields that affect aero
+            geometryUpdate |= CheckFieldValue(sharedBaseLength, ref sharedBaseLengthCached);
+            geometryUpdate |= CheckFieldValue(sharedBaseWidthRoot, ref sharedBaseWidthRootCached);
+            geometryUpdate |= CheckFieldValue(sharedBaseWidthTip, ref sharedBaseWidthTipCached);
+            geometryUpdate |= CheckFieldValue(sharedBaseThicknessRoot, ref sharedBaseThicknessRootCached);
+            geometryUpdate |= CheckFieldValue(sharedBaseThicknessTip, ref sharedBaseThicknessTipCached);
+            geometryUpdate |= CheckFieldValue(sharedBaseOffsetRoot, ref sharedBaseOffsetRootCached);
+            geometryUpdate |= CheckFieldValue(sharedBaseOffsetTip, ref sharedBaseOffsetTipCached);
+
+            geometryUpdate |= CheckFieldValue(sharedEdgeWidthTrailingRoot, ref sharedEdgeWidthTrailingRootCached);
+            geometryUpdate |= CheckFieldValue(sharedEdgeWidthTrailingTip, ref sharedEdgeWidthTrailingTipCached);
+
+            geometryUpdate |= CheckFieldValue(sharedEdgeWidthLeadingRoot, ref sharedEdgeWidthLeadingRootCached);
+            geometryUpdate |= CheckFieldValue(sharedEdgeWidthLeadingTip, ref sharedEdgeWidthLeadingTipCached);
+
+            if (geometryUpdate)
+                aeroUpdate = true;
+            // all the fields that have no aero effects
+            geometryUpdate |= CheckFieldValue(sharedEdgeTypeTrailing, ref sharedEdgeTypeTrailingCached);
+            geometryUpdate |= CheckFieldValue(sharedEdgeTypeLeading, ref sharedEdgeTypeLeadingCached);
+
+            geometryUpdate |= CheckFieldValue(sharedMaterialST, ref sharedMaterialSTCached);
+            geometryUpdate |= CheckFieldValue(sharedColorSTOpacity, ref sharedColorSTOpacityCached);
+            geometryUpdate |= CheckFieldValue(sharedColorSTHue, ref sharedColorSTHueCached);
+            geometryUpdate |= CheckFieldValue(sharedColorSTSaturation, ref sharedColorSTSaturationCached);
+            geometryUpdate |= CheckFieldValue(sharedColorSTBrightness, ref sharedColorSTBrightnessCached);
+
+            geometryUpdate |= CheckFieldValue(sharedMaterialSB, ref sharedMaterialSBCached);
+            geometryUpdate |= CheckFieldValue(sharedColorSBOpacity, ref sharedColorSBOpacityCached);
+            geometryUpdate |= CheckFieldValue(sharedColorSBHue, ref sharedColorSBHueCached);
+            geometryUpdate |= CheckFieldValue(sharedColorSBSaturation, ref sharedColorSBSaturationCached);
+            geometryUpdate |= CheckFieldValue(sharedColorSBBrightness, ref sharedColorSBBrightnessCached);
+
+            geometryUpdate |= CheckFieldValue(sharedMaterialET, ref sharedMaterialETCached);
+            geometryUpdate |= CheckFieldValue(sharedColorETOpacity, ref sharedColorETOpacityCached);
+            geometryUpdate |= CheckFieldValue(sharedColorETHue, ref sharedColorETHueCached);
+            geometryUpdate |= CheckFieldValue(sharedColorETSaturation, ref sharedColorETSaturationCached);
+            geometryUpdate |= CheckFieldValue(sharedColorETBrightness, ref sharedColorETBrightnessCached);
+
+            geometryUpdate |= CheckFieldValue(sharedMaterialEL, ref sharedMaterialELCached);
+            geometryUpdate |= CheckFieldValue(sharedColorELOpacity, ref sharedColorELOpacityCached);
+            geometryUpdate |= CheckFieldValue(sharedColorELHue, ref sharedColorELHueCached);
+            geometryUpdate |= CheckFieldValue(sharedColorELSaturation, ref sharedColorELSaturationCached);
+            geometryUpdate |= CheckFieldValue(sharedColorELBrightness, ref sharedColorELBrightnessCached);
+        }
+
+        private bool CheckFieldValue(float fieldValue, ref float fieldCache)
+        {
+            if (fieldValue != fieldCache)
+            {
+                if (WPDebug.logUpdate)
+                    DebugLogWithID("Update", "Detected value change");
+                fieldCache = fieldValue;
+                return true;
+            }
+            return false;
+        }
+
         private void StopWindowTimeout ()
         {
             uiAdjustWindow = true;
@@ -2699,25 +2697,9 @@ namespace WingProcedural
             else return "Inactive";
         }
 
+        #endregion
 
-
-
-        // Saving/loading
-
-        public override void OnSave (ConfigNode node)
-        {
-            WingProceduralManager.SaveConfigs ();
-        }
-
-        public override void OnLoad (ConfigNode node)
-        {
-            WingProceduralManager.LoadConfigs ();
-        }
-
-
-
-
-        // Coloration
+        #region Coloration
 
         // XYZ
         // HSB
@@ -2798,10 +2780,9 @@ namespace WingProcedural
             return new Color (Mathf.Clamp01 (r), Mathf.Clamp01 (g), Mathf.Clamp01 (b), hsbColor.w);
         }
 
+        #endregion
 
-
-
-        // Resources
+        #region Resources
         // Original code by Snjo
         // Modified to remove config support and string parsing and to add support for arbitrary volumes
 
@@ -3158,10 +3139,9 @@ namespace WingProcedural
             }
         }
 
+        #endregion
 
-
-
-        // Interfaces
+        #region Interfaces
 
         public float GetModuleCost ()
         {
@@ -3179,44 +3159,16 @@ namespace WingProcedural
                 FuelGetAddedCost () + aeroUICost;
         }
 
-        private Renderer meshRendererForBounds = null;
-        private Vector3 sizeMod = Vector3.zero;
-        // This interface is completely undocumented and results fetched through it are used in bizarre ways
-        // My current assumption is that KSP expects a scale multiplier through current size / default size, but who knows
-        // Axis order is not documented either, no idea whether it's right
-
         public Vector3 GetModuleSize (Vector3 defaultSize)
         {
             // This is a seriously stupid Interface
             // it is called 4(!) times per part, the first two the vessel size has not changed, the second two it has changed
-            // the return value is # meters to add/subtract from that, which happens even if the part is completely occluded by other parts (seriously, wtf)
-            // The simplest approach would be to ensure that the change in ship size is not greater than the size of the part
-            Debug.Log("compare");
-            Debug.Log(defaultSize);
-            Debug.Log(EditorLogic.fetch.ship.shipSize);
-
-
-            if (defaultSize.x > EditorLogic.fetch.ship.shipSize.x + 0.1)
-            {
-                Vector3 sizeDiff = defaultSize - EditorLogic.fetch.ship.shipSize;
-                Debug.Log("sizediff:" + sizeDiff);
-                sizeMod = Vector3.zero;
-                if (!isCtrlSrf)
-                {
-                    if (meshRendererForBounds == null)
-                        meshRendererForBounds = meshFilterWingSection.gameObject.GetComponent<Renderer>();
-
-                    if (sizeDiff.x > 2 * meshRendererForBounds.bounds.extents.x) // resizing is reasonable for getting larger
-                        sizeMod.x = 2 * meshRendererForBounds.bounds.extents.x - sizeDiff.x;
-                }
-                Debug.Log(sizeMod);
-            }
-            return sizeMod;
+            // the return value is # meters to add/subtract from the vessel size, which happens even if the part is completely occluded by other parts (seriously, wtf)
+            return Vector3.zero;
         }
+        #endregion
 
-
-
-        // Stock toolbar integration
+        #region Stock toolbar integration
 
         public static ApplicationLauncherButton stockButton = null;
 
@@ -3235,12 +3187,12 @@ namespace WingProcedural
 
         }
 
-        public void OnDestroy ()
+        public void editorAppDestroy()
         {
             bool stockButtonCanBeRemoved = true;
-            WingProcedural[] components = GameObject.FindObjectsOfType<WingProcedural> ();
+            WingProcedural[] components = GameObject.FindObjectsOfType<WingProcedural>(); // should just shove the editor applauncher into it's own class. Would remove the need for this
             if (WPDebug.logEvents)
-                DebugLogWithID ("OnDestroy", "Invoked, with " + components.Length + " remaining components in the scene");
+                DebugLogWithID("OnDestroy", "Invoked, with " + components.Length + " remaining components in the scene");
             for (int i = 0; i < components.Length; ++i)
             {
                 if (components[i] != null) stockButtonCanBeRemoved = false;
@@ -3249,14 +3201,12 @@ namespace WingProcedural
             {
                 uiInstanceIDTarget = 0;
                 if (stockButton != null)
-                    ApplicationLauncher.Instance.RemoveModApplication (stockButton);
+                    ApplicationLauncher.Instance.RemoveModApplication(stockButton);
             }
         }
+        #endregion
 
-
-
-
-        // Dump state
+        #region Dump state
 
         public void DumpState ()
         {
@@ -3292,5 +3242,6 @@ namespace WingProcedural
             }
             Debug.Log (report);
         }
+        #endregion
     }
 }
