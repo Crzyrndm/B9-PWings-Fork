@@ -2827,12 +2827,10 @@ namespace WingProcedural
         public float[] fuelCostPerUnit = new float[] { 0.0f, 0.6f, 0.875f, 0.750f };
 
         public bool fuelDisplayCurrentTankCost = false;
-        public bool fuelGUI = true;
         public bool fuelShowInfo = false;
 
         [KSPField (isPersistant = true)] public Vector4 fuelCurrentAmount = Vector4.zero;
         [KSPField (isPersistant = true)] public int fuelSelectedTankSetup = -1;
-        // [KSPField (isPersistant = true)] private bool fuelBrandNewPart = true;
 
         [KSPField (guiActive = false, guiActiveEditor = false, guiName = "Added cost")] public float fuelAddedCost = 0f;
         [KSPField (guiActive = false, guiActiveEditor = false, guiName = "Dry mass")] public float fuelDryMassInfo = 0f;
@@ -2840,62 +2838,89 @@ namespace WingProcedural
         private bool fuelInitialized = false;
         private float fuelVolumeOld = 0f;
 
+        /// <summary>
+        /// returns a string containing an abreviation of the current fuels and the number of units of each. eg LFO (360/420)
+        /// </summary>
         private string FuelGUIGetConfigDesc ()
         {
-            if (assemblyRFUsed || assemblyMFTUsed) return "";
-            else if (fuelSelectedTankSetup == -1) return "Invalid";
+            if (assemblyRFUsed || assemblyMFTUsed)
+                return "";
+            else if (fuelSelectedTankSetup == -1)
+                return "Invalid";
             else
             {
                 string units = "";
-                if (fuelSelectedTankSetup == 1) units += "LF (";
-                else if (fuelSelectedTankSetup == 2) units += "LFO (";
-                else if (fuelSelectedTankSetup == 3) units += "RCS (";
-                else units += "STR (";
+                if (fuelSelectedTankSetup == 1)
+                    units += "LF (";
+                else if (fuelSelectedTankSetup == 2)
+                    units += "LFO (";
+                else if (fuelSelectedTankSetup == 3)
+                    units += "RCS (";
+                else
+                    units += "STR (";
                 if (fuelConfigurationsList.Count > 0)
                 {
                     for (int i = 0; i < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; ++i)
                     {
                         units += ((int) fuelConfigurationsList[fuelSelectedTankSetup].resources[i].maxAmount).ToString ();
-                        if (i == fuelConfigurationsList[fuelSelectedTankSetup].resources.Count - 1) units += ")";
-                        else units += "/";
+                        if (i == fuelConfigurationsList[fuelSelectedTankSetup].resources.Count - 1)
+                            units += ")";
+                        else
+                            units += "/";
                     }
                 }
                 return units;
             }
         }
+
+        /// <summary>
+        /// force activate the "Next Configuration" button
+        /// </summary>
         private void FuelGUICheckEvent ()
         {
             if (Events.Contains ("NextConfiguration"))
             {
-                if (WPDebug.logFuel) DebugLogWithID ("FuelOnStart", "Event found and enabled");
+                if (WPDebug.logFuel)
+                    DebugLogWithID ("FuelOnStart", "Event found and enabled");
                 Events["NextConfiguration"].active = true;
                 Events["NextConfiguration"].guiActiveEditor = true;
             }
-            else if (WPDebug.logFuel) DebugLogWithID ("FuelOnStart", "Event not found");
+            else if (WPDebug.logFuel)
+                DebugLogWithID ("FuelOnStart", "Event not found");
         }
 
+        /// <summary>
+        /// takes a volume in m^3 and sets up max amounts (apparently, may be deeper)
+        /// </summary>
         private void FuelUpdateAmountsFromVolume (float volume, bool reassignAfter)
         {
-            if (isCtrlSrf || isWingAsCtrlSrf) return;
+            if (isCtrlSrf || isWingAsCtrlSrf)
+                return;
+
             if (assemblyRFUsed || assemblyMFTUsed)
             {
-                if (WPDebug.logFuel) DebugLogWithID ("FuelUpdateAmountsFromVolume", "Started for RF or MFT");
+                if (WPDebug.logFuel)
+                    DebugLogWithID ("FuelUpdateAmountsFromVolume", "Started for RF or MFT");
                 if (part.Modules.Contains ("ModuleFuelTanks"))
                 {
                     PartModule module = part.Modules["ModuleFuelTanks"];
                     Type type = module.GetType ();
 
                     double volumeRF = (double) volume;
-                    if (assemblyRFUsed) volumeRF *= 1000;     // RF requests units in liters instead of cubic meters
-                    else if (assemblyMFTUsed) volumeRF *= 173.9;  // MFT requests volume in units
+                    if (assemblyRFUsed)
+                        volumeRF *= 1000;     // RF requests units in liters instead of cubic meters
+                    else if (assemblyMFTUsed)
+                        volumeRF *= 173.9;  // MFT requests volume in units
                     type.GetField ("volume").SetValue (module, volumeRF); 
                     type.GetMethod ("ChangeVolume").Invoke (module, new object[] { volumeRF } );
                 }
-                else if (WPDebug.logFuel) DebugLogWithID ("FuelUpdateAmountsFromVolume", "Module not found");
+                else if (WPDebug.logFuel)
+                    DebugLogWithID ("FuelUpdateAmountsFromVolume", "Module not found");
             }
             else
             {
-                if (WPDebug.logFuel) DebugLogWithID ("FuelUpdateAmountsFromVolume", "Started for stock fuel");
+                if (WPDebug.logFuel)
+                    DebugLogWithID ("FuelUpdateAmountsFromVolume", "Started for stock fuel");
                 for (int i = 0; i < fuelConfigurationsList.Count; ++i)
                 {
                     for (int r = 0; r < fuelConfigurationsList[i].resources.Count; ++r)
@@ -2906,33 +2931,41 @@ namespace WingProcedural
                     }
                 }
                 fuelVolumeOld = volume;
-                if (reassignAfter) FuelSetConfigurationToParts (false);
+                if (reassignAfter)
+                    FuelSetConfigurationToParts (false);
             }
         }
 
+        /// <summary>
+        /// Called from setupRecurring (happens every OnAttach IIRC. Track it down properly later)
+        /// </summary>
         private void FuelOnStart ()
         {
-            if (WPDebug.logFuel) DebugLogWithID ("FuelOnStart", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed) return;
+            if (WPDebug.logFuel)
+                DebugLogWithID ("FuelOnStart", "Started");
+            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed)
+                return;
 
-            if (fuelGUI) FuelGUICheckEvent ();
+            FuelGUICheckEvent ();
             FuelInitializeData ();
             if (fuelSelectedTankSetup == -1)
             {
                 FuelSetConfigurationToParts (false);
                 fuelSelectedTankSetup = 0;
             }
-            // fuelBrandNewPart = false;
             FuelUpdateAmountsFromVolume (aeroStatVolume, false);
         }
 
-        // Runs only once per scene
-        // Sets up GUI and calls setup of fuel configuration list
-
+        /// <summary>
+        /// Runs only once per scene
+        /// Sets up GUI and calls setup of fuel configuration list
+        /// </summary>
         private void FuelInitializeData ()
         {
-            if (WPDebug.logFuel) DebugLogWithID ("FuelInitializeData", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf) return;
+            if (WPDebug.logFuel)
+                DebugLogWithID ("FuelInitializeData", "Started");
+            if (isCtrlSrf || isWingAsCtrlSrf)
+                return;
 
             if (!fuelInitialized)
             {
@@ -2941,6 +2974,9 @@ namespace WingProcedural
             }
         }
 
+        /// <summary>
+        /// calls FuelSetResourcesToPart on this part and all it's symmetry counterparts
+        /// </summary>
         private void FuelSetConfigurationToParts (bool calledByPlayer)
         {
             if (WPDebug.logFuel)
@@ -2953,7 +2989,11 @@ namespace WingProcedural
             {
                 for (int s = 0; s < part.symmetryCounterparts.Count; s++)
                 {
+                    if (part.symmetryCounterparts[s] == null) // fixes nullref caused by removing mirror sym while hovering over attach location
+                        continue;
+
                     FuelSetResourcesToPart (part.symmetryCounterparts[s], calledByPlayer);
+
                     WingProcedural wing = part.symmetryCounterparts[s].GetComponent<WingProcedural> ();
                     if (wing != null)
                     {
@@ -2965,17 +3005,7 @@ namespace WingProcedural
         }
 
         /// <summary>
-        /// Nullref in here somewhere
-        /// 
-        /// 1) Attach girder with no sym
-        /// 2) Attach wings to girder with mirr sym
-        /// 3) remove girder and drop in editor somewhere
-        /// 4) pick up again with mirror sym still active
-        /// 5) Hover over attach location
-        /// 6) deactivate mirror sym and try attach
-        /// 
-        /// it would seem the ghost parts are not properly destroyed when sym is deactivated.
-        /// Nullref appears after end of function, but try-catch trips on currentPart.GetComponents*PartResource*() (doesn't catch it either). Removing it doesn't stop the error
+        /// Updates part.Resources to match the changes
         /// </summary>
         private void FuelSetResourcesToPart (Part currentPart, bool calledByPlayer)
         {
@@ -3022,6 +3052,10 @@ namespace WingProcedural
             fuelAddedCost = FuelGetAddedCost ();
         }
 
+        /// <summary>
+        /// returns cost of max amount of fuel that the tanks can carry with the current loadout
+        /// </summary>
+        /// <returns></returns>
         private float FuelGetAddedCost ()
         {
             float result = 0f;
@@ -3035,6 +3069,9 @@ namespace WingProcedural
             return result;
         }
 
+        /// <summary>
+        /// called in Update for standard wing panels, sets fuelCurrentAmount to the current part resource volume (why does this need to be done?)
+        /// </summary>
         private void FuelOnUpdate ()
         {
             if (fuelSelectedTankSetup < fuelConfigurationsList.Count && fuelSelectedTankSetup >= 0) 
@@ -3050,6 +3087,9 @@ namespace WingProcedural
             }
         }
 
+        /// <summary>
+        /// returns the current volume of fuel at the specified index. Valid indices are 0-3
+        /// </summary>
         private float FuelGetResource (int number)
         {
             switch (number)
@@ -3067,9 +3107,11 @@ namespace WingProcedural
             }
         }
 
+        /// <summary>
+        /// sets the current volume of fuel at the specified index. Valid indices are 0-3
+        /// </summary>
         private void FuelSetResource (int number, float amount)
         {
-            // Vector4 fuelCurrentAmountCached = fuelCurrentAmount;
             switch (number)
             {
                 case 0:
@@ -3085,12 +3127,12 @@ namespace WingProcedural
                     fuelCurrentAmount.w = amount;
                     break;
             }
-            // if (WingProceduralDebugValues.logFuel) DebugLogWithID ("FuelSetResource", "Old: " + fuelCurrentAmountCached + " | New: " + fuelCurrentAmount);
         }
 
-        // Sets up fuel configuration list
-        // Argument determines the source of fetched resource amount
-
+        /// <summary>
+        /// Sets up fuel configuration list
+        /// Argument determines the source of fetched resource amount
+        /// </summary>
         private void FuelSetupConfigurationList (bool calledByPlayer)
         {
             if (WPDebug.logFuel) DebugLogWithID ("FuelSetupTankList", "Started");
