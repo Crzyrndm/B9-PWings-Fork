@@ -729,7 +729,6 @@ namespace WingProcedural
         {
             UpdateMaterials();
             UpdateGeometry(true);
-            UpdateCollidersForFAR();
             UpdateWindow();
         }
         #endregion
@@ -821,7 +820,8 @@ namespace WingProcedural
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Wing surface top | Passed array setup");
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Wing surface top | Passed array setup");
                     for (int i = 0; i < length; ++i)
                     {
                         // Root/tip filtering followed by leading/trailing filtering
@@ -870,7 +870,8 @@ namespace WingProcedural
                     meshFilterWingSurface.mesh.uv2 = uv2;
                     meshFilterWingSurface.mesh.colors = cl;
                     meshFilterWingSurface.mesh.RecalculateBounds ();
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Wing surface | Finished");
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Wing surface | Finished");
                 }
 
                 // Next, time for leading and trailing edges
@@ -882,11 +883,15 @@ namespace WingProcedural
 
                 for (int i = 0; i < meshTypeCountEdgeWing; ++i)
                 {
-                    if (i != wingEdgeTypeTrailingInt) meshFiltersWingEdgeTrailing[i].gameObject.SetActive (false);
-                    else meshFiltersWingEdgeTrailing[i].gameObject.SetActive (true);
+                    if (i != wingEdgeTypeTrailingInt)
+                        meshFiltersWingEdgeTrailing[i].gameObject.SetActive (false);
+                    else
+                        meshFiltersWingEdgeTrailing[i].gameObject.SetActive (true);
 
-                    if (i != wingEdgeTypeLeadingInt) meshFiltersWingEdgeLeading[i].gameObject.SetActive (false);
-                    else meshFiltersWingEdgeLeading[i].gameObject.SetActive (true);
+                    if (i != wingEdgeTypeLeadingInt)
+                        meshFiltersWingEdgeLeading[i].gameObject.SetActive (false);
+                    else
+                        meshFiltersWingEdgeLeading[i].gameObject.SetActive (true);
                 }
 
                 // Next we calculate some values reused for all edge geometry
@@ -913,7 +918,8 @@ namespace WingProcedural
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Wing edge trailing | Passed array setup");
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Wing edge trailing | Passed array setup");
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         if (vp[i].x < -0.1f)
@@ -921,7 +927,8 @@ namespace WingProcedural
                             vp[i] = new Vector3 (-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthTrailingTipDeviation + sharedBaseWidthTip / 2f + sharedBaseOffsetTip); // Tip edge
                             if (nm[i].x == 0f) uv[i] = new Vector2 (sharedBaseLength, uv[i].y);
                         }
-                        else vp[i] = new Vector3 (0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
+                        else
+                            vp[i] = new Vector3 (0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
                         if (nm[i].x == 0f && sharedEdgeTypeTrailing != 1)
                         {
                             cl[i] = GetVertexColor (2);
@@ -934,7 +941,8 @@ namespace WingProcedural
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.uv2 = uv2;
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.colors = cl;
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.RecalculateBounds ();
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Wing edge trailing | Finished");
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Wing edge trailing | Finished");
                 }
                 if (meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt] != null)
                 {
@@ -949,7 +957,8 @@ namespace WingProcedural
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Wing edge leading | Passed array setup");
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Wing edge leading | Passed array setup");
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         if (vp[i].x < -0.1f)
@@ -970,7 +979,8 @@ namespace WingProcedural
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.uv2 = uv2;
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.colors = cl;
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.RecalculateBounds ();
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Wing edge leading | Finished");
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Wing edge leading | Finished");
                 }
             }
             else
@@ -1245,9 +1255,11 @@ namespace WingProcedural
             if (WPDebug.logUpdateGeometry)
                 DebugLogWithID ("UpdateGeometry", "Finished");
             if (HighLogic.LoadedSceneIsEditor)
-            {
                 CalculateVolume ();
-                CalculateAerodynamicValues ();
+            if (updateAerodynamics)
+            {
+                UpdateCollidersForFAR();
+                CalculateAerodynamicValues();
             }
         }
 
@@ -2826,19 +2838,16 @@ namespace WingProcedural
 
         /// <summary>
         /// called in Update for standard wing panels, sets fuelCurrentAmount to the current part resource volume
-        /// the Vector4 of fuels is required because the stock resources get cleared frequently
+        /// the Vector4 of fuels is required because the stock resources get cleared frequently(?)
         /// </summary>
         private void FuelOnUpdate()
         {
-            if (fuelSelectedTankSetup < fuelConfigurationsList.Count && fuelSelectedTankSetup >= 0)
+            if (fuelSelectedTankSetup < fuelConfigurationsList.Count && fuelSelectedTankSetup >= 0 && fuelConfigurationsList[fuelSelectedTankSetup] != null)
             {
-                if (fuelConfigurationsList[fuelSelectedTankSetup] != null)
+                for (int i = 0; i < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; i++)
                 {
-                    for (int i = 0; i < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; i++)
-                    {
-                        if (fuelConfigurationsList[fuelSelectedTankSetup].resources[i].name != "Structural")
-                            FuelSetResource(i, (float)part.Resources[fuelConfigurationsList[fuelSelectedTankSetup].resources[i].name].amount);
-                    }
+                    if (fuelConfigurationsList[fuelSelectedTankSetup].resources[i].name != "Structural")
+                        FuelSetResource(i, (float)part.Resources[fuelConfigurationsList[fuelSelectedTankSetup].resources[i].name].amount);
                 }
             }
         }
