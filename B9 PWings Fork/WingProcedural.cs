@@ -1241,7 +1241,8 @@ namespace WingProcedural
                     if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Control surface top | Finished");
                 }
             }
-            if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Finished");
+            if (WPDebug.logUpdateGeometry)
+                DebugLogWithID ("UpdateGeometry", "Finished");
             if (HighLogic.LoadedSceneIsEditor)
             {
                 CalculateVolume ();
@@ -1649,7 +1650,6 @@ namespace WingProcedural
                 for (int i = 0; i < moduleListCount; ++i)
                 {
                     moduleList[i].Setup ();
-                    //moduleList[i].CalculateVolume ();
                 }
 
                 yield return new WaitForFixedUpdate ();
@@ -1740,10 +1740,13 @@ namespace WingProcedural
 
         public void CalculateVolume ()
         {
-            if (isWingAsCtrlSrf || isCtrlSrf || isPanel) return;
+            if (isWingAsCtrlSrf || isCtrlSrf || isPanel)
+                return;
+
             aeroStatVolume = (sharedBaseWidthTip * sharedBaseThicknessTip * sharedBaseLength) + ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * sharedBaseThicknessTip * sharedBaseLength)
                                 + (sharedBaseWidthTip * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength)
                                 + ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength);
+
             FuelUpdateAmountsFromVolume (aeroStatVolume, true);
         }
 
@@ -2825,7 +2828,8 @@ namespace WingProcedural
         }
 
         /// <summary>
-        /// called in Update for standard wing panels, sets fuelCurrentAmount to the current part resource volume (why does this need to be done? The part already has resource nodes to track amounts)
+        /// called in Update for standard wing panels, sets fuelCurrentAmount to the current part resource volume
+        /// the Vector4 of fuels is required because the stock resources get cleared frequently
         /// </summary>
         private void FuelOnUpdate()
         {
@@ -2944,9 +2948,8 @@ namespace WingProcedural
                     {
                         float newAmount = fuelPerCubicMeter[i][r] * volume * 0.7f; // since not all volume is used
                         float prevPct = FuelGetResource(r) / fuelConfigurationsList[i].resources[r].maxAmount;
-                        Debug.Log(prevPct);
                         fuelConfigurationsList[i].resources[r].maxAmount = newAmount;
-                        fuelConfigurationsList[i].resources[r].amount = prevPct != 0 || float.IsNaN(prevPct) ? Mathf.Min(newAmount * prevPct, newAmount) : newAmount;
+                        fuelConfigurationsList[i].resources[r].amount = !float.IsNaN(prevPct) ? Mathf.Min(newAmount * prevPct, newAmount) : newAmount;
                     }
                 }
                 fuelVolumeOld = volume;
