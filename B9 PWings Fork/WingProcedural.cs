@@ -1752,7 +1752,8 @@ namespace WingProcedural
 
         public void CalculateAerodynamicValues ()
         {
-            if (!isAttached || !HighLogic.LoadedSceneIsFlight)
+            Debug.Log("calc");
+            if (!isAttached)
                 return;
 
             if (WPDebug.logCAV)
@@ -1994,7 +1995,7 @@ namespace WingProcedural
             {
                 if (part.children[i].Modules.Contains ("WingProcedural"))
                 {
-                    var child = part.children[i].Modules.OfType<WingProcedural> ().FirstOrDefault ();
+                    WingProcedural child = part.children[i].Modules.OfType<WingProcedural> ().FirstOrDefault ();
                     aeroStatClChildren += child.aeroStatCl;
                     aeroStatClChildren += child.aeroStatClChildren;
                 }
