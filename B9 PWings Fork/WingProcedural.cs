@@ -199,15 +199,15 @@ namespace WingProcedural
         public float sharedEdgeTypeTrailingCached = 3f;
         public static Vector4 sharedEdgeTypeTrailingDefaults = new Vector4 (3f, 2f, 3f, 2f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (root)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (root)", guiFormat = "F3")]
         public float sharedEdgeWidthTrailingRoot = 0.48f;
         public float sharedEdgeWidthTrailingRootCached = 0.48f;
-        public static Vector4 sharedEdgeWidthTrailingRootDefaults = new Vector4 (0.48f, 0.48f, 0.48f, 0.48f);
+        public static Vector4 sharedEdgeWidthTrailingRootDefaults = new Vector4(0.48f, 0.48f, 0.48f, 0.48f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (tip)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (tip)", guiFormat = "F3")]
         public float sharedEdgeWidthTrailingTip = 0.48f;
         public float sharedEdgeWidthTrailingTipCached = 0.48f;
-        public static Vector4 sharedEdgeWidthTrailingTipDefaults = new Vector4 (0.48f, 0.48f, 0.48f, 0.48f);
+        public static Vector4 sharedEdgeWidthTrailingTipDefaults = new Vector4(0.48f, 0.48f, 0.48f, 0.48f);
 
         #endregion
 
@@ -644,7 +644,6 @@ namespace WingProcedural
             RenderingManager.AddToPostDrawQueue (0, OnDraw);
         }
 
-
         public override void OnSave(ConfigNode node)
         {
             WingProceduralManager.SaveConfigs();
@@ -704,7 +703,6 @@ namespace WingProcedural
                     parentModule.CalculateAerodynamicValues();
                 }
             }
-
             isAttached = false;
             uiEditMode = false;
         }
@@ -756,7 +754,8 @@ namespace WingProcedural
                     Array.Copy (meshReferenceWingSection.vp, vp, length);
                     Vector2[] uv = new Vector2[length];
                     Array.Copy (meshReferenceWingSection.uv, uv, length);
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Wing section | Passed array setup");
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Wing section | Passed array setup");
 
                     for (int i = 0; i < length; ++i)
                     {
@@ -964,9 +963,11 @@ namespace WingProcedural
                         if (vp[i].x < -0.1f)
                         {
                             vp[i] = new Vector3 (-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthLeadingTipDeviation + sharedBaseWidthTip / 2f - sharedBaseOffsetTip); // Tip edge
-                            if (nm[i].x == 0f) uv[i] = new Vector2 (sharedBaseLength, uv[i].y);
+                            if (nm[i].x == 0f)
+                                uv[i] = new Vector2 (sharedBaseLength, uv[i].y);
                         }
-                        else vp[i] = new Vector3 (0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
+                        else
+                            vp[i] = new Vector3 (0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
                         if (nm[i].x == 0f && sharedEdgeTypeLeading != 1)
                         {
                             cl[i] = GetVertexColor (3);
@@ -1174,7 +1175,8 @@ namespace WingProcedural
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.uv2 = uv2;
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.colors = cl;
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.RecalculateBounds ();
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Control surface edge | Finished");
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Control surface edge | Finished");
                 }
 
                 // Finally, simple top/bottom surface changes
@@ -1249,7 +1251,8 @@ namespace WingProcedural
                     meshFilterCtrlSurface.mesh.uv2 = uv2;
                     meshFilterCtrlSurface.mesh.colors = cl;
                     meshFilterCtrlSurface.mesh.RecalculateBounds ();
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Control surface top | Finished");
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Control surface top | Finished");
                 }
             }
             if (WPDebug.logUpdateGeometry)
@@ -1314,9 +1317,7 @@ namespace WingProcedural
             }
         }
 
-
         // Edge geometry
-
         public Vector3[] GetReferenceVertices (MeshFilter source)
         {
             Vector3[] positions = new Vector3[0];
@@ -1549,16 +1550,20 @@ namespace WingProcedural
         {
             if (reference == null)
             {
-                if (WPDebug.logCheckMeshFilter) DebugLogWithID ("CheckMeshFilter", "Looking for object: " + name);
+                if (WPDebug.logCheckMeshFilter)
+                    DebugLogWithID ("CheckMeshFilter", "Looking for object: " + name);
                 Transform parent = part.transform.GetChild (0).GetChild (0).GetChild (0).Find (name);
                 if (parent != null)
                 {
                     parent.localPosition = Vector3.zero;
-                    if (WPDebug.logCheckMeshFilter) DebugLogWithID ("CheckMeshFilter", "Object " + name + " was found");
+                    if (WPDebug.logCheckMeshFilter)
+                        DebugLogWithID ("CheckMeshFilter", "Object " + name + " was found");
                     reference = parent.gameObject.GetComponent<MeshFilter> ();
-                    if (disable) parent.gameObject.SetActive (false);
+                    if (disable)
+                        parent.gameObject.SetActive (false);
                 }
-                else { if (WPDebug.logCheckMeshFilter) DebugLogWithID ("CheckMeshFilter", "Object " + name + " was not found!"); }
+                else if (WPDebug.logCheckMeshFilter)
+                        DebugLogWithID ("CheckMeshFilter", "Object " + name + " was not found!");
             }
             return reference;
         }
@@ -1582,7 +1587,8 @@ namespace WingProcedural
                 reference.uv = new Vector2[length];
                 Array.Copy (source.mesh.uv, reference.uv, length);
             }
-            else if (WPDebug.logMeshReferences) DebugLogWithID ("FillMeshReference", "Mesh filter reference is null, unable to set up reference arrays");
+            else if (WPDebug.logMeshReferences)
+                DebugLogWithID ("FillMeshReference", "Mesh filter reference is null, unable to set up reference arrays");
             return reference;
         }
         #endregion
@@ -1630,7 +1636,8 @@ namespace WingProcedural
 
             if (!vesselListInclusive)
             {
-                if (WPDebug.logFlightSetup) DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " was not found in the status list, adding it");
+                if (WPDebug.logFlightSetup)
+                    DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " was not found in the status list, adding it");
                 vesselList.Add (new VesselStatus (vessel, false));
                 vesselStatusIndex = vesselList.Count - 1;
             }
@@ -1640,7 +1647,8 @@ namespace WingProcedural
 
             if (!vesselList[vesselStatusIndex].isUpdated)
             {
-                if (WPDebug.logFlightSetup) DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " was not updated yet (this message should only appear once)");
+                if (WPDebug.logFlightSetup)
+                    DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " was not updated yet (this message should only appear once)");
                 vesselList[vesselStatusIndex].isUpdated = true;
                 List<WingProcedural> moduleList = new List<WingProcedural> ();
 
@@ -1765,8 +1773,8 @@ namespace WingProcedural
 
         public void CalculateAerodynamicValues ()
         {
-            if (!isAttached)
-                return;
+            //if (!isAttached)
+            //    return;
 
             if (WPDebug.logCAV)
                 DebugLogWithID ("CalculateAerodynamicValues", "Started");
