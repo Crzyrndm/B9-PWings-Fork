@@ -688,6 +688,7 @@ namespace WingProcedural
                 DebugLogWithID("UpdateOnEditorAttach", "Setup started");
 
             isAttached = true;
+            UpdateGeometry(true);
             if (WPDebug.logEvents)
                 DebugLogWithID ("UpdateOnEditorAttach", "Setup ended");
         }
@@ -1752,7 +1753,6 @@ namespace WingProcedural
 
         public void CalculateAerodynamicValues ()
         {
-            Debug.Log("calc");
             if (!isAttached)
                 return;
 
@@ -1763,18 +1763,24 @@ namespace WingProcedural
             float sharedWidthTipSum = sharedBaseWidthTip;
             if (!isCtrlSrf)
             {
-                if (sharedEdgeTypeLeading != 1) sharedWidthTipSum += sharedEdgeWidthLeadingTip;
-                if (sharedEdgeTypeTrailing != 1) sharedWidthTipSum += sharedEdgeWidthTrailingTip;
+                if (sharedEdgeTypeLeading != 1)
+                    sharedWidthTipSum += sharedEdgeWidthLeadingTip;
+                if (sharedEdgeTypeTrailing != 1)
+                    sharedWidthTipSum += sharedEdgeWidthTrailingTip;
             }
-            else sharedWidthTipSum += sharedEdgeWidthTrailingTip;
+            else
+                sharedWidthTipSum += sharedEdgeWidthTrailingTip;
 
             float sharedWidthRootSum = sharedBaseWidthRoot;
             if (!isCtrlSrf)
             {
-                if (sharedEdgeTypeLeading != 1) sharedWidthRootSum += sharedEdgeWidthLeadingRoot;
-                if (sharedEdgeTypeTrailing != 1) sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
+                if (sharedEdgeTypeLeading != 1)
+                    sharedWidthRootSum += sharedEdgeWidthLeadingRoot;
+                if (sharedEdgeTypeTrailing != 1)
+                    sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
             }
-            else sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
+            else
+                sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
 
             float ctrlOffsetRootLimit = (sharedBaseLength / 2f) / (sharedBaseWidthRoot + sharedEdgeWidthTrailingRoot);
             float ctrlOffsetTipLimit = (sharedBaseLength / 2f) / (sharedBaseWidthTip + sharedEdgeWidthTrailingTip);
@@ -1790,14 +1796,6 @@ namespace WingProcedural
                 aeroStatTaperRatio = (double) sharedWidthTipSum / (double) sharedWidthRootSum;
                 aeroStatMeanAerodynamicChord = (double) (sharedWidthTipSum + sharedWidthRootSum) / 2.0;
                 aeroStatMidChordSweep = MathD.Atan ((double) sharedBaseOffsetTip / (double) sharedBaseLength) * MathD.Rad2Deg;
-
-                // This is a proper full volume calculation
-                // But since we're only currently using volume for fuel and it's usually stored in the midsection, width sums are unnecessary
-
-                // aeroStatVolume = (sharedWidthTipSum * sharedBaseThicknessTip * sharedBaseLength) +
-                // ((sharedWidthRootSum - sharedWidthTipSum) / 2f * sharedBaseThicknessTip * sharedBaseLength) +
-                // (sharedWidthTipSum * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength) +
-                // ((sharedWidthRootSum - sharedWidthTipSum) / 2f * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength);
             }
             else
             {
@@ -1926,21 +1924,25 @@ namespace WingProcedural
                         }
                         if (aeroFARMethodInfoUsed != null)
                         {
-                            if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info present");
+                            if (WPDebug.logCAV)
+                                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info present");
                             aeroFARFieldInfoSemispan.SetValue (aeroFARModuleReference, aeroStatSemispan);
                             aeroFARFieldInfoMAC.SetValue (aeroFARModuleReference, aeroStatMeanAerodynamicChord);
                             aeroFARFieldInfoSurfaceArea.SetValue (aeroFARModuleReference, aeroStatSurfaceArea);
                             aeroFARFieldInfoMidChordSweep.SetValue (aeroFARModuleReference, aeroStatMidChordSweep);
                             aeroFARFieldInfoTaperRatio.SetValue (aeroFARModuleReference, aeroStatTaperRatio);
-                            if (isCtrlSrf) aeroFARFieldInfoControlSurfaceFraction.SetValue (aeroFARModuleReference, aeroConstControlSurfaceFraction);
+                            if (isCtrlSrf)
+                                aeroFARFieldInfoControlSurfaceFraction.SetValue (aeroFARModuleReference, aeroConstControlSurfaceFraction);
 
-                            if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
+                            if (WPDebug.logCAV)
+                                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
                             aeroFARMethodInfoUsed.Invoke (aeroFARModuleReference, null);
                         }
                     }
                 }
             }
-            if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Segment ended");
+            if (WPDebug.logCAV)
+                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Segment ended");
 
             // Update GUI values and finish
 
@@ -2006,9 +2008,6 @@ namespace WingProcedural
                 this.part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ().GatherChildrenCl();
         }
 
-
-
-
         public bool showWingData = false;
         [KSPEvent (guiActiveEditor = true, guiName = "Show wing data")]
         public void InfoToggleEvent ()
@@ -2045,9 +2044,6 @@ namespace WingProcedural
                     myWindow.displayDirty = true;
             }
         }
-
-
-
 
         // [KSPEvent (guiActive = true, guiActiveEditor = true, guiName = "Dump interaction data")]
         public void DumpInteractionData ()
