@@ -2793,7 +2793,7 @@ namespace WingProcedural
         public bool fuelDisplayCurrentTankCost = false;
         public bool fuelShowInfo = false;
 
-        [KSPField (isPersistant = true)] public Vector4 fuelCurrentAmount = Vector4.zero;
+        [KSPField(isPersistant = true)] public Vector4 fuelCurrentAmount = new Vector4(-1, -1, -1, -1); // if val < 0, then fill to max, otherwise don't change
         [KSPField (isPersistant = true)] public int fuelSelectedTankSetup = 0;
 
         [KSPField (guiActive = false, guiActiveEditor = false, guiName = "Added cost")] public float fuelAddedCost = 0f;
@@ -2846,6 +2846,53 @@ namespace WingProcedural
             }
         }
 
+        /// <summary>
+        /// takes a volume in m^3 and sets up max amounts (and current for stock)
+        /// </summary>
+        private void FuelUpdateAmountsFromVolume(float volume, bool reassignAfter)
+        {
+            if (isCtrlSrf || isWingAsCtrlSrf)
+                return;
+
+            if (assemblyRFUsed || assemblyMFTUsed)
+            {
+                if (WPDebug.logFuel)
+                    DebugLogWithID("FuelUpdateAmountsFromVolume", "Started for RF or MFT");
+                if (part.Modules.Contains("ModuleFuelTanks"))
+                {
+                    PartModule module = part.Modules["ModuleFuelTanks"];
+                    Type type = module.GetType();
+
+                    double volumeRF = (double)volume;
+                    if (assemblyRFUsed)
+                        volumeRF *= 1000;     // RF requests units in liters instead of cubic meters
+                    else if (assemblyMFTUsed)
+                        volumeRF *= 173.9;  // MFT requests volume in units
+                    type.GetField("volume").SetValue(module, volumeRF);
+                    type.GetMethod("ChangeVolume").Invoke(module, new object[] { volumeRF });
+                }
+                else if (WPDebug.logFuel)
+                    DebugLogWithID("FuelUpdateAmountsFromVolume", "Module not found");
+            }
+            else
+            {
+                if (WPDebug.logFuel)
+                    DebugLogWithID("FuelUpdateAmountsFromVolume", "Started for stock fuel");
+                for (int i = 0; i < fuelConfigurationsList.Count; ++i)
+                {
+                    for (int r = 0; r < fuelConfigurationsList[i].resources.Count; ++r)
+                    {
+                        float newAmount = fuelPerCubicMeter[i][r] * volume * 0.7f; // since not all volume is used
+                        float prevPct = FuelGetResource(r) >= 0 ? FuelGetResource(r) / fuelConfigurationsList[i].resources[r].maxAmount : 1;
+                        fuelConfigurationsList[i].resources[r].maxAmount = newAmount;
+                        fuelConfigurationsList[i].resources[r].amount = !float.IsNaN(prevPct) ? Mathf.Min(newAmount * prevPct, newAmount) : newAmount;
+                    }
+                }
+                if (reassignAfter)
+                    FuelSetConfigurationToParts(false);
+            }
+            fuelVolumeOld = volume;
+        }
 
         /// <summary>
         /// calls FuelSetResourcesToPart on this part and all it's symmetry counterparts. Only call from the editor
@@ -2908,54 +2955,6 @@ namespace WingProcedural
             }
             currentPart.Resources.UpdateList();
             fuelAddedCost = FuelGetAddedCost();
-        }
-
-        /// <summary>
-        /// takes a volume in m^3 and sets up max amounts (deeper for stock resources)
-        /// </summary>
-        private void FuelUpdateAmountsFromVolume (float volume, bool reassignAfter)
-        {
-            if (isCtrlSrf || isWingAsCtrlSrf)
-                return;
-
-            if (assemblyRFUsed || assemblyMFTUsed)
-            {
-                if (WPDebug.logFuel)
-                    DebugLogWithID ("FuelUpdateAmountsFromVolume", "Started for RF or MFT");
-                if (part.Modules.Contains ("ModuleFuelTanks"))
-                {
-                    PartModule module = part.Modules["ModuleFuelTanks"];
-                    Type type = module.GetType ();
-
-                    double volumeRF = (double) volume;
-                    if (assemblyRFUsed)
-                        volumeRF *= 1000;     // RF requests units in liters instead of cubic meters
-                    else if (assemblyMFTUsed)
-                        volumeRF *= 173.9;  // MFT requests volume in units
-                    type.GetField ("volume").SetValue (module, volumeRF); 
-                    type.GetMethod ("ChangeVolume").Invoke (module, new object[] { volumeRF } );
-                }
-                else if (WPDebug.logFuel)
-                    DebugLogWithID ("FuelUpdateAmountsFromVolume", "Module not found");
-            }
-            else
-            {
-                if (WPDebug.logFuel)
-                    DebugLogWithID ("FuelUpdateAmountsFromVolume", "Started for stock fuel");
-                for (int i = 0; i < fuelConfigurationsList.Count; ++i)
-                {
-                    for (int r = 0; r < fuelConfigurationsList[i].resources.Count; ++r)
-                    {
-                        float newAmount = fuelPerCubicMeter[i][r] * volume * 0.7f; // since not all volume is used
-                        float prevPct = FuelGetResource(r) / fuelConfigurationsList[i].resources[r].maxAmount;
-                        fuelConfigurationsList[i].resources[r].maxAmount = newAmount;
-                        fuelConfigurationsList[i].resources[r].amount = !float.IsNaN(prevPct) ? Mathf.Min(newAmount * prevPct, newAmount) : newAmount;
-                    }
-                }
-                fuelVolumeOld = volume;
-                if (reassignAfter)
-                    FuelSetConfigurationToParts (false);
-            }
         }
 
         /// <summary>
