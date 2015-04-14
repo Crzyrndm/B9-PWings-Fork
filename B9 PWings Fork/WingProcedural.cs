@@ -18,11 +18,8 @@ namespace WingProcedural
         [KSPField] public bool isWingAsCtrlSrf = false;
         [KSPField] public bool isPanel = false;
 
-        [KSPField (isPersistant = true)] public bool isAttached = false;
+        [KSPField (isPersistant = true)] public bool isAttached = false; // why is this persistant. it's somehwat useful in the editor but shouldn't need transferring to flight. Loading vessels in the editor maybe?
         [KSPField (isPersistant = true)] public bool isSetToDefaultValues = false;
-
-        public bool isStarted = false;
-        public bool justDetached = false;
 
         #region Debug
 
@@ -457,7 +454,7 @@ namespace WingProcedural
         // Fuel configuration switching
         // Has to be situated here as this KSPEvent is not correctly added Part.Events otherwise
 
-        [KSPEvent (guiActive = false, guiActiveEditor = false, guiName = "Next configuration", active = false)]
+        [KSPEvent (guiActive = false, guiActiveEditor = true, guiName = "Next configuration", active = true)]
         public void NextConfiguration ()
         {
             if (WPDebug.logFuel)
@@ -607,37 +604,44 @@ namespace WingProcedural
         }
         #endregion
 
-        // Startup
-
+        #region Unity stuff and Callbacks/events
+        /// <summary>
+        /// run when part is created in editor, and when part is created in flight. Why is OnStart and Start both being used other than to sparate flight and editor startup?
+        /// </summary>
         public override void OnStart (PartModule.StartState state)
         {
             if (WPDebug.logEvents)
                 DebugLogWithID ("OnStart", "Invoked");
             base.OnStart (state);
-            CheckAssemblies (true); // why force the check to be run for every part?
-            if (HighLogic.LoadedSceneIsFlight)
-            {
-                if (!isStarted && isAttached)
-                {
-                    DebugLogWithID ("OnStart", "Setup started");
-                    StartCoroutine (SetupReorderedForFlight ());
-                    isStarted = true;
-                }
-            }
+            CheckAssemblies (false);
+            
+            if (!HighLogic.LoadedSceneIsFlight)
+                return;
+            
+            DebugLogWithID ("OnStart", "Setup started");
+            StartCoroutine (SetupReorderedForFlight ()); // does all setup neccesary for flight
         }
 
+        /// <summary>
+        /// run whenever part is created (used in editor), which in the editor is as soon as part list is clicked or symmetry count increases
+        /// </summary>
         public void Start ()
         {
             if (WPDebug.logEvents)
                 DebugLogWithID ("Start", "Invoked");
 
-            if (HighLogic.LoadedSceneIsEditor)
-            {
-                uiInstanceIDLocal = uiInstanceIDTarget = 0;
-                if (!WingProceduralManager.uiStyleConfigured)
-                    WingProceduralManager.ConfigureStyles ();
-                RenderingManager.AddToPostDrawQueue (0, OnDraw);
-            }
+            if (!HighLogic.LoadedSceneIsEditor)
+                return;
+
+            uiInstanceIDLocal = uiInstanceIDTarget = 0;
+
+            Setup();
+            this.part.OnEditorAttach += new Callback(UpdateOnEditorAttach);
+            this.part.OnEditorDetach += new Callback(UpdateOnEditorDetach);
+
+            if (!WingProceduralManager.uiStyleConfigured)
+                WingProceduralManager.ConfigureStyles ();
+            RenderingManager.AddToPostDrawQueue (0, OnDraw);
         }
 
 
@@ -658,115 +662,78 @@ namespace WingProcedural
 
         public void Update ()
         {
-            if (HighLogic.LoadedSceneIsEditor)
-            {
-                if (CachedOnEditorAttach == null)
-                    CachedOnEditorAttach = new Callback(UpdateOnEditorAttach);
-                if (!this.part.OnEditorAttach.GetInvocationList().Contains(CachedOnEditorAttach)) // seems unnecesary, why not just have it inside the previous null check?
-                    this.part.OnEditorAttach += CachedOnEditorAttach;
-
-                if (CachedOnEditorDetach == null)
-                    CachedOnEditorDetach = new Callback (UpdateOnEditorDetach);
-                if (!this.part.OnEditorDetach.GetInvocationList ().Contains (CachedOnEditorDetach))
-                    this.part.OnEditorDetach += CachedOnEditorDetach;
-
-                DebugTimerUpdate ();
-                UpdateUI ();
-
-                if (isStarted)
-                {
-                    bool updateGeo, updateAero;
-                    CheckAllFieldValues(out updateGeo, out updateAero);
-
-                    if (updateGeo)
-                    {
-                        UpdateCounterparts();
-                        UpdateGeometry(updateAero);
-                    }
-                    else if (justDetached)
-                    { // a somewhat strange check for attachment after detachment, seems to help in a certain case
-                        justDetached = false;
-                        if (isAttached)
-                        {
-                            CalculateVolume();
-                            CalculateAerodynamicValues();
-                        }
-                    }
-
-                    if (updateRequiredOnWindow)
-                    {
-                        updateRequiredOnWindow = false;
-                        UpdateWindow ();
-                    }
-                }
-                else if (isAttached)
-                {
-                    DebugLogWithID ("Update", "Setup started in absense of attachment event");
-                    Setup ();
-                    isStarted = true;
-                }
-            }
-            else
-            {
-                if (isAttached && !isStarted)
-                {
-                    DebugLogWithID ("Update", "Setup started on flight");
-                    Setup ();
-                    isStarted = true;
-                }
-            }
             if (!isCtrlSrf && !isWingAsCtrlSrf)
-                FuelOnUpdate ();
+                FuelOnUpdate();
+
+            if (!HighLogic.LoadedSceneIsEditor)
+                return;
+
+            DebugTimerUpdate ();
+            UpdateUI ();
+            
+            bool updateGeo, updateAero;
+            CheckAllFieldValues(out updateGeo, out updateAero);
+
+            if (updateGeo)
+            {
+                UpdateCounterparts();
+                UpdateGeometry(updateAero);
+            }
         }
 
-        
-
         // Attachment handling
-
-        private Callback CachedOnEditorAttach;
-        private Callback CachedOnEditorDetach;
-
         public void UpdateOnEditorAttach ()
         {
-            isAttached = true;
-            if (WPDebug.logEvents) DebugLogWithID ("UpdateOnEditorAttach", "Setup started");
+            if (WPDebug.logEvents)
+                DebugLogWithID("UpdateOnEditorAttach", "Setup started");
 
-            Setup ();
-            isStarted = true;
-            if (WPDebug.logEvents) DebugLogWithID ("UpdateOnEditorAttach", "Setup ended");
+            isAttached = true;
+            if (WPDebug.logEvents)
+                DebugLogWithID ("UpdateOnEditorAttach", "Setup ended");
         }
 
         public void UpdateOnEditorDetach ()
         {
-            if (this.part.parent != null && this.part.parent.Modules.Contains ("WingProcedural"))
-                this.part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ().justDetached = true;
+            if (this.part.parent != null && this.part.parent.Modules.Contains("WingProcedural"))
+            {
+                WingProcedural parentModule = this.part.parent.Modules.OfType<WingProcedural>().FirstOrDefault();
+                if (parentModule != null)
+                {
+                    parentModule.CalculateVolume();
+                    parentModule.CalculateAerodynamicValues();
+                }
+            }
 
             isAttached = false;
-            justDetached = true;
-            if (uiEditMode) uiEditMode = false;
+            uiEditMode = false;
         }
 
+        /// <summary>
+        /// called by Start routines of editor and flight scenes
+        /// </summary>
         public void Setup()
         {
             SetupMeshFilters();
             SetupFields();
             SetupMeshReferences();
             ReportOnMeshReferences();
-            SetupRecurring();
+            FuelStart(); // shifted from Setup() to fix NRE caused by reattaching a single part that wasn't originally mirrored. Shifted back now Setup is called from Start
+            RefreshGeometry();
         }
 
-        public void SetupRecurring()
+        /// <summary>
+        /// called from setup and when updating clones
+        /// </summary>
+        public void RefreshGeometry()
         {
-            FuelOnStart(); // shifted from Setup() to fix NRE caused by reattaching a single part that wasn't originally mirrored
             UpdateMaterials();
             UpdateGeometry(true);
             UpdateCollidersForFAR();
             UpdateWindow();
         }
-
+        #endregion
 
         #region Geometry
-
         public void UpdateGeometry (bool updateAerodynamics)
         {
             if (WPDebug.logUpdateGeometry)
@@ -1329,7 +1296,7 @@ namespace WingProcedural
                 clone.sharedColorETSaturation = clone.sharedColorETSaturationCached = sharedColorETSaturation;
                 clone.sharedColorELSaturation = clone.sharedColorELSaturationCached = sharedColorELSaturation;
 
-                clone.SetupRecurring();
+                clone.RefreshGeometry();
             }
         }
 
@@ -1682,7 +1649,7 @@ namespace WingProcedural
                 for (int i = 0; i < moduleListCount; ++i)
                 {
                     moduleList[i].Setup ();
-                    moduleList[i].CalculateVolume ();
+                    //moduleList[i].CalculateVolume ();
                 }
 
                 yield return new WaitForFixedUpdate ();
@@ -1782,216 +1749,216 @@ namespace WingProcedural
 
         public void CalculateAerodynamicValues ()
         {
-            if (isAttached || HighLogic.LoadedSceneIsFlight)
+            if (!isAttached || !HighLogic.LoadedSceneIsFlight)
+                return;
+
+            if (WPDebug.logCAV)
+                DebugLogWithID ("CalculateAerodynamicValues", "Started");
+            CheckAssemblies (false);
+
+            float sharedWidthTipSum = sharedBaseWidthTip;
+            if (!isCtrlSrf)
+            {
+                if (sharedEdgeTypeLeading != 1) sharedWidthTipSum += sharedEdgeWidthLeadingTip;
+                if (sharedEdgeTypeTrailing != 1) sharedWidthTipSum += sharedEdgeWidthTrailingTip;
+            }
+            else sharedWidthTipSum += sharedEdgeWidthTrailingTip;
+
+            float sharedWidthRootSum = sharedBaseWidthRoot;
+            if (!isCtrlSrf)
+            {
+                if (sharedEdgeTypeLeading != 1) sharedWidthRootSum += sharedEdgeWidthLeadingRoot;
+                if (sharedEdgeTypeTrailing != 1) sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
+            }
+            else sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
+
+            float ctrlOffsetRootLimit = (sharedBaseLength / 2f) / (sharedBaseWidthRoot + sharedEdgeWidthTrailingRoot);
+            float ctrlOffsetTipLimit = (sharedBaseLength / 2f) / (sharedBaseWidthTip + sharedEdgeWidthTrailingTip);
+
+            float ctrlOffsetRootClamped = Mathf.Clamp (sharedBaseOffsetRoot, -ctrlOffsetRootLimit, ctrlOffsetRootLimit);
+            float ctrlOffsetTipClamped = Mathf.Clamp (sharedBaseOffsetTip, -ctrlOffsetTipLimit, ctrlOffsetTipLimit);
+
+            // Base four values
+
+            if (!isCtrlSrf)
+            {
+                aeroStatSemispan = (double) sharedBaseLength;
+                aeroStatTaperRatio = (double) sharedWidthTipSum / (double) sharedWidthRootSum;
+                aeroStatMeanAerodynamicChord = (double) (sharedWidthTipSum + sharedWidthRootSum) / 2.0;
+                aeroStatMidChordSweep = MathD.Atan ((double) sharedBaseOffsetTip / (double) sharedBaseLength) * MathD.Rad2Deg;
+
+                // This is a proper full volume calculation
+                // But since we're only currently using volume for fuel and it's usually stored in the midsection, width sums are unnecessary
+
+                // aeroStatVolume = (sharedWidthTipSum * sharedBaseThicknessTip * sharedBaseLength) +
+                // ((sharedWidthRootSum - sharedWidthTipSum) / 2f * sharedBaseThicknessTip * sharedBaseLength) +
+                // (sharedWidthTipSum * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength) +
+                // ((sharedWidthRootSum - sharedWidthTipSum) / 2f * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength);
+            }
+            else
+            {
+                aeroStatSemispan = (double) sharedBaseLength;
+                aeroStatTaperRatio = (double) (sharedBaseLength + sharedWidthTipSum * ctrlOffsetTipClamped - sharedWidthRootSum * ctrlOffsetRootClamped) / (double) sharedBaseLength;
+                aeroStatMeanAerodynamicChord = (double) (sharedWidthTipSum + sharedWidthRootSum) / 2.0;
+                aeroStatMidChordSweep = MathD.Atan ((double) Mathf.Abs (sharedWidthRootSum - sharedWidthTipSum) / (double) sharedBaseLength) * MathD.Rad2Deg;
+            }
+            if (WPDebug.logCAV)
+                DebugLogWithID ("CalculateAerodynamicValues", "Passed B2/TR/MAC/MCS");
+
+            // Derived values
+
+            aeroStatSurfaceArea = aeroStatMeanAerodynamicChord * aeroStatSemispan;
+            aeroStatAspectRatio = 2.0f * aeroStatSemispan / aeroStatMeanAerodynamicChord;
+
+            aeroStatAspectRatioSweepScale = MathD.Pow (aeroStatAspectRatio / MathD.Cos (MathD.Deg2Rad * aeroStatMidChordSweep), 2.0f) + 4.0f;
+            aeroStatAspectRatioSweepScale = 2.0f + MathD.Sqrt (aeroStatAspectRatioSweepScale);
+            aeroStatAspectRatioSweepScale = (2.0f * MathD.PI) / aeroStatAspectRatioSweepScale * aeroStatAspectRatio;
+
+            aeroStatMass = MathD.Clamp (aeroConstMassFudgeNumber * aeroStatSurfaceArea * ((aeroStatAspectRatioSweepScale * 2.0) / (3.0 + aeroStatAspectRatioSweepScale)) * ((1.0 + aeroStatTaperRatio) / 2), 0.01, double.MaxValue);
+            aeroStatCd = aeroConstDragBaseValue / aeroStatAspectRatioSweepScale * aeroConstDragMultiplier;
+            aeroStatCl = aeroConstLiftFudgeNumber * aeroStatSurfaceArea * aeroStatAspectRatioSweepScale;
+            aeroStatConnectionForce = MathD.Round (MathD.Clamp (MathD.Sqrt (aeroStatCl + aeroStatClChildren) * (double) aeroConstConnectionFactor, (double) aeroConstConnectionMinimum, double.MaxValue));
+            if (WPDebug.logCAV)
+                DebugLogWithID ("CalculateAerodynamicValues", "Passed SR/AR/ARSS/mass/Cl/Cd/connection");
+
+            // Shared parameters
+
+            if (!isCtrlSrf)
+            {
+                aeroUICost = (float) aeroStatMass * (1f + (float) aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity;
+                aeroUICost = Mathf.Round (aeroUICost / 5f) * 5f;
+                part.CoMOffset = new Vector3 (sharedBaseLength / 2f, -sharedBaseOffsetTip / 2f, 0f);
+            }
+            else
+            {
+                aeroUICost = (float) aeroStatMass * (1f + (float) aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity * (1f - aeroConstControlSurfaceFraction);
+                aeroUICost += (float) aeroStatMass * (1f + (float) aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensityControl * aeroConstControlSurfaceFraction;
+                aeroUICost = Mathf.Round (aeroUICost / 5f) * 5f;
+                part.CoMOffset = new Vector3 (0f, -(sharedWidthRootSum + sharedWidthTipSum) / 4f, 0f);
+            }
+            part.breakingForce = Mathf.Round ((float) aeroStatConnectionForce);
+            part.breakingTorque = Mathf.Round ((float) aeroStatConnectionForce);
+            if (WPDebug.logCAV)
+                DebugLogWithID ("CalculateAerodynamicValues", "Passed cost/force/torque");
+
+            // Stock-only values
+
+            if ((!assemblyFARUsed && !assemblyNEARUsed) || !assemblyFARMass)
             {
                 if (WPDebug.logCAV)
-                    DebugLogWithID ("CalculateAerodynamicValues", "Started");
-                CheckAssemblies (false);
-
-                float sharedWidthTipSum = sharedBaseWidthTip;
-                if (!isCtrlSrf)
+                    DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive or FAR mass is not enabled, calculating stock part mass");
+                part.mass = Mathf.Round ((float) aeroStatMass * 100f) / 100f;
+            }
+            if (!assemblyFARUsed && !assemblyNEARUsed)
+            {
+                if (!isCtrlSrf && !isWingAsCtrlSrf)
                 {
-                    if (sharedEdgeTypeLeading != 1) sharedWidthTipSum += sharedEdgeWidthLeadingTip;
-                    if (sharedEdgeTypeTrailing != 1) sharedWidthTipSum += sharedEdgeWidthTrailingTip;
-                }
-                else sharedWidthTipSum += sharedEdgeWidthTrailingTip;
-
-                float sharedWidthRootSum = sharedBaseWidthRoot;
-                if (!isCtrlSrf)
-                {
-                    if (sharedEdgeTypeLeading != 1) sharedWidthRootSum += sharedEdgeWidthLeadingRoot;
-                    if (sharedEdgeTypeTrailing != 1) sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
-                }
-                else sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
-
-                float ctrlOffsetRootLimit = (sharedBaseLength / 2f) / (sharedBaseWidthRoot + sharedEdgeWidthTrailingRoot);
-                float ctrlOffsetTipLimit = (sharedBaseLength / 2f) / (sharedBaseWidthTip + sharedEdgeWidthTrailingTip);
-
-                float ctrlOffsetRootClamped = Mathf.Clamp (sharedBaseOffsetRoot, -ctrlOffsetRootLimit, ctrlOffsetRootLimit);
-                float ctrlOffsetTipClamped = Mathf.Clamp (sharedBaseOffsetTip, -ctrlOffsetTipLimit, ctrlOffsetTipLimit);
-
-                // Base four values
-
-                if (!isCtrlSrf)
-                {
-                    aeroStatSemispan = (double) sharedBaseLength;
-                    aeroStatTaperRatio = (double) sharedWidthTipSum / (double) sharedWidthRootSum;
-                    aeroStatMeanAerodynamicChord = (double) (sharedWidthTipSum + sharedWidthRootSum) / 2.0;
-                    aeroStatMidChordSweep = MathD.Atan ((double) sharedBaseOffsetTip / (double) sharedBaseLength) * MathD.Rad2Deg;
-
-                    // This is a proper full volume calculation
-                    // But since we're only currently using volume for fuel and it's usually stored in the midsection, width sums are unnecessary
-
-                    // aeroStatVolume = (sharedWidthTipSum * sharedBaseThicknessTip * sharedBaseLength) +
-                    // ((sharedWidthRootSum - sharedWidthTipSum) / 2f * sharedBaseThicknessTip * sharedBaseLength) +
-                    // (sharedWidthTipSum * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength) +
-                    // ((sharedWidthRootSum - sharedWidthTipSum) / 2f * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength);
+                    if (WPDebug.logCAV)
+                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
+                    ((Winglet) this.part).deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
+                    ((Winglet) this.part).dragCoeff = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
                 }
                 else
                 {
-                    aeroStatSemispan = (double) sharedBaseLength;
-                    aeroStatTaperRatio = (double) (sharedBaseLength + sharedWidthTipSum * ctrlOffsetTipClamped - sharedWidthRootSum * ctrlOffsetRootClamped) / (double) sharedBaseLength;
-                    aeroStatMeanAerodynamicChord = (double) (sharedWidthTipSum + sharedWidthRootSum) / 2.0;
-                    aeroStatMidChordSweep = MathD.Atan ((double) Mathf.Abs (sharedWidthRootSum - sharedWidthTipSum) / (double) sharedBaseLength) * MathD.Rad2Deg;
+                    if (WPDebug.logCAV)
+                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
+                    var mCtrlSrf = part.Modules.OfType<ModuleControlSurface> ().FirstOrDefault ();
+                    mCtrlSrf.deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
+                    mCtrlSrf.dragCoeff = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
+                    mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
                 }
+            }
+            if (WPDebug.logCAV)
+                DebugLogWithID ("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
+
+            // FAR values
+
+            if (assemblyFARUsed || assemblyNEARUsed)
+            {
                 if (WPDebug.logCAV)
-                    DebugLogWithID ("CalculateAerodynamicValues", "Passed B2/TR/MAC/MCS");
-
-                // Derived values
-
-                aeroStatSurfaceArea = aeroStatMeanAerodynamicChord * aeroStatSemispan;
-                aeroStatAspectRatio = 2.0f * aeroStatSemispan / aeroStatMeanAerodynamicChord;
-
-                aeroStatAspectRatioSweepScale = MathD.Pow (aeroStatAspectRatio / MathD.Cos (MathD.Deg2Rad * aeroStatMidChordSweep), 2.0f) + 4.0f;
-                aeroStatAspectRatioSweepScale = 2.0f + MathD.Sqrt (aeroStatAspectRatioSweepScale);
-                aeroStatAspectRatioSweepScale = (2.0f * MathD.PI) / aeroStatAspectRatioSweepScale * aeroStatAspectRatio;
-
-                aeroStatMass = MathD.Clamp (aeroConstMassFudgeNumber * aeroStatSurfaceArea * ((aeroStatAspectRatioSweepScale * 2.0) / (3.0 + aeroStatAspectRatioSweepScale)) * ((1.0 + aeroStatTaperRatio) / 2), 0.01, double.MaxValue);
-                aeroStatCd = aeroConstDragBaseValue / aeroStatAspectRatioSweepScale * aeroConstDragMultiplier;
-                aeroStatCl = aeroConstLiftFudgeNumber * aeroStatSurfaceArea * aeroStatAspectRatioSweepScale;
-                aeroStatConnectionForce = MathD.Round (MathD.Clamp (MathD.Sqrt (aeroStatCl + aeroStatClChildren) * (double) aeroConstConnectionFactor, (double) aeroConstConnectionMinimum, double.MaxValue));
-                if (WPDebug.logCAV)
-                    DebugLogWithID ("CalculateAerodynamicValues", "Passed SR/AR/ARSS/mass/Cl/Cd/connection");
-
-                // Shared parameters
-
-                if (!isCtrlSrf)
+                    DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Entered segment");
+                if (aeroFARModuleReference == null)
                 {
-                    aeroUICost = (float) aeroStatMass * (1f + (float) aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity;
-                    aeroUICost = Mathf.Round (aeroUICost / 5f) * 5f;
-                    part.CoMOffset = new Vector3 (sharedBaseLength / 2f, -sharedBaseOffsetTip / 2f, 0f);
+                    if (part.Modules.Contains ("FARControllableSurface"))
+                        aeroFARModuleReference = part.Modules["FARControllableSurface"];
+                    else if (part.Modules.Contains ("FARWingAerodynamicModel"))
+                        aeroFARModuleReference = part.Modules["FARWingAerodynamicModel"];
+                    if (WPDebug.logCAV)
+                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module reference was null, search performed, recheck result was " + (aeroFARModuleReference == null).ToString ());
                 }
-                else
-                {
-                    aeroUICost = (float) aeroStatMass * (1f + (float) aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity * (1f - aeroConstControlSurfaceFraction);
-                    aeroUICost += (float) aeroStatMass * (1f + (float) aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensityControl * aeroConstControlSurfaceFraction;
-                    aeroUICost = Mathf.Round (aeroUICost / 5f) * 5f;
-                    part.CoMOffset = new Vector3 (0f, -(sharedWidthRootSum + sharedWidthTipSum) / 4f, 0f);
-                }
-                part.breakingForce = Mathf.Round ((float) aeroStatConnectionForce);
-                part.breakingTorque = Mathf.Round ((float) aeroStatConnectionForce);
-                if (WPDebug.logCAV)
-                    DebugLogWithID ("CalculateAerodynamicValues", "Passed cost/force/torque");
-
-                // Stock-only values
-
-                if ((!assemblyFARUsed && !assemblyNEARUsed) || !assemblyFARMass)
+                if (aeroFARModuleReference != null)
                 {
                     if (WPDebug.logCAV)
-                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive or FAR mass is not enabled, calculating stock part mass");
-                    part.mass = Mathf.Round ((float) aeroStatMass * 100f) / 100f;
-                }
-                if (!assemblyFARUsed && !assemblyNEARUsed)
-                {
-                    if (!isCtrlSrf && !isWingAsCtrlSrf)
+                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module reference present");
+                    if (aeroFARModuleType == null)
+                        aeroFARModuleType = aeroFARModuleReference.GetType ();
+                    if (aeroFARModuleType != null) 
                     {
                         if (WPDebug.logCAV)
-                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
-                        ((Winglet) this.part).deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
-                        ((Winglet) this.part).dragCoeff = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
-                    }
-                    else
-                    {
+                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module type present");
+                        if (aeroFARFieldInfoSemispan == null)
+                            aeroFARFieldInfoSemispan = aeroFARModuleType.GetField ("b_2");
+                        if (aeroFARFieldInfoMAC == null)
+                            aeroFARFieldInfoMAC = aeroFARModuleType.GetField ("MAC");
+                        if (aeroFARFieldInfoSurfaceArea == null)
+                            aeroFARFieldInfoSurfaceArea = aeroFARModuleType.GetField ("S");
+                        if (aeroFARFieldInfoMidChordSweep == null)
+                            aeroFARFieldInfoMidChordSweep = aeroFARModuleType.GetField ("MidChordSweep");
+                        if (aeroFARFieldInfoTaperRatio == null)
+                            aeroFARFieldInfoTaperRatio = aeroFARModuleType.GetField ("TaperRatio");
+                        if (aeroFARFieldInfoControlSurfaceFraction == null && isCtrlSrf)
+                            aeroFARFieldInfoControlSurfaceFraction = aeroFARModuleType.GetField ("ctrlSurfFrac");
                         if (WPDebug.logCAV)
-                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
-                        var mCtrlSrf = part.Modules.OfType<ModuleControlSurface> ().FirstOrDefault ();
-                        mCtrlSrf.deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
-                        mCtrlSrf.dragCoeff = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
-                        mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
-                    }
-                }
-                if (WPDebug.logCAV)
-                    DebugLogWithID ("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
+                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Field checks and fetching passed");
 
-                // FAR values
-
-                if (assemblyFARUsed || assemblyNEARUsed)
-                {
-                    if (WPDebug.logCAV)
-                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Entered segment");
-                    if (aeroFARModuleReference == null)
-                    {
-                        if (part.Modules.Contains ("FARControllableSurface"))
-                            aeroFARModuleReference = part.Modules["FARControllableSurface"];
-                        else if (part.Modules.Contains ("FARWingAerodynamicModel"))
-                            aeroFARModuleReference = part.Modules["FARWingAerodynamicModel"];
-                        if (WPDebug.logCAV)
-                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module reference was null, search performed, recheck result was " + (aeroFARModuleReference == null).ToString ());
-                    }
-                    if (aeroFARModuleReference != null)
-                    {
-                        if (WPDebug.logCAV)
-                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module reference present");
-                        if (aeroFARModuleType == null)
-                            aeroFARModuleType = aeroFARModuleReference.GetType ();
-                        if (aeroFARModuleType != null) 
+                        if (aeroFARMethodInfoUsed == null)
                         {
+                            if (assemblyNEARUsed)
+                                aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("MathAndFunctionInitialization");
+                            else
+                                aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("StartInitialization");
                             if (WPDebug.logCAV)
-                                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module type present");
-                            if (aeroFARFieldInfoSemispan == null)
-                                aeroFARFieldInfoSemispan = aeroFARModuleType.GetField ("b_2");
-                            if (aeroFARFieldInfoMAC == null)
-                                aeroFARFieldInfoMAC = aeroFARModuleType.GetField ("MAC");
-                            if (aeroFARFieldInfoSurfaceArea == null)
-                                aeroFARFieldInfoSurfaceArea = aeroFARModuleType.GetField ("S");
-                            if (aeroFARFieldInfoMidChordSweep == null)
-                                aeroFARFieldInfoMidChordSweep = aeroFARModuleType.GetField ("MidChordSweep");
-                            if (aeroFARFieldInfoTaperRatio == null)
-                                aeroFARFieldInfoTaperRatio = aeroFARModuleType.GetField ("TaperRatio");
-                            if (aeroFARFieldInfoControlSurfaceFraction == null && isCtrlSrf)
-                                aeroFARFieldInfoControlSurfaceFraction = aeroFARModuleType.GetField ("ctrlSurfFrac");
-                            if (WPDebug.logCAV)
-                                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Field checks and fetching passed");
+                                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info was null, search performed, recheck result was " + (aeroFARMethodInfoUsed == null).ToString ());
+                        }
+                        if (aeroFARMethodInfoUsed != null)
+                        {
+                            if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info present");
+                            aeroFARFieldInfoSemispan.SetValue (aeroFARModuleReference, aeroStatSemispan);
+                            aeroFARFieldInfoMAC.SetValue (aeroFARModuleReference, aeroStatMeanAerodynamicChord);
+                            aeroFARFieldInfoSurfaceArea.SetValue (aeroFARModuleReference, aeroStatSurfaceArea);
+                            aeroFARFieldInfoMidChordSweep.SetValue (aeroFARModuleReference, aeroStatMidChordSweep);
+                            aeroFARFieldInfoTaperRatio.SetValue (aeroFARModuleReference, aeroStatTaperRatio);
+                            if (isCtrlSrf) aeroFARFieldInfoControlSurfaceFraction.SetValue (aeroFARModuleReference, aeroConstControlSurfaceFraction);
 
-                            if (aeroFARMethodInfoUsed == null)
-                            {
-                                if (assemblyNEARUsed)
-                                    aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("MathAndFunctionInitialization");
-                                else
-                                    aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("StartInitialization");
-                                if (WPDebug.logCAV)
-                                    DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info was null, search performed, recheck result was " + (aeroFARMethodInfoUsed == null).ToString ());
-                            }
-                            if (aeroFARMethodInfoUsed != null)
-                            {
-                                if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info present");
-                                aeroFARFieldInfoSemispan.SetValue (aeroFARModuleReference, aeroStatSemispan);
-                                aeroFARFieldInfoMAC.SetValue (aeroFARModuleReference, aeroStatMeanAerodynamicChord);
-                                aeroFARFieldInfoSurfaceArea.SetValue (aeroFARModuleReference, aeroStatSurfaceArea);
-                                aeroFARFieldInfoMidChordSweep.SetValue (aeroFARModuleReference, aeroStatMidChordSweep);
-                                aeroFARFieldInfoTaperRatio.SetValue (aeroFARModuleReference, aeroStatTaperRatio);
-                                if (isCtrlSrf) aeroFARFieldInfoControlSurfaceFraction.SetValue (aeroFARModuleReference, aeroConstControlSurfaceFraction);
-
-                                if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
-                                aeroFARMethodInfoUsed.Invoke (aeroFARModuleReference, null);
-                            }
+                            if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
+                            aeroFARMethodInfoUsed.Invoke (aeroFARModuleReference, null);
                         }
                     }
                 }
-                if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Segment ended");
-
-                // Update GUI values and finish
-
-                if (!assemblyFARUsed && !assemblyNEARUsed)
-                {
-                    aeroUICd = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
-                    aeroUICl = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
-                }
-                if ((!assemblyFARUsed && !assemblyNEARUsed) || !assemblyFARMass)
-                    aeroUIMass = part.mass;
-
-                aeroUIMeanAerodynamicChord = (float) aeroStatMeanAerodynamicChord;
-                aeroUISemispan = (float) aeroStatSemispan;
-                aeroUIMidChordSweep = (float) aeroStatMidChordSweep;
-                aeroUITaperRatio = (float) aeroStatTaperRatio;
-                aeroUISurfaceArea = (float) aeroStatSurfaceArea;
-                aeroUIAspectRatio = (float) aeroStatAspectRatio;
-
-                if (HighLogic.LoadedSceneIsEditor)
-                    GameEvents.onEditorShipModified.Fire (EditorLogic.fetch.ship);
-                if (WPDebug.logCAV)
-                    DebugLogWithID ("CalculateAerodynamicValues", "Finished");
             }
+            if (WPDebug.logCAV) DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Segment ended");
+
+            // Update GUI values and finish
+
+            if (!assemblyFARUsed && !assemblyNEARUsed)
+            {
+                aeroUICd = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
+                aeroUICl = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
+            }
+            if ((!assemblyFARUsed && !assemblyNEARUsed) || !assemblyFARMass)
+                aeroUIMass = part.mass;
+
+            aeroUIMeanAerodynamicChord = (float) aeroStatMeanAerodynamicChord;
+            aeroUISemispan = (float) aeroStatSemispan;
+            aeroUIMidChordSweep = (float) aeroStatMidChordSweep;
+            aeroUITaperRatio = (float) aeroStatTaperRatio;
+            aeroUISurfaceArea = (float) aeroStatSurfaceArea;
+            aeroUIAspectRatio = (float) aeroStatAspectRatio;
+
+            if (HighLogic.LoadedSceneIsEditor)
+                GameEvents.onEditorShipModified.Fire (EditorLogic.fetch.ship);
+            if (WPDebug.logCAV)
+                DebugLogWithID ("CalculateAerodynamicValues", "Finished");
         }
 
         private void UpdateCollidersForFAR ()
@@ -2128,8 +2095,6 @@ namespace WingProcedural
         public static bool uiEditModeTimeout = false;
         private float uiEditModeTimeoutDuration = 0.25f;
         private float uiEditModeTimer = 0f;
-
-        private bool updateRequiredOnWindow = false;
 
         // Supposed to fix context menu updates
         // Proposed by NathanKell, if I'm not mistaken
@@ -2391,7 +2356,7 @@ namespace WingProcedural
             SetFieldType("sharedColorELSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorELSaturationDefaults));
             SetFieldType("sharedColorELBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorELBrightnessDefaults));
 
-            updateRequiredOnWindow = true;
+            UpdateWindow();
             isSetToDefaultValues = true;
         }
 
@@ -2572,37 +2537,32 @@ namespace WingProcedural
 
         private void UpdateUI ()
         {
-            if (stockButton == null) OnStockButtonSetup ();
+            if (stockButton == null)
+                OnStockButtonSetup ();
             if (uiEditModeTimeout && uiInstanceIDTarget == 0)
             {
-                if (WPDebug.logPropertyWindow) DebugLogWithID ("UpdateUI", "Window timeout was left active on scene reload, resetting the window state");
+                if (WPDebug.logPropertyWindow)
+                    DebugLogWithID ("UpdateUI", "Window timeout was left active on scene reload, resetting the window state");
                 StopWindowTimeout ();
             }
-            if (uiInstanceIDLocal != uiInstanceIDTarget) return;
+            if (uiInstanceIDLocal != uiInstanceIDTarget)
+                return;
+
             if (uiEditModeTimeout)
             {
-                // if (logPropertyWindow) DebugLogWithID ("UpdateUI", "Timeout triggered, current state: " + uiEditModeTimeout + " | Time: " + uiEditModeTimer);
                 uiEditModeTimer += Time.deltaTime;
                 if (uiEditModeTimer > uiEditModeTimeoutDuration)
-                {
                     StopWindowTimeout ();
-                }
             }
-            else
+            else if (uiEditMode)
             {
-                if (uiEditMode)
+                if (Input.GetKeyDown (uiKeyCodeEdit))
+                    ExitEditMode ();
+                else
                 {
-                    if (Input.GetKeyDown (uiKeyCodeEdit)) ExitEditMode ();
-                    else
-                    {
-                        EditorLogic EdLogInstance = EditorLogic.fetch;
-                        bool cursorInGUI = false;
-                        cursorInGUI = WingProceduralManager.uiRectWindowEditor.Contains (UIUtility.GetMousePos ());
-                        if (!cursorInGUI)
-                        {
-                            if (Input.GetKeyDown (KeyCode.Mouse0)) ExitEditMode ();
-                        }
-                    }
+                    bool cursorInGUI = WingProceduralManager.uiRectWindowEditor.Contains (UIUtility.GetMousePos ());
+                    if (!cursorInGUI && Input.GetKeyDown(KeyCode.Mouse0))
+                        ExitEditMode ();
                 }
             }
         }
@@ -2628,6 +2588,7 @@ namespace WingProcedural
 
             if (geometryUpdate)
                 aeroUpdate = true;
+
             // all the fields that have no aero effects
             geometryUpdate |= CheckFieldValue(sharedEdgeTypeTrailing, ref sharedEdgeTypeTrailingCached);
             geometryUpdate |= CheckFieldValue(sharedEdgeTypeLeading, ref sharedEdgeTypeLeadingCached);
@@ -2830,67 +2791,123 @@ namespace WingProcedural
         public bool fuelShowInfo = false;
 
         [KSPField (isPersistant = true)] public Vector4 fuelCurrentAmount = Vector4.zero;
-        [KSPField (isPersistant = true)] public int fuelSelectedTankSetup = -1;
+        [KSPField (isPersistant = true)] public int fuelSelectedTankSetup = 0;
 
         [KSPField (guiActive = false, guiActiveEditor = false, guiName = "Added cost")] public float fuelAddedCost = 0f;
         [KSPField (guiActive = false, guiActiveEditor = false, guiName = "Dry mass")] public float fuelDryMassInfo = 0f;
 
-        private bool fuelInitialized = false;
         private float fuelVolumeOld = 0f;
 
         /// <summary>
-        /// returns a string containing an abreviation of the current fuels and the number of units of each. eg LFO (360/420)
+        /// Called from setup (part of Start() for editor and flight)
         /// </summary>
-        private string FuelGUIGetConfigDesc ()
+        private void FuelStart()
         {
-            if (assemblyRFUsed || assemblyMFTUsed)
-                return "";
-            else if (fuelSelectedTankSetup == -1)
-                return "Invalid";
-            else
+            if (WPDebug.logFuel)
+                DebugLogWithID("FuelStart", "Started");
+            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed)
+                return;
+
+            fuelConfigurationsList.Clear();
+            for (int configID = 0; configID < fuelResourceNames.Length; configID++)
             {
-                string units = "";
-                if (fuelSelectedTankSetup == 1)
-                    units += "LF (";
-                else if (fuelSelectedTankSetup == 2)
-                    units += "LFO (";
-                else if (fuelSelectedTankSetup == 3)
-                    units += "RCS (";
-                else
-                    units += "STR (";
-                if (fuelConfigurationsList.Count > 0)
+                WPInnerTank newTank = new WPInnerTank();
+                for (int nameID = 0; nameID < fuelResourceNames[configID].Length; nameID++)
                 {
-                    for (int i = 0; i < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; ++i)
+                    newTank.resources.Add(new WPResource(fuelResourceNames[configID][nameID].Trim(' ')));
+                }
+                fuelConfigurationsList.Add(newTank);
+            }
+
+            if (HighLogic.LoadedSceneIsEditor)
+                FuelSetConfigurationToParts(false);
+            FuelUpdateAmountsFromVolume(aeroStatVolume, false);
+        }
+
+        /// <summary>
+        /// called in Update for standard wing panels, sets fuelCurrentAmount to the current part resource volume (why does this need to be done? The part already has resource nodes to track amounts)
+        /// </summary>
+        private void FuelOnUpdate()
+        {
+            if (fuelSelectedTankSetup < fuelConfigurationsList.Count && fuelSelectedTankSetup >= 0)
+            {
+                if (fuelConfigurationsList[fuelSelectedTankSetup] != null)
+                {
+                    for (int i = 0; i < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; i++)
                     {
-                        units += ((int) fuelConfigurationsList[fuelSelectedTankSetup].resources[i].maxAmount).ToString ();
-                        if (i == fuelConfigurationsList[fuelSelectedTankSetup].resources.Count - 1)
-                            units += ")";
-                        else
-                            units += "/";
+                        if (fuelConfigurationsList[fuelSelectedTankSetup].resources[i].name != "Structural")
+                            FuelSetResource(i, (float)part.Resources[fuelConfigurationsList[fuelSelectedTankSetup].resources[i].name].amount);
                     }
                 }
-                return units;
             }
         }
 
+
         /// <summary>
-        /// force activate the "Next Configuration" button
+        /// calls FuelSetResourcesToPart on this part and all it's symmetry counterparts. Only call from the editor
         /// </summary>
-        private void FuelGUICheckEvent ()
+        private void FuelSetConfigurationToParts(bool calledByPlayer)
         {
-            if (Events.Contains ("NextConfiguration"))
+            if (WPDebug.logFuel)
+                DebugLogWithID("FuelAssignResourcesToPart", "Started");
+
+            FuelSetResourcesToPart(part, calledByPlayer);
+            for (int s = 0; s < part.symmetryCounterparts.Count; s++)
             {
-                if (WPDebug.logFuel)
-                    DebugLogWithID ("FuelOnStart", "Event found and enabled");
-                Events["NextConfiguration"].active = true;
-                Events["NextConfiguration"].guiActiveEditor = true;
+                if (part.symmetryCounterparts[s] == null) // fixes nullref caused by removing mirror sym while hovering over attach location
+                    continue;
+                FuelSetResourcesToPart(part.symmetryCounterparts[s], calledByPlayer);
+                WingProcedural wing = part.symmetryCounterparts[s].Modules.OfType<WingProcedural>().FirstOrDefault();
+                if (wing != null)
+                    wing.fuelSelectedTankSetup = fuelSelectedTankSetup;
             }
-            else if (WPDebug.logFuel)
-                DebugLogWithID ("FuelOnStart", "Event not found");
+
+            UpdateWindow();
         }
 
         /// <summary>
-        /// takes a volume in m^3 and sets up max amounts (apparently, may be deeper)
+        /// Updates part.Resources to match the changes
+        /// </summary>
+        private void FuelSetResourcesToPart(Part currentPart, bool calledByPlayer)
+        {
+            if (WPDebug.logFuel)
+                DebugLogWithID("FuelSetupTankInPart", "Started");
+
+            currentPart.Resources.list.Clear();
+            PartResource[] partResources = currentPart.GetComponents<PartResource>();
+            for (int i = 0; i < partResources.Length; i++)
+                DestroyImmediate(partResources[i]);
+
+
+            if (fuelVolumeOld != aeroStatVolume)
+                FuelUpdateAmountsFromVolume(aeroStatVolume, false);
+            
+            for (int resourceIndex = 0; resourceIndex < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; resourceIndex++)
+            {
+                if (fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].name != "Structural")
+                {
+                    if (WPDebug.logFuel)
+                        DebugLogWithID("FuelSetResourcesToPart", "Found wing with fuel | Stored amounts: " + fuelCurrentAmount);
+
+                    ConfigNode newResourceNode = new ConfigNode("RESOURCE");
+                    newResourceNode.AddValue("name", fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].name);
+                    if (calledByPlayer) // || fuelBrandNewPart)
+                    {
+                        if (WPDebug.logFuel)
+                            DebugLogWithID("FuelSetResourcesToPart", "CBP, setting amount from max of " + fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].maxAmount);
+                        FuelSetResource(resourceIndex, fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].amount);
+                    }
+                    newResourceNode.AddValue("amount", fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].maxAmount);
+                    newResourceNode.AddValue("maxAmount", fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].maxAmount);
+                    currentPart.AddResource(newResourceNode);
+                }
+            }
+            currentPart.Resources.UpdateList();
+            fuelAddedCost = FuelGetAddedCost();
+        }
+
+        /// <summary>
+        /// takes a volume in m^3 and sets up max amounts (may be deeper for stock resources)
         /// </summary>
         private void FuelUpdateAmountsFromVolume (float volume, bool reassignAfter)
         {
@@ -2926,130 +2943,15 @@ namespace WingProcedural
                     for (int r = 0; r < fuelConfigurationsList[i].resources.Count; ++r)
                     {
                         float newAmount = fuelPerCubicMeter[i][r] * volume * 0.7f; // since not all volume is used
+                        float prevVol = fuelConfigurationsList[i].resources[r].maxAmount;
                         fuelConfigurationsList[i].resources[r].maxAmount = newAmount;
-                        fuelConfigurationsList[i].resources[r].amount = newAmount;// Mathf.Min(fuelConfigurationsList[i].resources[r].amount, newAmount);
+                        fuelConfigurationsList[i].resources[r].amount = Mathf.Min(fuelConfigurationsList[i].resources[r].amount * newAmount / prevVol, newAmount);
                     }
                 }
                 fuelVolumeOld = volume;
                 if (reassignAfter)
                     FuelSetConfigurationToParts (false);
             }
-        }
-
-        /// <summary>
-        /// Called from setupRecurring (happens every OnAttach IIRC. Track it down properly later)
-        /// </summary>
-        private void FuelOnStart ()
-        {
-            if (WPDebug.logFuel)
-                DebugLogWithID ("FuelOnStart", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed)
-                return;
-
-            FuelGUICheckEvent ();
-            FuelInitializeData ();
-            if (fuelSelectedTankSetup == -1)
-            {
-                FuelSetConfigurationToParts (false);
-                fuelSelectedTankSetup = 0;
-            }
-            FuelUpdateAmountsFromVolume (aeroStatVolume, false);
-        }
-
-        /// <summary>
-        /// Runs only once per scene
-        /// Sets up GUI and calls setup of fuel configuration list
-        /// </summary>
-        private void FuelInitializeData ()
-        {
-            if (WPDebug.logFuel)
-                DebugLogWithID ("FuelInitializeData", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf)
-                return;
-
-            if (!fuelInitialized)
-            {
-                FuelSetupConfigurationList (false);
-                fuelInitialized = true;
-            }
-        }
-
-        /// <summary>
-        /// calls FuelSetResourcesToPart on this part and all it's symmetry counterparts
-        /// </summary>
-        private void FuelSetConfigurationToParts (bool calledByPlayer)
-        {
-            if (WPDebug.logFuel)
-                DebugLogWithID ("FuelAssignResourcesToPart", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed)
-                return;
-
-            FuelSetResourcesToPart (part, calledByPlayer);
-            if (HighLogic.LoadedSceneIsEditor)
-            {
-                for (int s = 0; s < part.symmetryCounterparts.Count; s++)
-                {
-                    if (part.symmetryCounterparts[s] == null) // fixes nullref caused by removing mirror sym while hovering over attach location
-                        continue;
-
-                    FuelSetResourcesToPart (part.symmetryCounterparts[s], calledByPlayer);
-
-                    WingProcedural wing = part.symmetryCounterparts[s].GetComponent<WingProcedural> ();
-                    if (wing != null)
-                    {
-                        wing.fuelSelectedTankSetup = fuelSelectedTankSetup;
-                    }
-                }
-            }
-            updateRequiredOnWindow = true;
-        }
-
-        /// <summary>
-        /// Updates part.Resources to match the changes
-        /// </summary>
-        private void FuelSetResourcesToPart (Part currentPart, bool calledByPlayer)
-        {
-            if (WPDebug.logFuel)
-                DebugLogWithID ("FuelSetupTankInPart", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed)
-                return;
-
-            currentPart.Resources.list.Clear();
-            PartResource[] partResources = currentPart.GetComponents<PartResource>();
-            for (int i = 0; i < partResources.Length; i++)
-                DestroyImmediate(partResources[i]);
-
-
-            if (fuelVolumeOld != aeroStatVolume)
-                FuelUpdateAmountsFromVolume (aeroStatVolume, false);
-            for (int tankIndex = 0; tankIndex < fuelConfigurationsList.Count; tankIndex++)
-            {
-                if (fuelSelectedTankSetup == tankIndex)
-                {
-                    for (int resourceIndex = 0; resourceIndex < fuelConfigurationsList[tankIndex].resources.Count; resourceIndex++)
-                    {
-                        if (fuelConfigurationsList[tankIndex].resources[resourceIndex].name != "Structural")
-                        {
-                            if (WPDebug.logFuel)
-                                DebugLogWithID ("FuelSetResourcesToPart", "Found wing with fuel | Stored amounts: " + fuelCurrentAmount);
-
-                            ConfigNode newResourceNode = new ConfigNode ("RESOURCE");
-                            newResourceNode.AddValue ("name", fuelConfigurationsList[tankIndex].resources[resourceIndex].name);
-                            if (calledByPlayer) // || fuelBrandNewPart)
-                            {
-                                if (WPDebug.logFuel)
-                                    DebugLogWithID ("FuelSetResourcesToPart", "CBP, setting amount from max of " + fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
-                                FuelSetResource (resourceIndex, fuelConfigurationsList[tankIndex].resources[resourceIndex].amount);
-                            }
-                            newResourceNode.AddValue("amount", fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
-                            newResourceNode.AddValue ("maxAmount", fuelConfigurationsList[tankIndex].resources[resourceIndex].maxAmount);
-                            currentPart.AddResource (newResourceNode);
-                        }
-                    }
-                }
-            }
-            currentPart.Resources.UpdateList();
-            fuelAddedCost = FuelGetAddedCost ();
         }
 
         /// <summary>
@@ -3067,24 +2969,6 @@ namespace WingProcedural
                 }
             }
             return result;
-        }
-
-        /// <summary>
-        /// called in Update for standard wing panels, sets fuelCurrentAmount to the current part resource volume (why does this need to be done?)
-        /// </summary>
-        private void FuelOnUpdate ()
-        {
-            if (fuelSelectedTankSetup < fuelConfigurationsList.Count && fuelSelectedTankSetup >= 0) 
-            {
-                if (fuelConfigurationsList[fuelSelectedTankSetup] != null)
-                {
-                    for (int i = 0; i < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; i++)
-                    {
-                        if (fuelConfigurationsList[fuelSelectedTankSetup].resources[i].name != "Structural")
-                            FuelSetResource (i, (float) part.Resources[fuelConfigurationsList[fuelSelectedTankSetup].resources[i].name].amount);
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -3130,54 +3014,37 @@ namespace WingProcedural
         }
 
         /// <summary>
-        /// Sets up fuel configuration list
-        /// Argument determines the source of fetched resource amount
+        /// returns a string containing an abreviation of the current fuels and the number of units of each. eg LFO (360/420)
         /// </summary>
-        private void FuelSetupConfigurationList (bool calledByPlayer)
+        private string FuelGUIGetConfigDesc()
         {
-            if (WPDebug.logFuel) DebugLogWithID ("FuelSetupTankList", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed) return;
-
-            // First find the amounts each tank type is filled with
-            // The created list contains configurations with amount of fuel per volume
-
-            fuelConfigurationsList.Clear ();
-            List<List<float>> configList = new List<List<float>> ();
-            for (int configID = 0; configID < fuelPerCubicMeter.Length; configID++)
+            if (assemblyRFUsed || assemblyMFTUsed)
+                return "";
+            else if (fuelSelectedTankSetup == -1)
+                return "Invalid";
+            else
             {
-                configList.Add (new List<float> ());
-                for (int amountIndex = 0; amountIndex < fuelPerCubicMeter[configID].Length; amountIndex++)
+                string units = "";
+                if (fuelSelectedTankSetup == 1)
+                    units += "LF (";
+                else if (fuelSelectedTankSetup == 2)
+                    units += "LFO (";
+                else if (fuelSelectedTankSetup == 3)
+                    units += "RCS (";
+                else
+                    units += "STR (";
+                if (fuelConfigurationsList.Count > 0)
                 {
-                    configList[configID].Add (fuelPerCubicMeter[configID][amountIndex]);
-                }
-            }
-
-            // Then find the kinds of resources each tank holds, and fill them with the amounts found previously, or the amount hey held last (values kept in save persistence/craft)
-
-            for (int configID = 0; configID < fuelResourceNames.Length; configID++)
-            {
-                WPInnerTank newTank = new WPInnerTank ();
-                fuelConfigurationsList.Add (newTank);
-                for (int nameID = 0; nameID < fuelResourceNames[configID].Length; nameID++)
-                {
-                    WPResource newResource = new WPResource (fuelResourceNames[configID][nameID].Trim (' '));
-                    if (configList[configID] != null)
+                    for (int i = 0; i < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; ++i)
                     {
-                        if (nameID < configList[configID].Count)
-                        {
-                            newResource.maxAmount = configList[configID][nameID];
-                            if (calledByPlayer)
-                            {
-                                newResource.amount = configList[configID][nameID]; 
-                            }
-                            else
-                            {
-                                newResource.amount = FuelGetResource (nameID);
-                            }
-                        }
+                        units += ((int)fuelConfigurationsList[fuelSelectedTankSetup].resources[i].maxAmount).ToString();
+                        if (i == fuelConfigurationsList[fuelSelectedTankSetup].resources.Count - 1)
+                            units += ")";
+                        else
+                            units += "/";
                     }
-                    newTank.resources.Add (newResource);
                 }
+                return units;
             }
         }
 
@@ -3231,8 +3098,11 @@ namespace WingProcedural
 
         public void editorAppDestroy()
         {
+            if (!HighLogic.LoadedSceneIsEditor)
+                return;
+
             bool stockButtonCanBeRemoved = true;
-            WingProcedural[] components = GameObject.FindObjectsOfType<WingProcedural>(); // should just shove the editor applauncher into it's own class. Would remove the need for this
+            WingProcedural[] components = GameObject.FindObjectsOfType<WingProcedural>();
             if (WPDebug.logEvents)
                 DebugLogWithID("OnDestroy", "Invoked, with " + components.Length + " remaining components in the scene");
             for (int i = 0; i < components.Length; ++i)
