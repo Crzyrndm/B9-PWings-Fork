@@ -2897,7 +2897,7 @@ namespace WingProcedural
                             DebugLogWithID("FuelSetResourcesToPart", "CBP, setting amount from max of " + fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].maxAmount);
                         FuelSetResource(resourceIndex, fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].amount);
                     }
-                    newResourceNode.AddValue("amount", fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].maxAmount);
+                    newResourceNode.AddValue("amount", fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].amount);
                     newResourceNode.AddValue("maxAmount", fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].maxAmount);
                     currentPart.AddResource(newResourceNode);
                 }
@@ -2907,7 +2907,7 @@ namespace WingProcedural
         }
 
         /// <summary>
-        /// takes a volume in m^3 and sets up max amounts (may be deeper for stock resources)
+        /// takes a volume in m^3 and sets up max amounts (deeper for stock resources)
         /// </summary>
         private void FuelUpdateAmountsFromVolume (float volume, bool reassignAfter)
         {
@@ -2943,9 +2943,10 @@ namespace WingProcedural
                     for (int r = 0; r < fuelConfigurationsList[i].resources.Count; ++r)
                     {
                         float newAmount = fuelPerCubicMeter[i][r] * volume * 0.7f; // since not all volume is used
-                        float prevVol = fuelConfigurationsList[i].resources[r].maxAmount;
+                        float prevPct = FuelGetResource(r) / fuelConfigurationsList[i].resources[r].maxAmount;
+                        Debug.Log(prevPct);
                         fuelConfigurationsList[i].resources[r].maxAmount = newAmount;
-                        fuelConfigurationsList[i].resources[r].amount = Mathf.Min(fuelConfigurationsList[i].resources[r].amount * newAmount / prevVol, newAmount);
+                        fuelConfigurationsList[i].resources[r].amount = prevPct != 0 || float.IsNaN(prevPct) ? Mathf.Min(newAmount * prevPct, newAmount) : newAmount;
                     }
                 }
                 fuelVolumeOld = volume;
