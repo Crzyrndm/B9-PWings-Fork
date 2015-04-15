@@ -1593,8 +1593,6 @@ namespace WingProcedural
         #endregion
 
         #region Aero
-        // Delayed aero value setup
-        // Must be run after all geometry setups, otherwise FAR checks will be done before surrounding parts take shape, producing incorrect results
 
         public class VesselStatus
         {
@@ -1607,9 +1605,10 @@ namespace WingProcedural
                 isUpdated = state;
             }
         }
-
         public static List<VesselStatus> vesselList = new List<VesselStatus> ();
 
+        // Delayed aero value setup
+        // Must be run after all geometry setups, otherwise FAR checks will be done before surrounding parts take shape, producing incorrect results
         public IEnumerator SetupReorderedForFlight ()
         {
             // First we need to determine whether the vessel this part is attached to is included into the status list
@@ -1718,7 +1717,7 @@ namespace WingProcedural
         [KSPField (guiActiveEditor = false, guiName = "Semispan", guiFormat = "F3", guiUnits = "m")]
         public float aeroUISemispan;
 
-        [KSPField (guiActiveEditor = false, guiName = "Mid-chord wweep", guiFormat = "F3", guiUnits = "deg.")]
+        [KSPField (guiActiveEditor = false, guiName = "Mid-chord sweep", guiFormat = "F3", guiUnits = "deg.")]
         public float aeroUIMidChordSweep;
 
         [KSPField (guiActiveEditor = false, guiName = "Taper ratio", guiFormat = "F3")]
@@ -2002,9 +2001,38 @@ namespace WingProcedural
             {
                 qry.lift = (float) aeroStatCl;
                 float negativeLiftPos = ((EditorLogic.fetch.ship.Parts[0].transform.position.x - qry.pos.x) > 0) ? -1f : 1f;
-                float widthRatio = (1f + 1f * (sharedBaseWidthTip / (sharedBaseWidthRoot + sharedBaseWidthTip))) / 3f;
-                qry.pos.x += widthRatio * sharedBaseLength * negativeLiftPos;
-                qry.pos.y += part.CoMOffset.z;
+
+                float sharedWidthTipSum = sharedBaseWidthTip;
+                if (!isCtrlSrf)
+                {
+                    if (sharedEdgeTypeLeading != 1)
+                        sharedWidthTipSum += sharedEdgeWidthLeadingTip;
+                    if (sharedEdgeTypeTrailing != 1)
+                        sharedWidthTipSum += sharedEdgeWidthTrailingTip;
+                }
+                else
+                    sharedWidthTipSum += sharedEdgeWidthTrailingTip;
+
+                float sharedWidthRootSum = sharedBaseWidthRoot;
+                if (!isCtrlSrf)
+                {
+                    if (sharedEdgeTypeLeading != 1)
+                        sharedWidthRootSum += sharedEdgeWidthLeadingRoot;
+                    if (sharedEdgeTypeTrailing != 1)
+                        sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
+                }
+                else
+                    sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
+
+                float widthRatio = (1f + 1f * (sharedWidthTipSum / (sharedWidthRootSum + sharedWidthTipSum))) / 3f;
+                float offset = widthRatio * sharedBaseLength * negativeLiftPos;
+
+                Debug.Log("qry");
+                Debug.Log(qry.refVector);
+                Debug.Log(qry.dir);
+
+                qry.pos.x += offset * qry.dir.y + part.CoMOffset.y * qry.dir.x;
+                qry.pos.y += part.CoMOffset.z * qry.dir.y - offset * qry.dir.x;
                 qry.pos.z += part.CoMOffset.y;
             }
         }
