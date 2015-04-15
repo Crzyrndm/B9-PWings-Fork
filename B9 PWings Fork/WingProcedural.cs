@@ -10,10 +10,9 @@ using System.Reflection;
 
 namespace WingProcedural
 {
-    public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier 
+    public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier
     {
         // Some handy bools
-
         [KSPField] public bool isCtrlSrf = false;
         [KSPField] public bool isWingAsCtrlSrf = false;
         [KSPField] public bool isPanel = false;
@@ -451,9 +450,8 @@ namespace WingProcedural
         }
         #endregion
 
-        // Fuel configuration switching
+        #region Fuel configuration switching
         // Has to be situated here as this KSPEvent is not correctly added Part.Events otherwise
-
         [KSPEvent (guiActive = false, guiActiveEditor = true, guiName = "Next configuration", active = true)]
         public void NextConfiguration ()
         {
@@ -472,6 +470,7 @@ namespace WingProcedural
 
             FuelSetConfigurationToParts (true);
         }
+        #endregion
 
         #region Inheritance
         private bool inheritancePossibleOnShape = false;
@@ -1334,6 +1333,162 @@ namespace WingProcedural
 
         #endregion
 
+        #region Mesh Setup and Checking
+        private void SetupMeshFilters()
+        {
+            if (!isCtrlSrf)
+            {
+                meshFilterWingSurface = CheckMeshFilter(meshFilterWingSurface, "surface");
+                meshFilterWingSection = CheckMeshFilter(meshFilterWingSection, "section");
+                for (int i = 0; i < meshTypeCountEdgeWing; ++i)
+                {
+                    MeshFilter meshFilterWingEdgeTrailing = CheckMeshFilter("edge_trailing_type" + i);
+                    meshFiltersWingEdgeTrailing.Add(meshFilterWingEdgeTrailing);
+
+                    MeshFilter meshFilterWingEdgeLeading = CheckMeshFilter("edge_leading_type" + i);
+                    meshFiltersWingEdgeLeading.Add(meshFilterWingEdgeLeading);
+                }
+            }
+            else
+            {
+                meshFilterCtrlFrame = CheckMeshFilter(meshFilterCtrlFrame, "frame");
+                meshFilterCtrlSurface = CheckMeshFilter(meshFilterCtrlSurface, "surface");
+                for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
+                {
+                    MeshFilter meshFilterCtrlEdge = CheckMeshFilter("edge_type" + i);
+                    meshFiltersCtrlEdge.Add(meshFilterCtrlEdge);
+                }
+            }
+        }
+
+        public void SetupMeshReferences()
+        {
+            bool required = true;
+            if (!isCtrlSrf)
+            {
+                if (meshReferenceWingSection != null && meshReferenceWingSurface != null && meshReferencesWingEdge[meshTypeCountEdgeWing - 1] != null)
+                {
+                    if (meshReferenceWingSection.vp.Length > 0 && meshReferenceWingSurface.vp.Length > 0 && meshReferencesWingEdge[meshTypeCountEdgeWing - 1].vp.Length > 0)
+                    {
+                        required = false;
+                    }
+                }
+            }
+            else
+            {
+                if (meshReferenceCtrlFrame != null && meshReferenceCtrlSurface != null && meshReferencesCtrlEdge[meshTypeCountEdgeCtrl - 1] != null)
+                {
+                    if (meshReferenceCtrlFrame.vp.Length > 0 && meshReferenceCtrlSurface.vp.Length > 0 && meshReferencesCtrlEdge[meshTypeCountEdgeCtrl - 1].vp.Length > 0)
+                    {
+                        required = false;
+                    }
+                }
+            }
+            if (required)
+            {
+                if (WPDebug.logMeshReferences) DebugLogWithID("SetupMeshReferences", "References missing | isCtrlSrf: " + isCtrlSrf);
+                SetupMeshReferencesFromScratch();
+            }
+            else
+            {
+                if (WPDebug.logMeshReferences) DebugLogWithID("SetupMeshReferences", "Skipped, all references seem to be in order");
+            }
+        }
+
+        public void ReportOnMeshReferences()
+        {
+            if (isCtrlSrf)
+            {
+                if (WPDebug.logMeshReferences)
+                    DebugLogWithID("ReportOnMeshReferences", "Control surface reference length check" + " | Edge: " + meshReferenceCtrlFrame.vp.Length
+                                        + " | Surface: " + meshReferenceCtrlSurface.vp.Length);
+            }
+            else
+            {
+                if (WPDebug.logMeshReferences)
+                    DebugLogWithID("ReportOnMeshReferences", "Wing reference length check" + " | Section: " + meshReferenceWingSection.vp.Length
+                                        + " | Surface: " + meshReferenceWingSurface.vp.Length
+                );
+            }
+        }
+
+        private void SetupMeshReferencesFromScratch()
+        {
+            if (WPDebug.logMeshReferences)
+                DebugLogWithID("SetupMeshReferencesFromScratch", "No sources found, creating new references");
+            if (!isCtrlSrf)
+            {
+                WingProcedural.meshReferenceWingSection = FillMeshRefererence(meshFilterWingSection);
+                WingProcedural.meshReferenceWingSurface = FillMeshRefererence(meshFilterWingSurface);
+                for (int i = 0; i < meshTypeCountEdgeWing; ++i)
+                {
+                    MeshReference meshReferenceWingEdge = FillMeshRefererence(meshFiltersWingEdgeTrailing[i]);
+                    meshReferencesWingEdge.Add(meshReferenceWingEdge);
+                }
+            }
+            else
+            {
+                WingProcedural.meshReferenceCtrlFrame = FillMeshRefererence(meshFilterCtrlFrame);
+                WingProcedural.meshReferenceCtrlSurface = FillMeshRefererence(meshFilterCtrlSurface);
+                for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
+                {
+                    MeshReference meshReferenceCtrlEdge = FillMeshRefererence(meshFiltersCtrlEdge[i]);
+                    meshReferencesCtrlEdge.Add(meshReferenceCtrlEdge);
+                }
+            }
+        }
+
+        // Reference fetching
+
+        private MeshFilter CheckMeshFilter(string name) { return CheckMeshFilter(null, name, false); }
+        private MeshFilter CheckMeshFilter(MeshFilter reference, string name) { return CheckMeshFilter(reference, name, false); }
+        private MeshFilter CheckMeshFilter(MeshFilter reference, string name, bool disable)
+        {
+            if (reference == null)
+            {
+                if (WPDebug.logCheckMeshFilter)
+                    DebugLogWithID("CheckMeshFilter", "Looking for object: " + name);
+                Transform parent = part.transform.GetChild(0).GetChild(0).GetChild(0).Find(name);
+                if (parent != null)
+                {
+                    parent.localPosition = Vector3.zero;
+                    if (WPDebug.logCheckMeshFilter)
+                        DebugLogWithID("CheckMeshFilter", "Object " + name + " was found");
+                    reference = parent.gameObject.GetComponent<MeshFilter>();
+                    if (disable)
+                        parent.gameObject.SetActive(false);
+                }
+                else if (WPDebug.logCheckMeshFilter)
+                    DebugLogWithID("CheckMeshFilter", "Object " + name + " was not found!");
+            }
+            return reference;
+        }
+
+        private Transform CheckTransform(string name)
+        {
+            Transform t = part.transform.GetChild(0).GetChild(0).GetChild(0).Find(name);
+            return t;
+        }
+
+        private MeshReference FillMeshRefererence(MeshFilter source)
+        {
+            MeshReference reference = new MeshReference();
+            if (source != null)
+            {
+                int length = source.mesh.vertices.Length;
+                reference.vp = new Vector3[length];
+                Array.Copy(source.mesh.vertices, reference.vp, length);
+                reference.nm = new Vector3[length];
+                Array.Copy(source.mesh.normals, reference.nm, length);
+                reference.uv = new Vector2[length];
+                Array.Copy(source.mesh.uv, reference.uv, length);
+            }
+            else if (WPDebug.logMeshReferences)
+                DebugLogWithID("FillMeshReference", "Mesh filter reference is null, unable to set up reference arrays");
+            return reference;
+        }
+        #endregion
+
         #region Materials
 
 
@@ -1435,162 +1590,6 @@ namespace WingProcedural
             }
         }
 
-        #endregion
-
-        #region Mesh
-        private void SetupMeshFilters ()
-        {
-            if (!isCtrlSrf)
-            {
-                meshFilterWingSurface = CheckMeshFilter (meshFilterWingSurface, "surface");
-                meshFilterWingSection = CheckMeshFilter (meshFilterWingSection, "section"); 
-                for (int i = 0; i < meshTypeCountEdgeWing; ++i)
-                {
-                    MeshFilter meshFilterWingEdgeTrailing = CheckMeshFilter ("edge_trailing_type" + i);
-                    meshFiltersWingEdgeTrailing.Add (meshFilterWingEdgeTrailing);
-
-                    MeshFilter meshFilterWingEdgeLeading = CheckMeshFilter ("edge_leading_type" + i);
-                    meshFiltersWingEdgeLeading.Add (meshFilterWingEdgeLeading);
-                }
-            }
-            else
-            {
-                meshFilterCtrlFrame = CheckMeshFilter (meshFilterCtrlFrame, "frame");
-                meshFilterCtrlSurface = CheckMeshFilter (meshFilterCtrlSurface, "surface");
-                for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
-                {
-                    MeshFilter meshFilterCtrlEdge = CheckMeshFilter ("edge_type" + i);
-                    meshFiltersCtrlEdge.Add (meshFilterCtrlEdge);
-                }
-            }
-        }
-
-        public void SetupMeshReferences ()
-        {
-            bool required = true;
-            if (!isCtrlSrf)
-            {
-                if (meshReferenceWingSection != null && meshReferenceWingSurface != null && meshReferencesWingEdge[meshTypeCountEdgeWing - 1] != null)
-                {
-                    if (meshReferenceWingSection.vp.Length > 0 && meshReferenceWingSurface.vp.Length > 0 && meshReferencesWingEdge[meshTypeCountEdgeWing - 1].vp.Length > 0)
-                    {
-                        required = false;
-                    }
-                }
-            }
-            else
-            {
-                if (meshReferenceCtrlFrame != null && meshReferenceCtrlSurface != null && meshReferencesCtrlEdge[meshTypeCountEdgeCtrl - 1] != null)
-                {
-                    if (meshReferenceCtrlFrame.vp.Length > 0 && meshReferenceCtrlSurface.vp.Length > 0 && meshReferencesCtrlEdge[meshTypeCountEdgeCtrl - 1].vp.Length > 0)
-                    {
-                        required = false;
-                    }
-                }
-            }
-            if (required)
-            {
-                if (WPDebug.logMeshReferences) DebugLogWithID ("SetupMeshReferences", "References missing | isCtrlSrf: " + isCtrlSrf);
-                SetupMeshReferencesFromScratch ();
-            }
-            else
-            {
-                if (WPDebug.logMeshReferences) DebugLogWithID ("SetupMeshReferences", "Skipped, all references seem to be in order");
-            }
-        }
-
-        public void ReportOnMeshReferences ()
-        {
-            if (isCtrlSrf)
-            {
-                if (WPDebug.logMeshReferences)
-                    DebugLogWithID("ReportOnMeshReferences", "Control surface reference length check" + " | Edge: " + meshReferenceCtrlFrame.vp.Length
-                                        + " | Surface: " + meshReferenceCtrlSurface.vp.Length);
-            }
-            else
-            {
-                if (WPDebug.logMeshReferences)
-                    DebugLogWithID("ReportOnMeshReferences", "Wing reference length check" + " | Section: " + meshReferenceWingSection.vp.Length
-                                        + " | Surface: " + meshReferenceWingSurface.vp.Length
-                );
-            }
-        }
-
-        private void SetupMeshReferencesFromScratch ()
-        {
-            if (WPDebug.logMeshReferences)
-                DebugLogWithID ("SetupMeshReferencesFromScratch", "No sources found, creating new references");
-            if (!isCtrlSrf)
-            {
-                WingProcedural.meshReferenceWingSection = FillMeshRefererence (meshFilterWingSection);
-                WingProcedural.meshReferenceWingSurface = FillMeshRefererence (meshFilterWingSurface);
-                for (int i = 0; i < meshTypeCountEdgeWing; ++i)
-                {
-                    MeshReference meshReferenceWingEdge = FillMeshRefererence (meshFiltersWingEdgeTrailing[i]);
-                    meshReferencesWingEdge.Add (meshReferenceWingEdge);
-                }
-            }
-            else
-            {
-                WingProcedural.meshReferenceCtrlFrame = FillMeshRefererence (meshFilterCtrlFrame);
-                WingProcedural.meshReferenceCtrlSurface = FillMeshRefererence (meshFilterCtrlSurface);
-                for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
-                {
-                    MeshReference meshReferenceCtrlEdge = FillMeshRefererence (meshFiltersCtrlEdge[i]);
-                    meshReferencesCtrlEdge.Add (meshReferenceCtrlEdge);
-                }
-            }
-        }
-
-        // Reference fetching
-
-        private MeshFilter CheckMeshFilter (string name) { return CheckMeshFilter (null, name, false); }
-        private MeshFilter CheckMeshFilter (MeshFilter reference, string name) { return CheckMeshFilter (reference, name, false); }
-        private MeshFilter CheckMeshFilter (MeshFilter reference, string name, bool disable)
-        {
-            if (reference == null)
-            {
-                if (WPDebug.logCheckMeshFilter)
-                    DebugLogWithID ("CheckMeshFilter", "Looking for object: " + name);
-                Transform parent = part.transform.GetChild (0).GetChild (0).GetChild (0).Find (name);
-                if (parent != null)
-                {
-                    parent.localPosition = Vector3.zero;
-                    if (WPDebug.logCheckMeshFilter)
-                        DebugLogWithID ("CheckMeshFilter", "Object " + name + " was found");
-                    reference = parent.gameObject.GetComponent<MeshFilter> ();
-                    if (disable)
-                        parent.gameObject.SetActive (false);
-                }
-                else if (WPDebug.logCheckMeshFilter)
-                        DebugLogWithID ("CheckMeshFilter", "Object " + name + " was not found!");
-            }
-            return reference;
-        }
-
-        private Transform CheckTransform (string name)
-        {
-            Transform t = part.transform.GetChild (0).GetChild (0).GetChild (0).Find (name);
-            return t;
-        }
-
-        private MeshReference FillMeshRefererence (MeshFilter source)
-        {
-            MeshReference reference = new MeshReference ();
-            if (source != null)
-            {
-                int length = source.mesh.vertices.Length;
-                reference.vp = new Vector3[length];
-                Array.Copy (source.mesh.vertices, reference.vp, length);
-                reference.nm = new Vector3[length];
-                Array.Copy (source.mesh.normals, reference.nm, length);
-                reference.uv = new Vector2[length];
-                Array.Copy (source.mesh.uv, reference.uv, length);
-            }
-            else if (WPDebug.logMeshReferences)
-                DebugLogWithID ("FillMeshReference", "Mesh filter reference is null, unable to set up reference arrays");
-            return reference;
-        }
         #endregion
 
         #region Aero
@@ -1999,9 +1998,14 @@ namespace WingProcedural
 
         public void OnCenterOfLiftQuery (CenterOfLiftQuery qry)
         {
-            if (isAttached && !assemblyFARUsed)
+            if (!assemblyFARUsed && !assemblyNEARUsed)
             {
                 qry.lift = (float) aeroStatCl;
+                float negativeLiftPos = ((EditorLogic.fetch.ship.Parts[0].transform.position.x - qry.pos.x) > 0) ? -1f : 1f;
+                float widthRatio = (1f + 1f * (sharedBaseWidthTip / (sharedBaseWidthRoot + sharedBaseWidthTip))) / 3f;
+                qry.pos.x += widthRatio * sharedBaseLength * negativeLiftPos;
+                qry.pos.y += part.CoMOffset.z;
+                qry.pos.z += part.CoMOffset.y;
             }
         }
 
