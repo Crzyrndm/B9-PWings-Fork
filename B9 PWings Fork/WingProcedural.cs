@@ -18,7 +18,7 @@ namespace WingProcedural
         [KSPField] public bool isWingAsCtrlSrf = false;
         [KSPField] public bool isPanel = false;
 
-        [KSPField (isPersistant = true)] public bool isAttached = false; // why is this persistant. it's somehwat useful in the editor but shouldn't need transferring to flight. Loading vessels in the editor maybe?
+        [KSPField (isPersistant = true)] public bool isAttached = false;
         [KSPField (isPersistant = true)] public bool isSetToDefaultValues = false;
 
         #region Debug
@@ -460,7 +460,7 @@ namespace WingProcedural
             if (WPDebug.logFuel)
                 DebugLogWithID ("NextConfiguration", "Started");
             
-            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed)
+            if (!(canBeFueled && useStockFuel))
                 return;
             
             fuelSelectedTankSetup++;
@@ -661,7 +661,7 @@ namespace WingProcedural
 
         public void Update ()
         {
-            if (!isCtrlSrf && !isWingAsCtrlSrf)
+            if (canBeFueled)
                 FuelOnUpdate();
 
             if (!HighLogic.LoadedSceneIsEditor)
@@ -1761,7 +1761,7 @@ namespace WingProcedural
 
         public void CalculateVolume ()
         {
-            if (isWingAsCtrlSrf || isCtrlSrf || isPanel)
+            if (!canBeFueled || isPanel)
                 return;
 
             aeroStatVolume = (sharedBaseWidthTip * sharedBaseThicknessTip * sharedBaseLength) + ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * sharedBaseThicknessTip * sharedBaseLength)
@@ -1773,9 +1773,6 @@ namespace WingProcedural
 
         public void CalculateAerodynamicValues ()
         {
-            //if (!isAttached)
-            //    return;
-
             if (WPDebug.logCAV)
                 DebugLogWithID ("CalculateAerodynamicValues", "Started");
             CheckAssemblies (false);
@@ -2284,7 +2281,7 @@ namespace WingProcedural
                 }
 
                 GUILayout.Label ("_________________________\n\nPress J to exit edit mode\nOptions below allow you to change default values", WingProceduralManager.uiStyleLabelHint);
-                if (!isCtrlSrf && !isWingAsCtrlSrf && !assemblyRFUsed && !assemblyMFTUsed)
+                if (canBeFueled && useStockFuel)
                 {
                     if (GUILayout.Button (FuelGUIGetConfigDesc () + " | Next tank setup", WingProceduralManager.uiStyleButton)) NextConfiguration ();
                 }
@@ -2825,7 +2822,7 @@ namespace WingProcedural
         {
             if (WPDebug.logFuel)
                 DebugLogWithID("FuelStart", "Started");
-            if (isCtrlSrf || isWingAsCtrlSrf || assemblyRFUsed || assemblyMFTUsed)
+            if (!(canBeFueled && useStockFuel))
                 return;
 
             fuelConfigurationsList.Clear();
@@ -2865,10 +2862,10 @@ namespace WingProcedural
         /// </summary>
         private void FuelUpdateAmountsFromVolume(float volume, bool reassignAfter)
         {
-            if (isCtrlSrf || isWingAsCtrlSrf)
+            if (!canBeFueled)
                 return;
 
-            if (assemblyRFUsed || assemblyMFTUsed)
+            if (!useStockFuel)
             {
                 if (WPDebug.logFuel)
                     DebugLogWithID("FuelUpdateAmountsFromVolume", "Started for RF or MFT");
@@ -3035,9 +3032,7 @@ namespace WingProcedural
         /// </summary>
         private string FuelGUIGetConfigDesc()
         {
-            if (assemblyRFUsed || assemblyMFTUsed)
-                return "";
-            else if (fuelSelectedTankSetup == -1)
+            if (fuelSelectedTankSetup == -1)
                 return "Invalid";
             else
             {
@@ -3065,13 +3060,29 @@ namespace WingProcedural
             }
         }
 
+        public bool canBeFueled
+        {
+            get
+            {
+                return !isCtrlSrf && !isWingAsCtrlSrf;
+            }
+        }
+
+        public bool useStockFuel
+        {
+            get
+            {
+                return !assemblyRFUsed && !assemblyMFTUsed;
+            }
+        }
+
         #endregion
 
         #region Interfaces
 
         public float GetModuleCost ()
         {
-            if (assemblyRFUsed || assemblyMFTUsed)
+            if (!useStockFuel)
                 return aeroUICost;
             else
                 return FuelGetAddedCost () + aeroUICost;
@@ -3079,10 +3090,7 @@ namespace WingProcedural
 
         public float GetModuleCost (float modifier)
         {
-            if (assemblyRFUsed || assemblyMFTUsed)
-                return aeroUICost;
-            else return
-                FuelGetAddedCost () + aeroUICost;
+            return GetModuleCost();
         }
 
         public Vector3 GetModuleSize (Vector3 defaultSize)
