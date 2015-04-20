@@ -643,15 +643,17 @@ namespace WingProcedural
             RenderingManager.AddToPostDrawQueue (0, OnDraw);
         }
 
-        public override void OnSave(ConfigNode node)
-        {
-            WingProceduralManager.SaveConfigs();
-        }
+        // unnecesary save/load. config is static so it will be initialised as you pass through the space center, and there is no way to change options in the editor scene
+        // may resolve errors reported by Hodo
+        //public override void OnSave(ConfigNode node)
+        //{
+        //    WingProceduralManager.SaveConfigs();
+        //}
 
-        public override void OnLoad(ConfigNode node)
-        {
-            WingProceduralManager.LoadConfigs();
-        }
+        //public override void OnLoad(ConfigNode node)
+        //{
+        //    WingProceduralManager.LoadConfigs();
+        //}
 
         public void OnDestroy()
         {
@@ -2186,38 +2188,35 @@ namespace WingProcedural
 
         private void OnDraw ()
         {
-            if (uiInstanceIDLocal == 0) uiInstanceIDLocal = part.GetInstanceID ();
+            if (!uiWindowActive)
+                return;
+
+            if (uiInstanceIDLocal == 0)
+                uiInstanceIDLocal = part.GetInstanceID ();
             if (uiInstanceIDTarget == uiInstanceIDLocal || uiInstanceIDTarget == 0)
             {
-                if (!WingProceduralManager.uiStyleConfigured) WingProceduralManager.ConfigureStyles ();
-                if (WingProceduralManager.uiStyleConfigured)
+                if (!WingProceduralManager.uiStyleConfigured)
+                    WingProceduralManager.ConfigureStyles ();
+
+                if (uiAdjustWindow)
                 {
-                    if (uiWindowActive)
-                    {
-                        if (uiAdjustWindow)
-                        {
-                            uiAdjustWindow = false;
-                            if (WPDebug.logPropertyWindow) DebugLogWithID ("OnDraw", "Window forced to adjust");
-                            WingProceduralManager.uiRectWindowEditor = GUILayout.Window (273, WingProceduralManager.uiRectWindowEditor, OnWindow, GetWindowTitle (), WingProceduralManager.uiStyleWindow, GUILayout.Height (0));
-                        }
-                        else
-                            WingProceduralManager.uiRectWindowEditor = GUILayout.Window (273, WingProceduralManager.uiRectWindowEditor, OnWindow, GetWindowTitle (), WingProceduralManager.uiStyleWindow);
-                        if (WingProceduralManager.uiRectWindowEditor.x == 0f && WingProceduralManager.uiRectWindowEditor.y == 0f) WingProceduralManager.uiRectWindowEditor = WingProceduralManager.uiRectWindowEditor.SetToScreenCenter ();
-
-                        // Thanks to ferram4
-                        // Following section lock the editor, preventing window clickthrough
-
-                        EditorLogic editorLogicInstance = EditorLogic.fetch;
-                        bool cursorInGUI = false;
-                        cursorInGUI = WingProceduralManager.uiRectWindowEditor.Contains (UIUtility.GetMousePos ());
-                        if (cursorInGUI)
-                        {
-                            editorLogicInstance.Lock (false, false, false, "WingProceduralWindow");
-                            EditorTooltip.Instance.HideToolTip ();
-                        }
-                        else if (!cursorInGUI) editorLogicInstance.Unlock ("WingProceduralWindow");
-                    }
+                    uiAdjustWindow = false;
+                    if (WPDebug.logPropertyWindow) DebugLogWithID ("OnDraw", "Window forced to adjust");
+                    WingProceduralManager.uiRectWindowEditor = GUILayout.Window (273, WingProceduralManager.uiRectWindowEditor, OnWindow, GetWindowTitle (), WingProceduralManager.uiStyleWindow, GUILayout.Height (0));
                 }
+                else
+                    WingProceduralManager.uiRectWindowEditor = GUILayout.Window (273, WingProceduralManager.uiRectWindowEditor, OnWindow, GetWindowTitle (), WingProceduralManager.uiStyleWindow);
+
+                // Thanks to ferram4
+                // Following section lock the editor, preventing window clickthrough
+
+                if (WingProceduralManager.uiRectWindowEditor.Contains(UIUtility.GetMousePos()))
+                {
+                    EditorLogic.fetch.Lock(false, false, false, "WingProceduralWindow");
+                    EditorTooltip.Instance.HideToolTip ();
+                }
+                else
+                    EditorLogic.fetch.Unlock("WingProceduralWindow");
             }
         }
 
@@ -2245,6 +2244,7 @@ namespace WingProcedural
                 {
                     EditorLogic.fetch.Unlock ("WingProceduralWindow");
                     uiWindowActive = false;
+                    stockButton.SetFalse(false);
                     returnEarly = true;
                 }
                 GUILayout.EndHorizontal ();
@@ -2360,6 +2360,7 @@ namespace WingProcedural
                     if (GUILayout.Button("Close", WingProceduralManager.uiStyleButton, GUILayout.MaxWidth(50f)))
                     {
                         uiWindowActive = false;
+                        stockButton.SetFalse(false);
                         uiAdjustWindow = true;
                         EditorLogic.fetch.Unlock("WingProceduralWindow");
                     }
@@ -2591,6 +2592,7 @@ namespace WingProcedural
                         uiEditModeTimeout = true;
                         uiAdjustWindow = true;
                         uiWindowActive = true;
+                        stockButton.SetTrue(false);
                         InheritanceStatusUpdate ();
                     }
                 }
@@ -3031,7 +3033,7 @@ namespace WingProcedural
         }
 
         /// <summary>
-        /// returns the current volume of fuel at the specified index. Valid indices are 0-3
+        /// returns the current volume of fuel for internal use at the specified index. Valid indices are 0-3
         /// </summary>
         private float FuelGetResource (int number)
         {
@@ -3051,7 +3053,7 @@ namespace WingProcedural
         }
 
         /// <summary>
-        /// sets the current volume of fuel at the specified index. Valid indices are 0-3
+        /// sets the current volume of fuel for internal use at the specified index. Valid indices are 0-3
         /// </summary>
         private void FuelSetResource (int number, float amount)
         {
@@ -3153,17 +3155,12 @@ namespace WingProcedural
 
         private void OnStockButtonSetup ()
         {
-            stockButton = ApplicationLauncher.Instance.AddModApplication (OnStockButtonClick, OnStockButtonClick, OnStockButtonVoid, OnStockButtonVoid, OnStockButtonVoid, OnStockButtonVoid, ApplicationLauncher.AppScenes.SPH, (Texture) GameDatabase.Instance.GetTexture ("B9_Aerospace/Plugins/icon_stock", false));
+            stockButton = ApplicationLauncher.Instance.AddModApplication (OnStockButtonClick, OnStockButtonClick, null, null, null, null, ApplicationLauncher.AppScenes.SPH, (Texture) GameDatabase.Instance.GetTexture ("B9_Aerospace/Plugins/icon_stock", false));
         }
 
         public void OnStockButtonClick ()
         {
             uiWindowActive = !uiWindowActive;
-        }
-
-        private void OnStockButtonVoid ()
-        {
-
         }
 
         public void editorAppDestroy()

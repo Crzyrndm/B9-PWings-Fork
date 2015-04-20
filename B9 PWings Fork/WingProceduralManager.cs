@@ -262,7 +262,7 @@ namespace WingProcedural
             config = KSP.IO.PluginConfiguration.CreateForType<WingProceduralManager> ();
             config.load ();
 
-            WingProceduralManager.uiRectWindowEditor = config.GetValue<Rect> ("uiRectWindowEditor");
+            WingProceduralManager.uiRectWindowEditor = config.GetValue("uiRectWindowEditor", UIUtility.SetToScreenCenter(new Rect()));
             WingProceduralManager.uiRectWindowDebug = config.GetValue<Rect> ("uiRectWindowDebug");
 
             WPDebug.logCAV = Convert.ToBoolean (config.GetValue ("logCAV", "false"));
