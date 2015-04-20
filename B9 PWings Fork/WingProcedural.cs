@@ -797,7 +797,6 @@ namespace WingProcedural
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterWingSection.mesh;
                     meshCollider.convex = true;
-                    Debug.Log(meshCollider.bounds);
                     
                     if (WPDebug.logUpdateGeometry)
                         DebugLogWithID ("UpdateGeometry", "Wing section | Finished");
