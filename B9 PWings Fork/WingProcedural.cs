@@ -797,6 +797,7 @@ namespace WingProcedural
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterWingSection.mesh;
                     meshCollider.convex = true;
+                    Debug.Log(meshCollider.bounds);
                     
                     if (WPDebug.logUpdateGeometry)
                         DebugLogWithID ("UpdateGeometry", "Wing section | Finished");
@@ -1741,6 +1742,7 @@ namespace WingProcedural
         public double aeroStatMeanAerodynamicChord;
         public double aeroStatSemispan;
         public double aeroStatMidChordSweep;
+        public Vector3d aeroStatRootMidChordOffsetFromOrigin;
         public double aeroStatTaperRatio;
         public double aeroStatSurfaceArea;
         public double aeroStatAspectRatio;
@@ -1755,6 +1757,7 @@ namespace WingProcedural
         private FieldInfo  aeroFARFieldInfoMidChordSweep;
         private FieldInfo  aeroFARFieldInfoTaperRatio;
         private FieldInfo  aeroFARFieldInfoControlSurfaceFraction;
+        private FieldInfo  aeroFARFieldInfoRootChordOffset;
         private MethodInfo aeroFARMethodInfoUsed;
 
         public void CalculateVolume ()
@@ -1776,26 +1779,30 @@ namespace WingProcedural
             CheckAssemblies (false);
 
             float sharedWidthTipSum = sharedBaseWidthTip;
-            if (!isCtrlSrf)
-            {
-                if (sharedEdgeTypeLeading != 1)
-                    sharedWidthTipSum += sharedEdgeWidthLeadingTip;
-                if (sharedEdgeTypeTrailing != 1)
-                    sharedWidthTipSum += sharedEdgeWidthTrailingTip;
-            }
-            else
-                sharedWidthTipSum += sharedEdgeWidthTrailingTip;
-
             float sharedWidthRootSum = sharedBaseWidthRoot;
+
             if (!isCtrlSrf)
             {
+                double offset = 0;
                 if (sharedEdgeTypeLeading != 1)
+                {
+                    sharedWidthTipSum += sharedEdgeWidthLeadingTip;
                     sharedWidthRootSum += sharedEdgeWidthLeadingRoot;
+                    offset += 0.2 * (sharedEdgeWidthLeadingRoot + sharedEdgeWidthLeadingTip);
+                }
                 if (sharedEdgeTypeTrailing != 1)
+                {
+                    sharedWidthTipSum += sharedEdgeWidthTrailingTip;
                     sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
+                    offset -= 0.25 * (sharedEdgeWidthTrailingRoot + sharedEdgeWidthTrailingTip);
+                }
+                aeroStatRootMidChordOffsetFromOrigin = offset * Vector3d.up;
             }
             else
+            {
+                sharedWidthTipSum += sharedEdgeWidthTrailingTip;
                 sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
+            }
 
             float ctrlOffsetRootLimit = (sharedBaseLength / 2f) / (sharedBaseWidthRoot + sharedEdgeWidthTrailingRoot);
             float ctrlOffsetTipLimit = (sharedBaseLength / 2f) / (sharedBaseWidthTip + sharedEdgeWidthTrailingTip);
@@ -1923,8 +1930,16 @@ namespace WingProcedural
                             aeroFARFieldInfoMidChordSweep = aeroFARModuleType.GetField ("MidChordSweep");
                         if (aeroFARFieldInfoTaperRatio == null)
                             aeroFARFieldInfoTaperRatio = aeroFARModuleType.GetField ("TaperRatio");
-                        if (aeroFARFieldInfoControlSurfaceFraction == null && isCtrlSrf)
-                            aeroFARFieldInfoControlSurfaceFraction = aeroFARModuleType.GetField ("ctrlSurfFrac");
+                        if (isCtrlSrf)
+                        {
+                            if (aeroFARFieldInfoControlSurfaceFraction == null)
+                                aeroFARFieldInfoControlSurfaceFraction = aeroFARModuleType.GetField ("ctrlSurfFrac");
+                        }
+                        else
+                        {
+                            if (aeroFARFieldInfoRootChordOffset == null)
+                                aeroFARFieldInfoRootChordOffset = aeroFARModuleType.GetField("rootMidChordOffsetFromOrig");
+                        }
                         if (WPDebug.logCAV)
                             DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Field checks and fetching passed");
 
@@ -1948,6 +1963,8 @@ namespace WingProcedural
                             aeroFARFieldInfoTaperRatio.SetValue (aeroFARModuleReference, aeroStatTaperRatio);
                             if (isCtrlSrf)
                                 aeroFARFieldInfoControlSurfaceFraction.SetValue (aeroFARModuleReference, aeroConstControlSurfaceFraction);
+                            else
+                                aeroFARFieldInfoRootChordOffset.SetValue(aeroFARModuleReference, (Vector3)aeroStatRootMidChordOffsetFromOrigin);
 
                             if (WPDebug.logCAV)
                                 DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
@@ -1995,44 +2012,41 @@ namespace WingProcedural
             }
         }
 
-        public void OnCenterOfLiftQuery (CenterOfLiftQuery qry)
+        public void OnCenterOfLiftQuery (CenterOfLiftQuery qry) //improved as a way of testing numbers for the FAR integration. not bothering too much because of 1.0 aero
         {
             if (!assemblyFARUsed && !assemblyNEARUsed)
             {
                 qry.lift = (float) aeroStatCl;
-                float negativeLiftPos = ((EditorLogic.fetch.ship.Parts[0].transform.position.x - qry.pos.x) > 0) ? -1f : 1f;
+                float negativePosX = ((EditorLogic.fetch.ship.Parts[0].transform.position.x - qry.pos.x) > 0) ? -1.0f : 1.0f;
+                float negativePosY = ((EditorLogic.fetch.ship.Parts[0].transform.position.y - qry.pos.y) > 0) ? -1.0f : 1.0f;
+                float negativePosZ = ((EditorLogic.fetch.ship.Parts[0].transform.position.z - qry.pos.z) > 0) ? -1.0f : 1.0f;
 
                 float sharedWidthTipSum = sharedBaseWidthTip;
-                if (!isCtrlSrf)
-                {
-                    if (sharedEdgeTypeLeading != 1)
-                        sharedWidthTipSum += sharedEdgeWidthLeadingTip;
-                    if (sharedEdgeTypeTrailing != 1)
-                        sharedWidthTipSum += sharedEdgeWidthTrailingTip;
-                }
-                else
-                    sharedWidthTipSum += sharedEdgeWidthTrailingTip;
-
                 float sharedWidthRootSum = sharedBaseWidthRoot;
                 if (!isCtrlSrf)
                 {
                     if (sharedEdgeTypeLeading != 1)
+                    {
+                        sharedWidthTipSum += sharedEdgeWidthLeadingTip;
                         sharedWidthRootSum += sharedEdgeWidthLeadingRoot;
+                    }
                     if (sharedEdgeTypeTrailing != 1)
+                    {
+                        sharedWidthTipSum += sharedEdgeWidthTrailingTip;
                         sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
+                    }
                 }
                 else
+                {
+                    sharedWidthTipSum += sharedEdgeWidthTrailingTip;
                     sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
+                }
 
                 float widthRatio = (1f + 1f * (sharedWidthTipSum / (sharedWidthRootSum + sharedWidthTipSum))) / 3f;
-                float offset = widthRatio * sharedBaseLength * negativeLiftPos;
-
-                Debug.Log("qry");
-                Debug.Log(qry.refVector);
-                Debug.Log(qry.dir);
+                float offset = widthRatio * sharedBaseLength * negativePosX;
 
                 qry.pos.x += offset * qry.dir.y + part.CoMOffset.y * qry.dir.x;
-                qry.pos.y += part.CoMOffset.z * qry.dir.y - offset * qry.dir.x;
+                qry.pos.y += -part.CoMOffset.z * qry.dir.y - offset * qry.dir.x;
                 qry.pos.z += part.CoMOffset.y;
             }
         }
