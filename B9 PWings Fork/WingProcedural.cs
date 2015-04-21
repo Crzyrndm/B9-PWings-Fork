@@ -93,20 +93,26 @@ namespace WingProcedural
         #region Shared properties / Limits and increments
         private Vector2 GetLimitsFromType (Vector4 set)
         {
-            if (WPDebug.logLimits) DebugLogWithID ("GetLimitsFromType", "Using set: " + set);
-            if (!isCtrlSrf) return new Vector2 (set.x, set.y);
-            else return new Vector2 (set.z, set.w);
+            if (WPDebug.logLimits)
+                DebugLogWithID ("GetLimitsFromType", "Using set: " + set);
+            if (!isCtrlSrf)
+                return new Vector2 (set.x, set.y);
+            else
+                return new Vector2 (set.z, set.w);
         }
 
         private float GetIncrementFromType (float incrementWing, float incrementCtrl)
         {
-            if (!isCtrlSrf) return incrementWing;
-            else return incrementCtrl;
+            if (!isCtrlSrf)
+                return incrementWing;
+            else
+                return incrementCtrl;
         }
 
-        private static Vector4 sharedBaseLengthLimits = new Vector4 (0.25f, 16f, 0.25f, 8f);
-        private static Vector2 sharedBaseThicknessLimits = new Vector2 (0.08f, 1f);
-        private static Vector4 sharedBaseWidthLimits = new Vector4 (0.25f, 16f, 0.125f, 1.5f);
+        private static Vector4 sharedBaseLengthLimits = new Vector4 (0.125f, 16f, 0.25f, 8f);
+        private static Vector2 sharedBaseThicknessLimits = new Vector2 (0.04f, 1f);
+        private static Vector4 sharedBaseWidthRootLimits = new Vector4 (0.125f, 16f, 0.125f, 1.5f);
+        private static Vector4 sharedBaseWidthTipLimits = new Vector4(0f, 16f, 0.125f, 1.5f);
         private static Vector4 sharedBaseOffsetLimits = new Vector4 (-8f, 8f, -2f, 2f);
         private static Vector4 sharedEdgeTypeLimits = new Vector4 (1f, 4f, 1f, 3f);
         private static Vector4 sharedEdgeWidthLimits = new Vector4 (0f, 1f, 0.24f, 1f);
@@ -477,87 +483,119 @@ namespace WingProcedural
         private bool inheritancePossibleOnMaterials = false;
         private void InheritanceStatusUpdate ()
         {
-            if (this.part.parent != null)
+            if (this.part.parent == null)
+                return;
+
+            if (!part.parent.Modules.Contains("WingProcedural"))
+                return;
+
+            WingProcedural parentModule = part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ();
+            if (parentModule != null)
             {
-                if (part.parent.Modules.Contains ("WingProcedural"))
+                if (!parentModule.isCtrlSrf)
                 {
-                    var parentModule = part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ();
-                    if (parentModule != null)
-                    {
-                        if (!parentModule.isCtrlSrf)
-                        {
-                            inheritancePossibleOnMaterials = true;
-                            if (!isCtrlSrf) inheritancePossibleOnShape = true;
-                        }
-                    }
+                    inheritancePossibleOnMaterials = true;
+                    if (!isCtrlSrf)
+                        inheritancePossibleOnShape = true;
                 }
             }
         }
 
         private void InheritParentValues (int mode)
         {
-            if (this.part.parent != null)
+            if (this.part.parent == null)
+                return;
+
+            if (!part.parent.Modules.Contains("WingProcedural"))
+                return;
+
+            WingProcedural parentModule = part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ();
+            if (parentModule == null)
+                return;
+
+            if (!(parentModule.isCtrlSrf || isCtrlSrf) && mode != 3)
             {
-                if (part.parent.Modules.Contains ("WingProcedural"))
-                {
-                    var parentModule = part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ();
-                    if (parentModule != null)
-                    {
-                        if (mode == 0 && !parentModule.isCtrlSrf && !isCtrlSrf)
-                        {
-                            float widthDelta = parentModule.sharedBaseWidthTip - sharedBaseWidthRoot;
-                            sharedBaseWidthTip = ((parentModule.sharedBaseWidthTip - parentModule.sharedBaseWidthRoot) / (parentModule.sharedBaseLength)) * (sharedBaseLength + parentModule.sharedBaseLength) + parentModule.sharedBaseWidthRoot - widthDelta; // All thanks to ferram4
-                            
-                            // Only perform offset adjustment if width wasn't clipped, otherwise there is no point
-                            if (sharedBaseWidthTip < sharedBaseWidthLimits.x) sharedBaseWidthTip = sharedBaseWidthLimits.x;
-                            else sharedBaseOffsetTip = parentModule.sharedBaseOffsetTip * (sharedBaseLength / parentModule.sharedBaseLength); 
-
-                            sharedBaseThicknessRoot = parentModule.sharedBaseThicknessTip;
-                            sharedBaseThicknessTip = Mathf.Min (sharedBaseThicknessRoot, sharedBaseThicknessTip);
-                        }
-                        if (mode == 1 && !parentModule.isCtrlSrf && !isCtrlSrf)
-                        {
-                            sharedBaseWidthRoot = parentModule.sharedBaseWidthTip;
-                        }
-                        if (mode == 2 && !parentModule.isCtrlSrf && !isCtrlSrf)
-                        {
-                            sharedEdgeTypeLeading = parentModule.sharedEdgeTypeLeading;
-                            sharedEdgeWidthLeadingRoot = parentModule.sharedEdgeWidthLeadingTip;
-                            sharedEdgeWidthLeadingTip = Mathf.Min (sharedEdgeWidthLeadingRoot, sharedEdgeWidthLeadingTip);
-
-                            sharedEdgeTypeTrailing = parentModule.sharedEdgeTypeTrailing;
-                            sharedEdgeWidthTrailingRoot = parentModule.sharedEdgeWidthTrailingTip;
-                            sharedEdgeWidthTrailingTip = Mathf.Min (sharedEdgeWidthTrailingRoot, sharedEdgeWidthTrailingTip);
-                        }
-                        else if (mode == 3)
-                        {
-                            sharedMaterialST = parentModule.sharedMaterialST;
-                            sharedColorSTOpacity = parentModule.sharedColorSTOpacity;
-                            sharedColorSTHue = parentModule.sharedColorSTHue;
-                            sharedColorSTSaturation = parentModule.sharedColorSTSaturation;
-                            sharedColorSTBrightness = parentModule.sharedColorSTBrightness;
-
-                            sharedMaterialSB = parentModule.sharedMaterialSB;
-                            sharedColorSBOpacity = parentModule.sharedColorSBOpacity;
-                            sharedColorSBHue = parentModule.sharedColorSBHue;
-                            sharedColorSBSaturation = parentModule.sharedColorSBSaturation;
-                            sharedColorSBBrightness = parentModule.sharedColorSBBrightness;
-
-                            sharedMaterialET = parentModule.sharedMaterialET;
-                            sharedColorETOpacity = parentModule.sharedColorETOpacity;
-                            sharedColorETHue = parentModule.sharedColorETHue;
-                            sharedColorETSaturation = parentModule.sharedColorETSaturation;
-                            sharedColorETBrightness = parentModule.sharedColorETBrightness;
-
-                            sharedMaterialEL = parentModule.sharedMaterialEL;
-                            sharedColorELOpacity = parentModule.sharedColorELOpacity;
-                            sharedColorELHue = parentModule.sharedColorELHue;
-                            sharedColorELSaturation = parentModule.sharedColorELSaturation;
-                            sharedColorELBrightness = parentModule.sharedColorELBrightness;
-                        }
-                    }
-                }
+                if (mode == 0)
+                    inheritShape(parentModule);
+                else if (mode == 1)
+                    inheritWidth(parentModule);
+                else if (mode == 2)
+                    inheritEdges(parentModule);
             }
+            else if (mode == 3)
+                inheritColours(parentModule);
+        }
+
+        private void inheritShape(WingProcedural parent)
+        {
+            if (Input.GetMouseButtonUp(0))
+                inheritWidth(parent);
+
+            float widthDelta = parent.sharedBaseWidthTip - sharedBaseWidthRoot;
+            sharedBaseWidthTip = ((parent.sharedBaseWidthTip - parent.sharedBaseWidthRoot) / (parent.sharedBaseLength)) * (sharedBaseLength + parent.sharedBaseLength) + parent.sharedBaseWidthRoot - widthDelta; // All thanks to ferram4
+            sharedBaseThicknessRoot = parent.sharedBaseThicknessTip;
+
+            float offset = sharedBaseLength / parent.sharedBaseLength * parent.sharedBaseOffsetTip;
+            if (offset > sharedBaseOffsetLimits.y)
+                sharedBaseLength *= sharedBaseOffsetLimits.y / offset;
+            else if (offset < sharedBaseOffsetLimits.x)
+                sharedBaseLength *= sharedBaseOffsetLimits.x / offset;
+
+            if (sharedBaseWidthTip < sharedBaseWidthTipLimits.x)
+                sharedBaseLength *= (sharedBaseWidthRoot - sharedBaseWidthTipLimits.x) / (sharedBaseWidthRoot - sharedBaseWidthTip);
+            else if (sharedBaseWidthTip > sharedBaseWidthTipLimits.y)
+                sharedBaseLength *= sharedBaseWidthTipLimits.y / sharedBaseWidthTip;
+
+            sharedBaseLength = Mathf.Clamp(sharedBaseLength, sharedBaseLengthLimits.x, sharedBaseLengthLimits.y);
+            sharedBaseWidthTip = Mathf.Clamp(sharedBaseWidthTip, sharedBaseWidthTipLimits.x, sharedBaseWidthTipLimits.y);
+            sharedBaseOffsetTip = Mathf.Clamp(parent.sharedBaseOffsetTip * (sharedBaseLength / parent.sharedBaseLength), sharedBaseOffsetLimits.x, sharedBaseOffsetLimits.y);
+            sharedBaseThicknessTip = Mathf.Clamp(sharedBaseThicknessRoot + sharedBaseLength / parent.sharedBaseLength * (parent.sharedBaseThicknessTip - parent.sharedBaseThicknessRoot), sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
+
+            if (Input.GetMouseButtonUp(0))
+                inheritEdges(parent);
+        }
+
+        private void inheritWidth(WingProcedural parent)
+        {
+            sharedBaseWidthRoot = parent.sharedBaseWidthTip;
+        }
+
+        private void inheritEdges(WingProcedural parent)
+        {
+            sharedEdgeTypeLeading = parent.sharedEdgeTypeLeading;
+            sharedEdgeWidthLeadingRoot = parent.sharedEdgeWidthLeadingTip;
+            sharedEdgeWidthLeadingTip = Mathf.Clamp(sharedEdgeWidthLeadingRoot + ((parent.sharedEdgeWidthLeadingTip - parent.sharedEdgeWidthLeadingRoot) / parent.sharedBaseLength) * sharedBaseLength, sharedEdgeWidthLimits.x, sharedEdgeWidthLimits.y);
+
+            sharedEdgeTypeTrailing = parent.sharedEdgeTypeTrailing;
+            sharedEdgeWidthTrailingRoot = parent.sharedEdgeWidthTrailingTip;
+            sharedEdgeWidthTrailingTip = Mathf.Clamp(sharedEdgeWidthTrailingRoot + ((parent.sharedEdgeWidthTrailingTip - parent.sharedEdgeWidthTrailingRoot) / parent.sharedBaseLength) * sharedBaseLength, sharedEdgeWidthLimits.x, sharedEdgeWidthLimits.y);
+        }
+
+        private void inheritColours(WingProcedural parent)
+        {
+            sharedMaterialST = parent.sharedMaterialST;
+            sharedColorSTOpacity = parent.sharedColorSTOpacity;
+            sharedColorSTHue = parent.sharedColorSTHue;
+            sharedColorSTSaturation = parent.sharedColorSTSaturation;
+            sharedColorSTBrightness = parent.sharedColorSTBrightness;
+
+            sharedMaterialSB = parent.sharedMaterialSB;
+            sharedColorSBOpacity = parent.sharedColorSBOpacity;
+            sharedColorSBHue = parent.sharedColorSBHue;
+            sharedColorSBSaturation = parent.sharedColorSBSaturation;
+            sharedColorSBBrightness = parent.sharedColorSBBrightness;
+
+            sharedMaterialET = parent.sharedMaterialET;
+            sharedColorETOpacity = parent.sharedColorETOpacity;
+            sharedColorETHue = parent.sharedColorETHue;
+            sharedColorETSaturation = parent.sharedColorETSaturation;
+            sharedColorETBrightness = parent.sharedColorETBrightness;
+
+            sharedMaterialEL = parent.sharedMaterialEL;
+            sharedColorELOpacity = parent.sharedColorELOpacity;
+            sharedColorELHue = parent.sharedColorELHue;
+            sharedColorELSaturation = parent.sharedColorELSaturation;
+            sharedColorELBrightness = parent.sharedColorELBrightness;
         }
 
         #endregion
@@ -2254,8 +2292,8 @@ namespace WingProcedural
                 if (sharedFieldGroupBaseStatic)
                 {
                     DrawField (ref sharedBaseLength, sharedIncrementMain, 1f, GetLimitsFromType (sharedBaseLengthLimits), "Length", uiColorSliderBase, 0, 0);
-                    DrawField(ref sharedBaseWidthRoot, sharedIncrementMain, 1f, GetLimitsFromType(sharedBaseWidthLimits), "Width (root)", uiColorSliderBase, 1, 0);
-                    DrawField(ref sharedBaseWidthTip, sharedIncrementMain, 1f, GetLimitsFromType(sharedBaseWidthLimits), "Width (tip)", uiColorSliderBase, 2, 0);
+                    DrawField(ref sharedBaseWidthRoot, sharedIncrementMain, 1f, GetLimitsFromType(sharedBaseWidthRootLimits), "Width (root)", uiColorSliderBase, 1, 0);
+                    DrawField(ref sharedBaseWidthTip, sharedIncrementMain, 1f, GetLimitsFromType(sharedBaseWidthTipLimits), "Width (tip)", uiColorSliderBase, 2, 0);
                     if (isCtrlSrf)
                         DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (root)", uiColorSliderBase, 3, 0);
                     DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0);
@@ -2332,8 +2370,10 @@ namespace WingProcedural
                 }
 
                 GUILayout.BeginHorizontal ();
-                if (GUILayout.Button ("Save as default", WingProceduralManager.uiStyleButton)) ReplaceDefaults ();
-                if (GUILayout.Button ("Restore default", WingProceduralManager.uiStyleButton)) RestoreDefaults ();
+                if (GUILayout.Button ("Save as default", WingProceduralManager.uiStyleButton))
+                    ReplaceDefaults ();
+                if (GUILayout.Button ("Restore default", WingProceduralManager.uiStyleButton))
+                    RestoreDefaults ();
                 GUILayout.EndHorizontal ();
                 if (inheritancePossibleOnShape || inheritancePossibleOnMaterials)
                 {
@@ -2341,11 +2381,17 @@ namespace WingProcedural
                     GUILayout.BeginHorizontal ();
                     if (inheritancePossibleOnShape) 
                     { 
-                        if (GUILayout.Button ("Shape", WingProceduralManager.uiStyleButton)) InheritParentValues (0);
-                        if (GUILayout.Button ("Width", WingProceduralManager.uiStyleButton)) InheritParentValues (1);
-                        if (GUILayout.Button ("Edges", WingProceduralManager.uiStyleButton)) InheritParentValues (2); 
+                        if (GUILayout.Button ("Shape", WingProceduralManager.uiStyleButton))
+                            InheritParentValues (0);
+                        if (GUILayout.Button ("Width", WingProceduralManager.uiStyleButton))
+                            InheritParentValues (1);
+                        if (GUILayout.Button ("Edges", WingProceduralManager.uiStyleButton))
+                            InheritParentValues (2); 
                     }
-                    if (inheritancePossibleOnMaterials) { if (GUILayout.Button ("Color", WingProceduralManager.uiStyleButton)) InheritParentValues (3); }
+                    if (inheritancePossibleOnMaterials)
+                    {
+                        if (GUILayout.Button ("Color", WingProceduralManager.uiStyleButton)) InheritParentValues (3);
+                    }
                     GUILayout.EndHorizontal ();
                 }
             }
@@ -2374,8 +2420,8 @@ namespace WingProcedural
         {
             // SetFieldVisibility ("sharedFieldGroupBase", true);
             SetFieldType("sharedBaseLength", 1, GetLimitsFromType(sharedBaseLengthLimits), sharedIncrementMain, false, GetDefault(sharedBaseLengthDefaults));
-            SetFieldType("sharedBaseWidthRoot", GetFieldMode(), GetLimitsFromType(sharedBaseWidthLimits), sharedIncrementMain, false, GetDefault(sharedBaseWidthRootDefaults));
-            SetFieldType("sharedBaseWidthTip", GetFieldMode(), GetLimitsFromType(sharedBaseWidthLimits), sharedIncrementMain, false, GetDefault(sharedBaseWidthTipDefaults));
+            SetFieldType("sharedBaseWidthRoot", GetFieldMode(), GetLimitsFromType(sharedBaseWidthRootLimits), sharedIncrementMain, false, GetDefault(sharedBaseWidthRootDefaults));
+            SetFieldType("sharedBaseWidthTip", GetFieldMode(), GetLimitsFromType(sharedBaseWidthTipLimits), sharedIncrementMain, false, GetDefault(sharedBaseWidthTipDefaults));
             SetFieldType("sharedBaseThicknessRoot", 2, sharedBaseThicknessLimits, sharedIncrementSmall, false, GetDefault(sharedBaseThicknessRootDefaults));
             SetFieldType("sharedBaseThicknessTip", 2, sharedBaseThicknessLimits, sharedIncrementSmall, false, GetDefault(sharedBaseThicknessTipDefaults));
             SetFieldType("sharedBaseOffsetRoot", GetFieldMode(), GetLimitsFromType(sharedBaseOffsetLimits), GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), false, GetDefault(sharedBaseOffsetRootDefaults));
