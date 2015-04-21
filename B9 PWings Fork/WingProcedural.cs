@@ -513,27 +513,37 @@ namespace WingProcedural
             if (parentModule == null)
                 return;
 
-            if (!(parentModule.isCtrlSrf || isCtrlSrf) && mode != 3)
+            switch (mode)
             {
-                if (mode == 0)
+                case 0:
                     inheritShape(parentModule);
-                else if (mode == 1)
+                    break;
+                case 1:
                     inheritWidth(parentModule);
-                else if (mode == 2)
+                    break;
+                case 2:
                     inheritEdges(parentModule);
+                    break;
+                case 3:
+                    inheritColours(parentModule);
+                    break;
             }
-            else if (mode == 3)
-                inheritColours(parentModule);
         }
 
         private void inheritShape(WingProcedural parent)
         {
+            if (parent.isCtrlSrf || isCtrlSrf)
+                return;
+
             if (Input.GetMouseButtonUp(0))
                 inheritWidth(parent);
-
-            float widthDelta = parent.sharedBaseWidthTip - sharedBaseWidthRoot;
-            sharedBaseWidthTip = ((parent.sharedBaseWidthTip - parent.sharedBaseWidthRoot) / (parent.sharedBaseLength)) * (sharedBaseLength + parent.sharedBaseLength) + parent.sharedBaseWidthRoot - widthDelta; // All thanks to ferram4
             sharedBaseThicknessRoot = parent.sharedBaseThicknessTip;
+
+            float tip = sharedBaseWidthRoot + ((parent.sharedBaseWidthTip - parent.sharedBaseWidthRoot) / (parent.sharedBaseLength)) * sharedBaseLength;
+            if (sharedBaseWidthTip < sharedBaseWidthTipLimits.x)
+                sharedBaseLength *= (sharedBaseWidthRoot - sharedBaseWidthTipLimits.x) / (sharedBaseWidthRoot - sharedBaseWidthTip);
+            else if (sharedBaseWidthTip > sharedBaseWidthTipLimits.y)
+                sharedBaseLength *= sharedBaseWidthTipLimits.y / sharedBaseWidthTip;
 
             float offset = sharedBaseLength / parent.sharedBaseLength * parent.sharedBaseOffsetTip;
             if (offset > sharedBaseOffsetLimits.y)
@@ -541,14 +551,9 @@ namespace WingProcedural
             else if (offset < sharedBaseOffsetLimits.x)
                 sharedBaseLength *= sharedBaseOffsetLimits.x / offset;
 
-            if (sharedBaseWidthTip < sharedBaseWidthTipLimits.x)
-                sharedBaseLength *= (sharedBaseWidthRoot - sharedBaseWidthTipLimits.x) / (sharedBaseWidthRoot - sharedBaseWidthTip);
-            else if (sharedBaseWidthTip > sharedBaseWidthTipLimits.y)
-                sharedBaseLength *= sharedBaseWidthTipLimits.y / sharedBaseWidthTip;
-
             sharedBaseLength = Mathf.Clamp(sharedBaseLength, sharedBaseLengthLimits.x, sharedBaseLengthLimits.y);
-            sharedBaseWidthTip = Mathf.Clamp(sharedBaseWidthTip, sharedBaseWidthTipLimits.x, sharedBaseWidthTipLimits.y);
-            sharedBaseOffsetTip = Mathf.Clamp(parent.sharedBaseOffsetTip * (sharedBaseLength / parent.sharedBaseLength), sharedBaseOffsetLimits.x, sharedBaseOffsetLimits.y);
+            sharedBaseWidthTip = Mathf.Clamp(tip, sharedBaseWidthTipLimits.x, sharedBaseWidthTipLimits.y);
+            sharedBaseOffsetTip = Mathf.Clamp(offset, sharedBaseOffsetLimits.x, sharedBaseOffsetLimits.y);
             sharedBaseThicknessTip = Mathf.Clamp(sharedBaseThicknessRoot + sharedBaseLength / parent.sharedBaseLength * (parent.sharedBaseThicknessTip - parent.sharedBaseThicknessRoot), sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
 
             if (Input.GetMouseButtonUp(0))
@@ -557,11 +562,17 @@ namespace WingProcedural
 
         private void inheritWidth(WingProcedural parent)
         {
+            if (parent.isCtrlSrf || isCtrlSrf)
+                return;
+
             sharedBaseWidthRoot = parent.sharedBaseWidthTip;
         }
 
         private void inheritEdges(WingProcedural parent)
         {
+            if (parent.isCtrlSrf || isCtrlSrf)
+                return;
+
             sharedEdgeTypeLeading = parent.sharedEdgeTypeLeading;
             sharedEdgeWidthLeadingRoot = parent.sharedEdgeWidthLeadingTip;
             sharedEdgeWidthLeadingTip = Mathf.Clamp(sharedEdgeWidthLeadingRoot + ((parent.sharedEdgeWidthLeadingTip - parent.sharedEdgeWidthLeadingRoot) / parent.sharedBaseLength) * sharedBaseLength, sharedEdgeWidthLimits.x, sharedEdgeWidthLimits.y);
