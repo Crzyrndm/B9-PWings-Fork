@@ -2019,6 +2019,7 @@ namespace WingProcedural
                             if (WPDebug.logCAV)
                                 DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
                             aeroFARMethodInfoUsed.Invoke (aeroFARModuleReference, null);
+                            part.SendMessage("GeometryPartModuleRebuildMeshData"); // for newFAR
                         }
                     }
                 }
