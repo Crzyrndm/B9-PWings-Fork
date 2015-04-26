@@ -32,7 +32,7 @@ namespace WingProcedural
             {
                 if (Input.GetMouseButtonUp(0))
                     value -= incrementLarge;
-                else if (Input.GetMouseButtonUp(1))
+                else if (Input.GetMouseButtonUp(1) && allowFine)
                     value -= incrementLarge / 128;
 
                 value = Mathf.Clamp((float)(value01 * range + limits.x), (float)(limits.x * 0.5), limits.y);
@@ -43,7 +43,7 @@ namespace WingProcedural
             {
                 if (Input.GetMouseButtonUp(0))
                     value01 += incrementLarge;
-                else if (Input.GetMouseButtonUp(1))
+                else if (Input.GetMouseButtonUp(1) && allowFine)
                     value01 += incrementLarge / 128;
 
                 value = Mathf.Clamp((float)(value01 * range + limits.x), (float)(limits.x * 0.5), limits.y);
