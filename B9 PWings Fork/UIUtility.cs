@@ -31,9 +31,9 @@ namespace WingProcedural
             if (GUI.Button(rectButtonL, new GUIContent(""), WingProceduralManager.uiStyleButton))
             {
                 if (Input.GetMouseButtonUp(0))
-                    value01 -= 0.0625;
+                    value -= incrementLarge;
                 else if (Input.GetMouseButtonUp(1))
-                    value01 -= 0.0625 / 128;
+                    value -= incrementLarge / 128;
 
                 value = Mathf.Clamp((float)(value01 * range + limits.x), (float)(limits.x * 0.5), limits.y);
                 if (valueOld != value)
@@ -42,16 +42,16 @@ namespace WingProcedural
             else if (GUI.Button(rectButtonR, new GUIContent(""), WingProceduralManager.uiStyleButton))
             {
                 if (Input.GetMouseButtonUp(0))
-                    value01 += 0.0625;
+                    value01 += incrementLarge;
                 else if (Input.GetMouseButtonUp(1))
-                    value01 += 0.0625 / 128;
+                    value01 += incrementLarge / 128;
 
                 value = Mathf.Clamp((float)(value01 * range + limits.x), (float)(limits.x * 0.5), limits.y);
                 if (valueOld != value)
                     changed = true;
             }
 
-            if (rectLast.Contains(Event.current.mousePosition) && Event.current.type == EventType.MouseDrag) // right click drag doesn't work without the event check
+            if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown)) // right click drag doesn't work without the event check
             {
                 value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
