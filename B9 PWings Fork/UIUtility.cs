@@ -9,7 +9,7 @@ namespace WingProcedural
 {
     public static class UIUtility
     {
-        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType)
+        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
         {
             if (!WingProceduralManager.uiStyleConfigured)
                 WingProceduralManager.ConfigureStyles ();
@@ -30,17 +30,25 @@ namespace WingProcedural
 
             if (GUI.Button(rectButtonL, new GUIContent(""), WingProceduralManager.uiStyleButton))
             {
-                if (Input.GetMouseButton(0))
+                if (Input.GetMouseButtonUp(0))
                     value01 -= 0.0625;
-                else if (Input.GetMouseButton(1))
-                    value01 -= 0.0625 * increment01;
+                else if (Input.GetMouseButtonUp(1))
+                    value01 -= 0.0625 / 128;
+
+                value = Mathf.Clamp((float)(value01 * range + limits.x), (float)(limits.x * 0.5), limits.y);
+                if (valueOld != value)
+                    changed = true;
             }
             else if (GUI.Button(rectButtonR, new GUIContent(""), WingProceduralManager.uiStyleButton))
             {
-                if (Input.GetMouseButton(0))
-                    value01 -= 0.0625;
-                else if (Input.GetMouseButton(1))
-                    value01 -= 0.0625 * increment01;
+                if (Input.GetMouseButtonUp(0))
+                    value01 += 0.0625;
+                else if (Input.GetMouseButtonUp(1))
+                    value01 += 0.0625 / 128;
+
+                value = Mathf.Clamp((float)(value01 * range + limits.x), (float)(limits.x * 0.5), limits.y);
+                if (valueOld != value)
+                    changed = true;
             }
 
             if (rectLast.Contains(Event.current.mousePosition) && Event.current.type == EventType.MouseDrag) // right click drag doesn't work without the event check
@@ -67,9 +75,8 @@ namespace WingProcedural
                                 value01 = value01 - excess + increment01;
                         }
                     }
-                    else if (Input.GetMouseButton(1))
+                    else if (Input.GetMouseButton(1) && allowFine)
                     {
-                        Debug.Log("right click");
                         double excess = valueOld / increment01; // modulus is never negative, which makes the match somewhat annoying. Do it manually instead
                         excess = (excess - Math.Round(excess)) * increment01;
                         double valueIncrement = valueOld - excess;

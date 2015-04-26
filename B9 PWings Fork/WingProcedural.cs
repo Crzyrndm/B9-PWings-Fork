@@ -519,7 +519,7 @@ namespace WingProcedural
                     inheritShape(parentModule);
                     break;
                 case 1:
-                    inheritWidth(parentModule);
+                    inheritBase(parentModule);
                     break;
                 case 2:
                     inheritEdges(parentModule);
@@ -536,7 +536,7 @@ namespace WingProcedural
                 return;
 
             if (Input.GetMouseButtonUp(0))
-                inheritWidth(parent);
+                inheritBase(parent);
             sharedBaseThicknessRoot = parent.sharedBaseThicknessTip;
 
             float tip = sharedBaseWidthRoot + ((parent.sharedBaseWidthTip - parent.sharedBaseWidthRoot) / (parent.sharedBaseLength)) * sharedBaseLength;
@@ -560,12 +560,17 @@ namespace WingProcedural
                 inheritEdges(parent);
         }
 
-        private void inheritWidth(WingProcedural parent)
+        private void inheritBase(WingProcedural parent)
         {
             if (parent.isCtrlSrf || isCtrlSrf)
                 return;
 
             sharedBaseWidthRoot = parent.sharedBaseWidthTip;
+            sharedBaseThicknessRoot = parent.sharedBaseThicknessTip;
+            sharedEdgeTypeLeading = parent.sharedEdgeTypeLeading;
+            sharedEdgeWidthLeadingRoot = parent.sharedEdgeWidthLeadingTip;
+            sharedEdgeTypeTrailing = parent.sharedEdgeTypeTrailing;
+            sharedEdgeWidthTrailingRoot = parent.sharedEdgeWidthTrailingTip;
         }
 
         private void inheritEdges(WingProcedural parent)
@@ -2323,7 +2328,7 @@ namespace WingProcedural
                     DrawFieldGroupHeader (ref sharedFieldGroupEdgeLeadingStatic, "Edge (leading)");
                     if (sharedFieldGroupEdgeLeadingStatic)
                     {
-                        DrawField (ref sharedEdgeTypeLeading, sharedIncrementInt, sharedIncrementInt, GetLimitsFromType (sharedEdgeTypeLimits), "Shape", uiColorSliderEdgeL, 7, 2);
+                        DrawField (ref sharedEdgeTypeLeading, sharedIncrementInt, sharedIncrementInt, GetLimitsFromType (sharedEdgeTypeLimits), "Shape", uiColorSliderEdgeL, 7, 2, false);
                         DrawField (ref sharedEdgeWidthLeadingRoot, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (root)", uiColorSliderEdgeL, 8, 0);
                         DrawField (ref sharedEdgeWidthLeadingTip, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (tip)", uiColorSliderEdgeL, 9, 0);
                     }
@@ -2332,7 +2337,7 @@ namespace WingProcedural
                 DrawFieldGroupHeader (ref sharedFieldGroupEdgeTrailingStatic, "Edge (trailing)");
                 if (sharedFieldGroupEdgeTrailingStatic)
                 {
-                    DrawField (ref sharedEdgeTypeTrailing, sharedIncrementInt, sharedIncrementInt, GetLimitsFromType (sharedEdgeTypeLimits), "Shape", uiColorSliderEdgeT, 10, isCtrlSrf ? 3 : 2);
+                    DrawField (ref sharedEdgeTypeTrailing, sharedIncrementInt, sharedIncrementInt, GetLimitsFromType (sharedEdgeTypeLimits), "Shape", uiColorSliderEdgeT, 10, isCtrlSrf ? 3 : 2, false);
                     DrawField (ref sharedEdgeWidthTrailingRoot, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (root)", uiColorSliderEdgeT, 11, 0);
                     DrawField (ref sharedEdgeWidthTrailingTip, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (tip)", uiColorSliderEdgeT, 12, 0);
                 }
@@ -2340,7 +2345,7 @@ namespace WingProcedural
                 DrawFieldGroupHeader (ref sharedFieldGroupColorSTStatic, "Surface (top)");
                 if (sharedFieldGroupColorSTStatic)
                 {
-                    DrawField (ref sharedMaterialST, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsST, 13, 1);
+                    DrawField (ref sharedMaterialST, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsST, 13, 1, false);
                     DrawField (ref sharedColorSTOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsST, 14, 0);
                     DrawField (ref sharedColorSTHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsST, 15, 0);
                     DrawField (ref sharedColorSTSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsST, 16, 0);
@@ -2350,7 +2355,7 @@ namespace WingProcedural
                 DrawFieldGroupHeader (ref sharedFieldGroupColorSBStatic, "Surface (bottom)");
                 if (sharedFieldGroupColorSBStatic)
                 {
-                    DrawField (ref sharedMaterialSB, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsSB, 13, 1);
+                    DrawField (ref sharedMaterialSB, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsSB, 13, 1, false);
                     DrawField (ref sharedColorSBOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsSB, 14, 0);
                     DrawField (ref sharedColorSBHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsSB, 15, 0);
                     DrawField (ref sharedColorSBSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsSB, 16, 0);
@@ -2360,7 +2365,7 @@ namespace WingProcedural
                 DrawFieldGroupHeader (ref sharedFieldGroupColorETStatic, "Surface (trailing edge)");
                 if (sharedFieldGroupColorETStatic)
                 {
-                    DrawField (ref sharedMaterialET, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsET, 13, 1);
+                    DrawField (ref sharedMaterialET, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsET, 13, 1, false);
                     DrawField (ref sharedColorETOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsET, 14, 0);
                     DrawField (ref sharedColorETHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsET, 15, 0);
                     DrawField (ref sharedColorETSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsET, 16, 0);
@@ -2372,7 +2377,7 @@ namespace WingProcedural
                     DrawFieldGroupHeader (ref sharedFieldGroupColorELStatic, "Surface (leading edge)");
                     if (sharedFieldGroupColorELStatic)
                     {
-                        DrawField (ref sharedMaterialEL, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsEL, 13, 1);
+                        DrawField (ref sharedMaterialEL, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsEL, 13, 1, false);
                         DrawField (ref sharedColorELOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsEL, 14, 0);
                         DrawField (ref sharedColorELHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsEL, 15, 0);
                         DrawField (ref sharedColorELSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsEL, 16, 0);
@@ -2400,7 +2405,7 @@ namespace WingProcedural
                     { 
                         if (GUILayout.Button ("Shape", WingProceduralManager.uiStyleButton))
                             InheritParentValues (0);
-                        if (GUILayout.Button ("Width", WingProceduralManager.uiStyleButton))
+                        if (GUILayout.Button ("Base", WingProceduralManager.uiStyleButton))
                             InheritParentValues (1);
                         if (GUILayout.Button ("Edges", WingProceduralManager.uiStyleButton))
                             InheritParentValues (2); 
@@ -2513,10 +2518,10 @@ namespace WingProcedural
         /// <param name="hsbColor">field colour</param>
         /// <param name="fieldID">tooltip stuff</param>
         /// <param name="fieldType">tooltip stuff</param>
-        private void DrawField (ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType)
+        private void DrawField (ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
         {
             bool changed = false;
-            field = UIUtility.FieldSlider (field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB (hsbColor), fieldType);
+            field = UIUtility.FieldSlider (field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB (hsbColor), fieldType, allowFine);
             if (changed)
             {
                 uiLastFieldName = name;
