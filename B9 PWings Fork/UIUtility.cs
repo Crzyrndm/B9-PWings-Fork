@@ -51,7 +51,9 @@ namespace WingProcedural
                     changed = true;
             }
 
-            if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown)) // right click drag doesn't work without the event check
+            if (rectLast.Contains(Event.current.mousePosition)
+                && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown)
+                && !Input.GetMouseButtonUp(1)) // right click drag doesn't work without the event check
             {
                 value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
