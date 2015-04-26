@@ -30,7 +30,7 @@ namespace WingProcedural
 
             if (GUI.Button(rectButtonL, new GUIContent(""), WingProceduralManager.uiStyleButton))
             {
-                if (Input.GetMouseButtonUp(0))
+                if (Input.GetMouseButtonUp(0) || !allowFine)
                     value -= incrementLarge;
                 else if (Input.GetMouseButtonUp(1) && allowFine)
                     value -= incrementLarge / 128;
@@ -41,7 +41,7 @@ namespace WingProcedural
             }
             else if (GUI.Button(rectButtonR, new GUIContent(""), WingProceduralManager.uiStyleButton))
             {
-                if (Input.GetMouseButtonUp(0))
+                if (Input.GetMouseButtonUp(0) || !allowFine)
                     value01 += incrementLarge;
                 else if (Input.GetMouseButtonUp(1) && allowFine)
                     value01 += incrementLarge / 128;
@@ -57,7 +57,7 @@ namespace WingProcedural
 
                 if (valueOld != value01 && rectLast.Contains(Event.current.mousePosition))
                 {
-                    if (Input.GetMouseButton(0))
+                    if (Input.GetMouseButton(0) || !allowFine)
                     {
                         double excess = value01 % increment01;
                         if (value01 > valueOld)
