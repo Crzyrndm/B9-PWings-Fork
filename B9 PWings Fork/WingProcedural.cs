@@ -1891,6 +1891,7 @@ namespace WingProcedural
             aeroStatMass = MathD.Clamp (aeroConstMassFudgeNumber * aeroStatSurfaceArea * ((aeroStatAspectRatioSweepScale * 2.0) / (3.0 + aeroStatAspectRatioSweepScale)) * ((1.0 + aeroStatTaperRatio) / 2), 0.01, double.MaxValue);
             aeroStatCd = aeroConstDragBaseValue / aeroStatAspectRatioSweepScale * aeroConstDragMultiplier;
             aeroStatCl = aeroConstLiftFudgeNumber * aeroStatSurfaceArea * aeroStatAspectRatioSweepScale;
+            GatherChildrenCl();
             aeroStatConnectionForce = MathD.Round (MathD.Clamp (MathD.Sqrt (aeroStatCl + aeroStatClChildren) * (double) aeroConstConnectionFactor, (double) aeroConstConnectionMinimum, double.MaxValue));
             if (WPDebug.logCAV)
                 DebugLogWithID ("CalculateAerodynamicValues", "Passed SR/AR/ARSS/mass/Cl/Cd/connection");
@@ -2109,15 +2110,19 @@ namespace WingProcedural
             // Add up the Cl and ChildrenCl of all our children to our ChildrenCl
             for (int i = 0; i < part.children.Count; ++i)
             {
+                if (part.children[i] == null)
+                    continue;
                 if (part.children[i].Modules.Contains ("WingProcedural"))
                 {
                     WingProcedural child = part.children[i].Modules.OfType<WingProcedural> ().FirstOrDefault ();
+                    if (child == null)
+                        continue;
                     aeroStatClChildren += child.aeroStatCl;
                     aeroStatClChildren += child.aeroStatClChildren;
                 }
             }
 
-            // If parent is a pWing, trickle the call to gather ChildrenCl down to them.
+            // If parent is a pWing, trickle the call to gather ChildrenCl up to them.
             if (this.part.parent != null && this.part.parent.Modules.Contains ("WingProcedural"))
                 this.part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ().GatherChildrenCl();
         }
@@ -2497,13 +2502,23 @@ namespace WingProcedural
                 field.SetValue(this, Mathf.Clamp(value, limits.x, limits.y));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="field">the value to draw</param>
+        /// <param name="increment">mouse drag increment</param>
+        /// <param name="incrementLarge">button increment</param>
+        /// <param name="limits">min/max value</param>
+        /// <param name="name">the field name to display</param>
+        /// <param name="hsbColor">field colour</param>
+        /// <param name="fieldID">tooltip stuff</param>
+        /// <param name="fieldType">tooltip stuff</param>
         private void DrawField (ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType)
         {
             bool changed = false;
-            float value = UIUtility.FieldSlider (field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB (hsbColor), fieldType);
+            field = UIUtility.FieldSlider (field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB (hsbColor), fieldType);
             if (changed)
             {
-                field = value;
                 uiLastFieldName = name;
                 uiLastFieldTooltip = UpdateTooltipText (fieldID);
             }

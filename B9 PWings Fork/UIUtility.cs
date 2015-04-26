@@ -11,48 +11,79 @@ namespace WingProcedural
     {
         public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType)
         {
-            if (!WingProceduralManager.uiStyleConfigured) WingProceduralManager.ConfigureStyles ();
+            if (!WingProceduralManager.uiStyleConfigured)
+                WingProceduralManager.ConfigureStyles ();
             GUILayout.BeginHorizontal ();
-
-            float valueOld = value;
-            float valueFromButtons = 0f;
+            double range = limits.y - limits.x;
+            double value01 = (value - limits.x) / range; // rescaling value to be 0-100% of range for convenience
+            double increment01 = increment / range;
+            double valueOld = value01;
             changed = false;
 
             GUILayout.Label ("", WingProceduralManager.uiStyleLabelHint);
             Rect rectLast = GUILayoutUtility.GetLastRect (); 
-            Rect rectSlider = new Rect (rectLast.xMin + 8f, rectLast.yMin, rectLast.width - 16f, rectLast.height);
-            Rect rectSliderValue = new Rect (rectSlider.xMin, rectSlider.yMin, rectSlider.width * ((value - limits.x) / (limits.y - limits.x)), rectSlider.height - 3f);
-            Rect rectButtonL = new Rect (rectLast.xMin, rectLast.yMin, 6f, rectLast.height);
-            Rect rectButtonR = new Rect (rectLast.xMin + rectLast.width - 6f, rectLast.yMin, 6f, rectLast.height);
-            Rect rectLabelValue = new Rect (rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height); 
+            Rect rectSlider = new Rect (rectLast.xMin + 15f, rectLast.yMin, rectLast.width - 30f, rectLast.height);
+            Rect rectSliderValue = new Rect (rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
+            Rect rectButtonL = new Rect (rectLast.xMin, rectLast.yMin, 12f, rectLast.height);
+            Rect rectButtonR = new Rect (rectLast.xMin + rectLast.width - 12f, rectLast.yMin, 12f, rectLast.height);
+            Rect rectLabelValue = new Rect (rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
 
-            if (GUI.Button (rectButtonL, new GUIContent (""), WingProceduralManager.uiStyleButton)) valueFromButtons -= incrementLarge;
-            value = GUI.HorizontalSlider (rectSlider, value, limits.x, limits.y, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
-            if (GUI.Button (rectButtonR, new GUIContent (""), WingProceduralManager.uiStyleButton)) valueFromButtons += incrementLarge;
-            value += valueFromButtons;
-
-            if (valueOld != value)
+            if (GUI.Button(rectButtonL, new GUIContent(""), WingProceduralManager.uiStyleButton))
             {
-                value = Mathf.Clamp (value, limits.x, limits.y);
-                if (valueOld != value)
-                {
-                    float excess = value % increment;
-                    if (value > valueOld)
-                    {
-                        if (excess > increment / 2f) value = Mathf.Min (value - excess + increment, limits.y);
-                        else value = value - excess;
-                    }
-
-                    else if (value < valueOld)
-                    {
-                        if (excess < increment / 2f) value = Mathf.Max (limits.x, value - excess);
-                        else value = value - excess + increment;
-                    }
-
-                    value = Mathf.Clamp (value, limits.x, limits.y);
-                    if (valueOld != value) changed = true;
-                }
+                if (Input.GetMouseButton(0))
+                    value01 -= 0.0625;
+                else if (Input.GetMouseButton(1))
+                    value01 -= 0.0625 * increment01;
             }
+            else if (GUI.Button(rectButtonR, new GUIContent(""), WingProceduralManager.uiStyleButton))
+            {
+                if (Input.GetMouseButton(0))
+                    value01 -= 0.0625;
+                else if (Input.GetMouseButton(1))
+                    value01 -= 0.0625 * increment01;
+            }
+
+            if (rectLast.Contains(Event.current.mousePosition) && Event.current.type == EventType.MouseDrag) // right click drag doesn't work without the event check
+            {
+                value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
+
+                if (valueOld != value01 && rectLast.Contains(Event.current.mousePosition))
+                {
+                    if (Input.GetMouseButton(0))
+                    {
+                        double excess = value01 % increment01;
+                        if (value01 > valueOld)
+                        {
+                            if (excess > increment01 / 2)
+                                value01 = value01 - excess + increment01;
+                            else
+                                value01 = value01 - excess;
+                        }
+                        else if (value01 < valueOld)
+                        {
+                            if (excess < increment01 / 2)
+                                value01 = value01 - excess;
+                            else
+                                value01 = value01 - excess + increment01;
+                        }
+                    }
+                    else if (Input.GetMouseButton(1))
+                    {
+                        Debug.Log("right click");
+                        double excess = valueOld / increment01; // modulus is never negative, which makes the match somewhat annoying. Do it manually instead
+                        excess = (excess - Math.Round(excess)) * increment01;
+                        double valueIncrement = valueOld - excess;
+                        value01 = valueOld - excess + Math.Min(value01 - 0.5, 0.499) * increment01;
+                    }
+                }
+
+                value = Mathf.Clamp((float)(value01 * range + limits.x), (float)(limits.x * 0.5), limits.y);
+                if (valueOld != value)
+                    changed = true;
+            }
+            else
+                GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
+
 
             GUI.DrawTexture (rectSliderValue, backgroundColor.GetTexture2D ());
             GUI.Label (rectSlider, "  " + name, WingProceduralManager.uiStyleLabelHint);
@@ -107,6 +138,14 @@ namespace WingProcedural
             Vector3 mousePos = Input.mousePosition;
             mousePos.y = Screen.height - mousePos.y;
             return mousePos;
+        }
+
+        public static Vector3 GetMouseWindowPos(Rect windowRect)
+        {
+            Vector3 mousepos = GetMousePos();
+            mousepos.x -= windowRect.x;
+            mousepos.y -= windowRect.y;
+            return mousepos;
         }
 
         public static string GetValueTranslation (float value, int type)
