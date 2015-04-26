@@ -567,8 +567,10 @@ namespace WingProcedural
 
             sharedBaseWidthRoot = parent.sharedBaseWidthTip;
             sharedBaseThicknessRoot = parent.sharedBaseThicknessTip;
+
             sharedEdgeTypeLeading = parent.sharedEdgeTypeLeading;
             sharedEdgeWidthLeadingRoot = parent.sharedEdgeWidthLeadingTip;
+
             sharedEdgeTypeTrailing = parent.sharedEdgeTypeTrailing;
             sharedEdgeWidthTrailingRoot = parent.sharedEdgeWidthTrailingTip;
         }
