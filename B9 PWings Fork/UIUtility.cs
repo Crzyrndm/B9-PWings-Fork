@@ -18,14 +18,14 @@ namespace WingProcedural
             double value01 = (value - limits.x) / range; // rescaling value to be 0-100% of range for convenience
             double increment01 = increment / range;
             double valueOld = value01;
-            changed = false;
+            float buttonWidth = 12, spaceWidth = 3;
 
             GUILayout.Label ("", WingProceduralManager.uiStyleLabelHint);
-            Rect rectLast = GUILayoutUtility.GetLastRect (); 
-            Rect rectSlider = new Rect (rectLast.xMin + 15f, rectLast.yMin, rectLast.width - 30f, rectLast.height);
+            Rect rectLast = GUILayoutUtility.GetLastRect ();
+            Rect rectSlider = new Rect(rectLast.xMin + buttonWidth + spaceWidth, rectLast.yMin, rectLast.width - 2 * (buttonWidth + spaceWidth), rectLast.height);
             Rect rectSliderValue = new Rect (rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
-            Rect rectButtonL = new Rect (rectLast.xMin, rectLast.yMin, 12f, rectLast.height);
-            Rect rectButtonR = new Rect (rectLast.xMin + rectLast.width - 12f, rectLast.yMin, 12f, rectLast.height);
+            Rect rectButtonL = new Rect (rectLast.xMin, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectButtonR = new Rect (rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
             Rect rectLabelValue = new Rect (rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
 
             if (GUI.Button(rectButtonL, "", WingProceduralManager.uiStyleButton))
@@ -43,32 +43,25 @@ namespace WingProcedural
                     value01 += incrementLarge * increment01;
             }
 
-            if (rectLast.Contains(Event.current.mousePosition)
-                && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work without the event check
-                && !(Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1))) // drag event covers this, but don't want it to
+            if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work properly without the event check
+                    && !(Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1))) // drag event covers this, but don't want it to
             {
                 value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
-                if (valueOld != value01 && rectLast.Contains(Event.current.mousePosition))
+                if (valueOld != value01)
                 {
-                    if (Input.GetMouseButton(0) || !allowFine)
-                    {
-                        double excess = value01 / increment01;
+                    double excess = value01 / increment01;
+                    if (Input.GetMouseButton(0) || !allowFine) // normal control
                         value01 -= (excess - Math.Round(excess)) * increment01;
-                    }
-                    else if (Input.GetMouseButton(1) && allowFine)
-                    {
-                        double excess = valueOld / increment01; // modulus is never negative, which makes the match somewhat annoying. Do it manually instead
+                    else if (Input.GetMouseButton(1) && allowFine) // fine control
                         value01 = valueOld - ((excess - Math.Round(excess)) * increment01) + Math.Min(value01 - 0.5, 0.4999) * increment01;
-                    }
                 }
             }
             else
                 GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
-            value = Mathf.Clamp((float)(value01 * range + limits.x), (float)(limits.x * 0.5), limits.y);
-            if (valueOld != value)
-                changed = true;
+            value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+            changed = valueOld != value ? true : false;
 
             GUI.DrawTexture (rectSliderValue, backgroundColor.GetTexture2D ());
             GUI.Label (rectSlider, "  " + name, WingProceduralManager.uiStyleLabelHint);
