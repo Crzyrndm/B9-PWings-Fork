@@ -697,6 +697,8 @@ namespace WingProcedural
             if (!WingProceduralManager.uiStyleConfigured)
                 WingProceduralManager.ConfigureStyles ();
             RenderingManager.AddToPostDrawQueue (0, OnDraw);
+
+            part.DragCubes.Procedural = true;
         }
 
         // unnecesary save/load. config is static so it will be initialised as you pass through the space center, and there is no way to change options in the editor scene
@@ -1937,8 +1939,7 @@ namespace WingProcedural
                 {
                     if (WPDebug.logCAV)
                         DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
-                    ((Winglet) this.part).deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
-                    ((Winglet) this.part).dragCoeff = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
+                    ((ModuleLiftingSurface)this.part.Modules["ModuleLiftingSurface"]).deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
                 }
                 else
                 {
@@ -1946,7 +1947,6 @@ namespace WingProcedural
                         DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
                     var mCtrlSrf = part.Modules.OfType<ModuleControlSurface> ().FirstOrDefault ();
                     mCtrlSrf.deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
-                    mCtrlSrf.dragCoeff = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
                 }
             }
