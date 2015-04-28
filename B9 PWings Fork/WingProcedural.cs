@@ -675,6 +675,8 @@ namespace WingProcedural
             
             DebugLogWithID ("OnStart", "Setup started");
             StartCoroutine (SetupReorderedForFlight ()); // does all setup neccesary for flight
+
+            part.DragCubes.Procedural = true;
         }
 
         /// <summary>
@@ -699,14 +701,23 @@ namespace WingProcedural
             RenderingManager.AddToPostDrawQueue (0, OnDraw);
 
             part.DragCubes.Procedural = true;
+
+            
         }
 
         // unnecesary save/load. config is static so it will be initialised as you pass through the space center, and there is no way to change options in the editor scene
         // may resolve errors reported by Hodo
-        //public override void OnSave(ConfigNode node)
-        //{
-        //    WingProceduralManager.SaveConfigs();
-        //}
+        public override void OnSave(ConfigNode node)
+        {
+            try
+            {
+                WingProceduralManager.SaveConfigs();
+            }
+            catch
+            {
+                Debug.Log("B9 PWings - Failed to save settings");
+            }
+        }
 
         //public override void OnLoad(ConfigNode node)
         //{
@@ -722,6 +733,14 @@ namespace WingProcedural
         {
             if (canBeFueled)
                 FuelOnUpdate();
+
+            Debug.Log("Log Thermal");
+            Debug.Log(part.thermalMass);
+            Debug.Log(part.thermalMassModifier);
+            Debug.Log(part.resourceThermalMass);
+            Debug.Log(part.heatConductivity);
+            Debug.Log(part.heatConvectiveConstant);
+            Debug.Log(part.radiativeArea);
 
             if (!HighLogic.LoadedSceneIsEditor)
                 return;
