@@ -734,14 +734,6 @@ namespace WingProcedural
             if (canBeFueled)
                 FuelOnUpdate();
 
-            Debug.Log("Log Thermal");
-            Debug.Log(part.thermalMass);
-            Debug.Log(part.thermalMassModifier);
-            Debug.Log(part.resourceThermalMass);
-            Debug.Log(part.heatConductivity);
-            Debug.Log(part.heatConvectiveConstant);
-            Debug.Log(part.radiativeArea);
-
             if (!HighLogic.LoadedSceneIsEditor)
                 return;
 
