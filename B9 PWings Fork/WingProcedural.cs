@@ -698,11 +698,8 @@ namespace WingProcedural
 
             if (!WingProceduralManager.uiStyleConfigured)
                 WingProceduralManager.ConfigureStyles ();
-            RenderingManager.AddToPostDrawQueue (0, OnDraw);
 
             part.DragCubes.Procedural = true;
-
-            
         }
 
         // unnecesary save/load. config is static so it will be initialised as you pass through the space center, and there is no way to change options in the editor scene
@@ -2259,7 +2256,7 @@ namespace WingProcedural
                 myWindow.displayDirty = true;
         }
 
-        private void OnDraw ()
+        private void OnGUI ()
         {
             if (!uiWindowActive)
                 return;

@@ -50,11 +50,16 @@ namespace WingProcedural
 
                 if (valueOld != value01)
                 {
-                    double excess = value01 / increment01;
                     if (Input.GetMouseButton(0) || !allowFine) // normal control
+                    {
+                        double excess = value01 / increment01;
                         value01 -= (excess - Math.Round(excess)) * increment01;
+                    }
                     else if (Input.GetMouseButton(1) && allowFine) // fine control
-                        value01 = valueOld - ((excess - Math.Round(excess)) * increment01) + Math.Min(value01 - 0.5, 0.4999) * increment01;
+                    {
+                        double excess = valueOld / increment01;
+                        value01 = (valueOld - (excess - Math.Round(excess)) * increment01) + Math.Min(value01 - 0.5, 0.4999) * increment01;
+                    }
                 }
             }
             else
