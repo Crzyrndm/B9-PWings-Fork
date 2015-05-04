@@ -675,8 +675,6 @@ namespace WingProcedural
             
             DebugLogWithID ("OnStart", "Setup started");
             StartCoroutine (SetupReorderedForFlight ()); // does all setup neccesary for flight
-
-            part.DragCubes.Procedural = true;
         }
 
         /// <summary>
@@ -698,8 +696,6 @@ namespace WingProcedural
 
             if (!WingProceduralManager.uiStyleConfigured)
                 WingProceduralManager.ConfigureStyles ();
-
-            part.DragCubes.Procedural = true;
         }
 
         // unnecesary save/load. config is static so it will be initialised as you pass through the space center, and there is no way to change options in the editor scene
@@ -2064,6 +2060,14 @@ namespace WingProcedural
                 GameEvents.onEditorShipModified.Fire (EditorLogic.fetch.ship);
             if (WPDebug.logCAV)
                 DebugLogWithID ("CalculateAerodynamicValues", "Finished");
+
+            if (!assemblyFARUsed)
+            {
+                DragCube DragCube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
+                part.DragCubes.ClearCubes();
+                part.DragCubes.Cubes.Add(DragCube);
+                part.DragCubes.ResetCubeWeights();
+            }
         }
 
         private void UpdateCollidersForFAR ()
@@ -2258,7 +2262,7 @@ namespace WingProcedural
 
         private void OnGUI ()
         {
-            if (!uiWindowActive)
+            if (!HighLogic.LoadedSceneIsEditor || !uiWindowActive)
                 return;
 
             if (uiInstanceIDLocal == 0)
