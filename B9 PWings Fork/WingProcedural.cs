@@ -660,6 +660,8 @@ namespace WingProcedural
         #endregion
 
         #region Unity stuff and Callbacks/events
+
+        public static bool isStarted = false;
         /// <summary>
         /// run when part is created in editor, and when part is created in flight. Why is OnStart and Start both being used other than to sparate flight and editor startup?
         /// </summary>
@@ -675,6 +677,8 @@ namespace WingProcedural
             
             DebugLogWithID ("OnStart", "Setup started");
             StartCoroutine (SetupReorderedForFlight ()); // does all setup neccesary for flight
+            isStarted = true;
+            GameEvents.onGameSceneLoadRequested.Add(OnSceneSwitch);
         }
 
         /// <summary>
@@ -696,6 +700,7 @@ namespace WingProcedural
 
             if (!WingProceduralManager.uiStyleConfigured)
                 WingProceduralManager.ConfigureStyles ();
+            isStarted = true;
         }
 
         // unnecesary save/load. config is static so it will be initialised as you pass through the space center, and there is no way to change options in the editor scene
@@ -720,14 +725,16 @@ namespace WingProcedural
         public void OnDestroy()
         {
             editorAppDestroy();
+            GameEvents.onGameSceneLoadRequested.Remove(OnSceneSwitch);
         }
 
         public void Update()
         {
             if (canBeFueled)
                 FuelOnUpdate();
-            if (!HighLogic.LoadedSceneIsEditor)
+            if (!HighLogic.LoadedSceneIsEditor || !isStarted)
                 return;
+            
 
             DebugTimerUpdate ();
             UpdateUI ();
@@ -767,6 +774,11 @@ namespace WingProcedural
             }
             isAttached = false;
             uiEditMode = false;
+        }
+
+        public void OnSceneSwitch(GameScenes scene)
+        {
+            isStarted = false; // fixes nullrefs when switching scenes and things haven't been destroyed yet
         }
 
         /// <summary>
@@ -2043,6 +2055,7 @@ namespace WingProcedural
                             if (WPDebug.logCAV)
                                 DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
                             aeroFARMethodInfoUsed.Invoke (aeroFARModuleReference, null);
+
                             part.SendMessage("GeometryPartModuleRebuildMeshData"); // for newFAR
                         }
                     }
@@ -3279,13 +3292,17 @@ namespace WingProcedural
                 DebugLogWithID("OnDestroy", "Invoked, with " + components.Length + " remaining components in the scene");
             for (int i = 0; i < components.Length; ++i)
             {
-                if (components[i] != null) stockButtonCanBeRemoved = false;
+                if (components[i] != null)
+                    stockButtonCanBeRemoved = false;
             }
             if (stockButtonCanBeRemoved)
             {
                 uiInstanceIDTarget = 0;
                 if (stockButton != null)
+                {
                     ApplicationLauncher.Instance.RemoveModApplication(stockButton);
+                    stockButton = null;
+                }
             }
         }
         #endregion
