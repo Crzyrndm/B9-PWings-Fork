@@ -722,11 +722,10 @@ namespace WingProcedural
             editorAppDestroy();
         }
 
-        public void Update ()
+        public void Update()
         {
             if (canBeFueled)
                 FuelOnUpdate();
-
             if (!HighLogic.LoadedSceneIsEditor)
                 return;
 
@@ -788,6 +787,11 @@ namespace WingProcedural
         /// </summary>
         public void RefreshGeometry()
         {
+            if (!isCtrlSrf && (meshFiltersWingEdgeLeading.Count != meshTypeCountEdgeWing || meshFiltersWingEdgeTrailing.Count != meshTypeCountEdgeWing))
+                return;
+            else if (isCtrlSrf && meshFiltersCtrlEdge.Count != meshTypeCountEdgeCtrl)
+                return;
+
             UpdateMaterials();
             UpdateGeometry(true);
             UpdateWindow();
@@ -1150,11 +1154,13 @@ namespace WingProcedural
                     meshFilterCtrlFrame.mesh.RecalculateBounds ();
 
                     MeshCollider meshCollider = meshFilterCtrlFrame.gameObject.GetComponent<MeshCollider> ();
-                    if (meshCollider == null) meshCollider = meshFilterCtrlFrame.gameObject.AddComponent<MeshCollider> ();
+                    if (meshCollider == null)
+                        meshCollider = meshFilterCtrlFrame.gameObject.AddComponent<MeshCollider> ();
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterCtrlFrame.mesh;
                     meshCollider.convex = true;
-                    if (WPDebug.logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Control surface frame | Finished");
+                    if (WPDebug.logUpdateGeometry)
+                        DebugLogWithID ("UpdateGeometry", "Control surface frame | Finished");
                 }
 
                 // Next, time for edge types
@@ -1164,7 +1170,8 @@ namespace WingProcedural
                 int ctrlEdgeTypeInt = Mathf.RoundToInt (sharedEdgeTypeTrailing - 1);
                 for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
                 {
-                    if (i != ctrlEdgeTypeInt) meshFiltersCtrlEdge[i].gameObject.SetActive (false);
+                    if (i != ctrlEdgeTypeInt)
+                        meshFiltersCtrlEdge[i].gameObject.SetActive (false);
                     else meshFiltersCtrlEdge[i].gameObject.SetActive (true);
                 }
 
@@ -1554,8 +1561,6 @@ namespace WingProcedural
         #endregion
 
         #region Materials
-
-
         public static Material materialLayeredSurface;
         public static Texture materialLayeredSurfaceTextureMain;
         public static Texture materialLayeredSurfaceTextureMask;
@@ -1569,7 +1574,8 @@ namespace WingProcedural
 
         public void UpdateMaterials ()
         {
-            if (materialLayeredSurface == null || materialLayeredEdge == null) SetMaterialReferences ();
+            if (materialLayeredSurface == null || materialLayeredEdge == null)
+                SetMaterialReferences ();
             if (materialLayeredSurface != null)
             {
                 if (!isCtrlSrf)
@@ -1591,13 +1597,16 @@ namespace WingProcedural
                     }
                 }
             }
-            else if (WPDebug.logUpdateMaterials) DebugLogWithID ("UpdateMaterials", "Material creation failed");
+            else if (WPDebug.logUpdateMaterials)
+                DebugLogWithID ("UpdateMaterials", "Material creation failed");
         }
 
         private void SetMaterialReferences ()
         {
-            if (materialLayeredSurface == null) materialLayeredSurface = ResourceExtractor.GetEmbeddedMaterial ("B9_Aerospace_WingStuff.SpecularLayered.txt");
-            if (materialLayeredEdge == null) materialLayeredEdge = ResourceExtractor.GetEmbeddedMaterial ("B9_Aerospace_WingStuff.SpecularLayered.txt");
+            if (materialLayeredSurface == null)
+                materialLayeredSurface = ResourceExtractor.GetEmbeddedMaterial ("B9_Aerospace_WingStuff.SpecularLayered.txt");
+            if (materialLayeredEdge == null)
+                materialLayeredEdge = ResourceExtractor.GetEmbeddedMaterial ("B9_Aerospace_WingStuff.SpecularLayered.txt");
 
             if (!isCtrlSrf) SetTextures (meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
             else SetTextures (meshFilterCtrlSurface, meshFilterCtrlFrame);
@@ -1626,7 +1635,8 @@ namespace WingProcedural
             if (target != null)
             {
                 Renderer r = target.gameObject.GetComponent<Renderer> ();
-                if (r != null) r.sharedMaterial = material;
+                if (r != null)
+                    r.sharedMaterial = material;
             }
         }
 
@@ -1639,7 +1649,8 @@ namespace WingProcedural
                 {
                     materialLayeredSurfaceTextureMain = r.sharedMaterial.GetTexture ("_MainTex");
                     materialLayeredSurfaceTextureMask = r.sharedMaterial.GetTexture ("_Emissive");
-                    if (WPDebug.logUpdateMaterials) DebugLogWithID ("SetTextures", "Main: " + materialLayeredSurfaceTextureMain.ToString () + " | Mask: " + materialLayeredSurfaceTextureMask);
+                    if (WPDebug.logUpdateMaterials)
+                        DebugLogWithID ("SetTextures", "Main: " + materialLayeredSurfaceTextureMain.ToString () + " | Mask: " + materialLayeredSurfaceTextureMask);
                 }
             }
             if (sourceEdge != null)
@@ -1649,7 +1660,8 @@ namespace WingProcedural
                 {
                     materialLayeredEdgeTextureMain = r.sharedMaterial.GetTexture ("_MainTex");
                     materialLayeredEdgeTextureMask = r.sharedMaterial.GetTexture ("_Emissive");
-                    if (WPDebug.logUpdateMaterials) DebugLogWithID ("SetTextures", "Main: " + materialLayeredEdgeTextureMain.ToString () + " | Mask: " + materialLayeredEdgeTextureMask);
+                    if (WPDebug.logUpdateMaterials)
+                        DebugLogWithID ("SetTextures", "Main: " + materialLayeredEdgeTextureMain.ToString () + " | Mask: " + materialLayeredEdgeTextureMask);
                 }
             }
         }
@@ -2275,7 +2287,8 @@ namespace WingProcedural
                 if (uiAdjustWindow)
                 {
                     uiAdjustWindow = false;
-                    if (WPDebug.logPropertyWindow) DebugLogWithID ("OnDraw", "Window forced to adjust");
+                    if (WPDebug.logPropertyWindow)
+                        DebugLogWithID ("OnGUI", "Window forced to adjust");
                     WingProceduralManager.uiRectWindowEditor = GUILayout.Window (273, WingProceduralManager.uiRectWindowEditor, OnWindow, GetWindowTitle (), WingProceduralManager.uiStyleWindow, GUILayout.Height (0));
                 }
                 else
