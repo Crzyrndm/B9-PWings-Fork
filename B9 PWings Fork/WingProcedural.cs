@@ -734,18 +734,17 @@ namespace WingProcedural
                 FuelOnUpdate();
             if (!HighLogic.LoadedSceneIsEditor || !isStarted)
                 return;
-            
 
-            DebugTimerUpdate ();
-            UpdateUI ();
+            DebugTimerUpdate();
+            UpdateUI();
             
             bool updateGeo, updateAero;
             CheckAllFieldValues(out updateGeo, out updateAero);
 
             if (updateGeo)
             {
-                UpdateCounterparts();
                 UpdateGeometry(updateAero);
+                UpdateCounterparts();
             }
         }
 
@@ -799,10 +798,18 @@ namespace WingProcedural
         /// </summary>
         public void RefreshGeometry()
         {
-            if (!isCtrlSrf && (meshFiltersWingEdgeLeading.Count != meshTypeCountEdgeWing || meshFiltersWingEdgeTrailing.Count != meshTypeCountEdgeWing))
-                return;
-            else if (isCtrlSrf && meshFiltersCtrlEdge.Count != meshTypeCountEdgeCtrl)
-                return;
+            if (!isCtrlSrf)
+            {
+                if (meshFiltersWingEdgeLeading.Count == 0 || meshFiltersWingEdgeLeading.Count % meshTypeCountEdgeWing != 0)
+                    return;
+                if (meshFiltersWingEdgeTrailing.Count == 0 || meshFiltersWingEdgeTrailing.Count % meshTypeCountEdgeWing != 0)
+                    return;
+            }
+            else
+            {
+                if (meshFiltersCtrlEdge.Count == 0 || meshFiltersCtrlEdge.Count % meshTypeCountEdgeCtrl == 0)
+                    return;
+            }
 
             UpdateMaterials();
             UpdateGeometry(true);
@@ -3007,8 +3014,8 @@ namespace WingProcedural
         }
 
         /// <summary>
-        /// called in Update for standard wing panels, sets fuelCurrentAmount to the current part resource volume
-        /// the Vector4 of fuels is required because the stock resources get cleared frequently(?)
+        /// called in Update for standard wing panels, sets fuelCurrentAmount to the current part resource volume.
+        /// The Vector4 of fuels is required because the stock resources get cleared frequently(?)
         /// </summary>
         private void FuelOnUpdate()
         {
