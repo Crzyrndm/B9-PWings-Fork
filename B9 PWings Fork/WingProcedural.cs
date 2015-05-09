@@ -798,19 +798,6 @@ namespace WingProcedural
         /// </summary>
         public void RefreshGeometry()
         {
-            if (!isCtrlSrf)
-            {
-                if (meshFiltersWingEdgeLeading.Count == 0 || meshFiltersWingEdgeLeading.Count % meshTypeCountEdgeWing != 0) // required count = meshtype count * symmetry count (why?)
-                    return;
-                if (meshFiltersWingEdgeTrailing.Count == 0 || meshFiltersWingEdgeTrailing.Count % meshTypeCountEdgeWing != 0)
-                    return;
-            }
-            else
-            {
-                if (meshFiltersCtrlEdge.Count == 0 || meshFiltersCtrlEdge.Count % meshTypeCountEdgeCtrl == 0)
-                    return;
-            }
-
             UpdateMaterials();
             UpdateGeometry(true);
             UpdateWindow();
@@ -1612,7 +1599,7 @@ namespace WingProcedural
                     SetMaterial (meshFilterCtrlFrame, materialLayeredEdge);
                     for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
                     {
-                        SetMaterial (meshFiltersCtrlEdge[i], materialLayeredEdge);
+                        SetMaterial(meshFiltersCtrlEdge[i], materialLayeredEdge);
                     }
                 }
             }
