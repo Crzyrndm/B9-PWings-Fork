@@ -800,7 +800,7 @@ namespace WingProcedural
         {
             if (!isCtrlSrf)
             {
-                if (meshFiltersWingEdgeLeading.Count == 0 || meshFiltersWingEdgeLeading.Count % meshTypeCountEdgeWing != 0)
+                if (meshFiltersWingEdgeLeading.Count == 0 || meshFiltersWingEdgeLeading.Count % meshTypeCountEdgeWing != 0) // required count = meshtype count * symmetry count (why?)
                     return;
                 if (meshFiltersWingEdgeTrailing.Count == 0 || meshFiltersWingEdgeTrailing.Count % meshTypeCountEdgeWing != 0)
                     return;
