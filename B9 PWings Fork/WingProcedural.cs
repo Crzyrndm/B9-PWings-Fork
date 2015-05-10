@@ -17,8 +17,10 @@ namespace WingProcedural
         [KSPField] public bool isWingAsCtrlSrf = false;
         [KSPField] public bool isPanel = false;
 
-        [KSPField (isPersistant = true)] public bool isAttached = false;
-        [KSPField (isPersistant = true)] public bool isSetToDefaultValues = false;
+        [KSPField (isPersistant = true)]
+        public bool isAttached = false;
+        [KSPField (isPersistant = true)]
+        public bool isSetToDefaultValues = false;
 
         #region Debug
 
@@ -622,7 +624,6 @@ namespace WingProcedural
 
         public static bool assembliesChecked = false;
         public static bool assemblyFARUsed = false;
-        public static bool assemblyNEARUsed = false;
         public static bool assemblyFARMass = false;
         public static bool assemblyDREUsed = false;
         public static bool assemblyRFUsed = false;
@@ -633,11 +634,10 @@ namespace WingProcedural
             if (!assembliesChecked || forced)
             {
                 assemblyFARUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("FerramAerospaceResearch", StringComparison.InvariantCultureIgnoreCase));
-                assemblyNEARUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("NEAR", StringComparison.InvariantCultureIgnoreCase));
                 assemblyRFUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("RealFuels", StringComparison.InvariantCultureIgnoreCase));
                 assemblyMFTUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("modularFuelTanks", StringComparison.InvariantCultureIgnoreCase));
                 assemblyDREUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("DeadlyReentry", StringComparison.InvariantCultureIgnoreCase));
-                if (assemblyFARUsed || assemblyNEARUsed)
+                if (assemblyFARUsed)
                 {
                     ConfigNode[] nodes = GameDatabase.Instance.GetConfigNodes ("FARAeroData");
                     for (int i = 0; i < nodes.Length; ++i)
@@ -649,7 +649,7 @@ namespace WingProcedural
                     }
                 }
                 if (WPDebug.logEvents)
-                    DebugLogWithID ("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | NEAR: " + assemblyNEARUsed + " | FAR mass: " + assemblyFARMass + " | DRE: " + assemblyDREUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
+                    DebugLogWithID ("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | FAR mass: " + assemblyFARMass + " | DRE: " + assemblyDREUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
                 if (isCtrlSrf && isWingAsCtrlSrf && WPDebug.logEvents)
                     DebugLogWithID ("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
                 if (assemblyRFUsed && assemblyMFTUsed && WPDebug.logEvents) 
@@ -1949,13 +1949,13 @@ namespace WingProcedural
 
             // Stock-only values
 
-            if ((!assemblyFARUsed && !assemblyNEARUsed) || !assemblyFARMass)
+            if ((!assemblyFARUsed) || !assemblyFARMass)
             {
                 if (WPDebug.logCAV)
                     DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive or FAR mass is not enabled, calculating stock part mass");
                 part.mass = Mathf.Round ((float) aeroStatMass * 100f) / 100f;
             }
-            if (!assemblyFARUsed && !assemblyNEARUsed)
+            if (!assemblyFARUsed)
             {
                 if (!isCtrlSrf && !isWingAsCtrlSrf)
                 {
@@ -1977,7 +1977,7 @@ namespace WingProcedural
 
             // FAR values
 
-            if (assemblyFARUsed || assemblyNEARUsed)
+            if (assemblyFARUsed)
             {
                 if (WPDebug.logCAV)
                     DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Entered segment");
@@ -2025,10 +2025,7 @@ namespace WingProcedural
 
                         if (aeroFARMethodInfoUsed == null)
                         {
-                            if (assemblyNEARUsed)
-                                aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("MathAndFunctionInitialization");
-                            else
-                                aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("StartInitialization");
+                            aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("StartInitialization");
                             if (WPDebug.logCAV)
                                 DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info was null, search performed, recheck result was " + (aeroFARMethodInfoUsed == null).ToString ());
                         }
@@ -2060,12 +2057,12 @@ namespace WingProcedural
 
             // Update GUI values and finish
 
-            if (!assemblyFARUsed && !assemblyNEARUsed)
+            if (!assemblyFARUsed)
             {
                 aeroUICd = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
                 aeroUICl = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
             }
-            if ((!assemblyFARUsed && !assemblyNEARUsed) || !assemblyFARMass)
+            if (!assemblyFARUsed || !assemblyFARMass)
                 aeroUIMass = part.mass;
 
             aeroUIMeanAerodynamicChord = (float) aeroStatMeanAerodynamicChord;
@@ -2091,7 +2088,7 @@ namespace WingProcedural
 
         private void UpdateCollidersForFAR ()
         {
-            if (assemblyFARUsed && assemblyNEARUsed)
+            if (assemblyFARUsed)
             {
                 if (part.Modules.Contains ("FARWingAerodynamicModel"))
                 {
@@ -2099,45 +2096,6 @@ namespace WingProcedural
                     Type typeFAR = moduleFAR.GetType ();
                     typeFAR.GetMethod ("TriggerPartColliderUpdate").Invoke (moduleFAR, null);
                 }
-            }
-        }
-
-        public void OnCenterOfLiftQuery (CenterOfLiftQuery qry) //improved as a way of testing numbers for the FAR integration. not bothering too much because of 1.0 aero
-        {
-            if (!assemblyFARUsed && !assemblyNEARUsed)
-            {
-                qry.lift = (float) aeroStatCl;
-                float negativePosX = ((EditorLogic.fetch.ship.Parts[0].transform.position.x - qry.pos.x) > 0) ? -1.0f : 1.0f;
-                float negativePosY = ((EditorLogic.fetch.ship.Parts[0].transform.position.y - qry.pos.y) > 0) ? -1.0f : 1.0f;
-                float negativePosZ = ((EditorLogic.fetch.ship.Parts[0].transform.position.z - qry.pos.z) > 0) ? -1.0f : 1.0f;
-
-                float sharedWidthTipSum = sharedBaseWidthTip;
-                float sharedWidthRootSum = sharedBaseWidthRoot;
-                if (!isCtrlSrf)
-                {
-                    if (sharedEdgeTypeLeading != 1)
-                    {
-                        sharedWidthTipSum += sharedEdgeWidthLeadingTip;
-                        sharedWidthRootSum += sharedEdgeWidthLeadingRoot;
-                    }
-                    if (sharedEdgeTypeTrailing != 1)
-                    {
-                        sharedWidthTipSum += sharedEdgeWidthTrailingTip;
-                        sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
-                    }
-                }
-                else
-                {
-                    sharedWidthTipSum += sharedEdgeWidthTrailingTip;
-                    sharedWidthRootSum += sharedEdgeWidthTrailingRoot;
-                }
-
-                float widthRatio = (1f + 1f * (sharedWidthTipSum / (sharedWidthRootSum + sharedWidthTipSum))) / 3f;
-                float offset = widthRatio * sharedBaseLength * negativePosX;
-
-                qry.pos.x += offset * qry.dir.y + part.CoMOffset.y * qry.dir.x;
-                qry.pos.y += -part.CoMOffset.z * qry.dir.y - offset * qry.dir.x;
-                qry.pos.z += part.CoMOffset.y;
             }
         }
 
@@ -2176,14 +2134,14 @@ namespace WingProcedural
                 else Events["InfoToggleEvent"].guiName = "Show wing data";
 
                 // If FAR/NEAR aren't present, toggle Cl/Cd
-                if (!assemblyFARUsed && !assemblyNEARUsed)
+                if (!assemblyFARUsed)
                 {
                     Fields["aeroUICd"].guiActiveEditor = showWingData;
                     Fields["aeroUICl"].guiActiveEditor = showWingData;
                 }
 
                 // If FAR|NEAR are not present, or its a version without wing mass calculations, toggle wing mass
-                if ((!assemblyFARUsed && !assemblyNEARUsed) || !assemblyFARMass)
+                if (!assemblyFARUsed || !assemblyFARMass)
                     Fields["aeroUIMass"].guiActive = showWingData;
 
                 // Toggle the rest of the info values
