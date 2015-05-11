@@ -1833,10 +1833,10 @@ namespace WingProcedural
         private Type       aeroFARModuleType;
 
         private FieldInfo  aeroFARFieldInfoSemispan;
-        private FieldInfo  aeroFARFieldInfoSemispan_Actual; // to handle tweakscale, wings have semispan (unscaled) and semispan_actual (tweakscaled). Need to set both
+        private FieldInfo aeroFARFieldInfoSemispan_Actual; // to handle tweakscale, wings have semispan (unscaled) and semispan_actual (tweakscaled). Need to set both (actual is the important one, and tweakscale isn't needed here, so only _actual actually needs to be set, but it would be silly to not set it)
         private FieldInfo  aeroFARFieldInfoMAC;
-        private FieldInfo  aeroFARFieldInfoMAC_Actual; //  to handle tweakscale, wings have MAC (unscaled) and MAC_actual (tweakscaled). Need to set both
-        // private FieldInfo  aeroFARFieldInfoSurfaceArea; // calculated internally from b_2_actual and MAC_actual
+        private FieldInfo  aeroFARFieldInfoMAC_Actual; //  to handle tweakscale, wings have MAC (unscaled) and MAC_actual (tweakscaled). Need to set both (actual is the important one, and tweakscale isn't needed here, so only _actual actually needs to be set, but it would be silly to not set it)
+        private FieldInfo aeroFARFieldInfoSurfaceArea; // calculated internally from b_2_actual and MAC_actual
         private FieldInfo  aeroFARFieldInfoMidChordSweep;
         private FieldInfo  aeroFARFieldInfoTaperRatio;
         private FieldInfo  aeroFARFieldInfoControlSurfaceFraction;
@@ -2010,8 +2010,8 @@ namespace WingProcedural
                             aeroFARFieldInfoMAC = aeroFARModuleType.GetField ("MAC");
                         if (aeroFARFieldInfoMAC_Actual == null)
                             aeroFARFieldInfoMAC_Actual = aeroFARModuleType.GetField("MAC_actual");
-                        //if (aeroFARFieldInfoSurfaceArea == null)
-                        //    aeroFARFieldInfoSurfaceArea = aeroFARModuleType.GetField ("S");
+                        if (aeroFARFieldInfoSurfaceArea == null)
+                            aeroFARFieldInfoSurfaceArea = aeroFARModuleType.GetField("S");
                         if (aeroFARFieldInfoMidChordSweep == null)
                             aeroFARFieldInfoMidChordSweep = aeroFARModuleType.GetField ("MidChordSweep");
                         if (aeroFARFieldInfoTaperRatio == null)
@@ -2059,15 +2059,14 @@ namespace WingProcedural
                         }
 
                         //Debug.Log("=========================================");
-                        //Debug.Log("b_2:" + aeroStatSemispan + "," + aeroFARFieldInfoSemispan.GetValue(aeroFARModuleReference));
-                        //Debug.Log("b_2_actual:" + aeroStatSemispan + "," + aeroFARFieldInfoSemispan_Actual.GetValue(aeroFARModuleReference));
-                        //Debug.Log("MAC:" + aeroStatMeanAerodynamicChord + "," + aeroFARFieldInfoMAC.GetValue(aeroFARModuleReference));
-                        //Debug.Log("MAC_actual:" + aeroStatMeanAerodynamicChord + "," + aeroFARFieldInfoMAC_Actual.GetValue(aeroFARModuleReference));
-                        ////Debug.Log("S:" + aeroStatSurfaceArea + "," + aeroFARFieldInfoSurfaceArea.GetValue(aeroFARModuleReference));
-                        //Debug.Log("MidChordSweep:" + aeroStatMidChordSweep + "," + aeroFARFieldInfoMidChordSweep.GetValue(aeroFARModuleReference));
-                        //Debug.Log("TaperRatio:" + aeroStatTaperRatio + "," + aeroFARFieldInfoTaperRatio.GetValue(aeroFARModuleReference));
-                        //Debug.Log("ctrl fraction:" + aeroConstControlSurfaceFraction + "," + aeroFARFieldInfoControlSurfaceFraction.GetValue(aeroFARModuleReference));
-
+                        //Debug.Log("b_2: " + aeroStatSemispan + ", " + aeroFARFieldInfoSemispan.GetValue(aeroFARModuleReference));
+                        //Debug.Log("b_2_actual: " + aeroStatSemispan + ", " + aeroFARFieldInfoSemispan_Actual.GetValue(aeroFARModuleReference));
+                        //Debug.Log("MAC: " + aeroStatMeanAerodynamicChord + ", " + aeroFARFieldInfoMAC.GetValue(aeroFARModuleReference));
+                        //Debug.Log("MAC_actual: " + aeroStatMeanAerodynamicChord + ", " + aeroFARFieldInfoMAC_Actual.GetValue(aeroFARModuleReference));
+                        //Debug.Log("S: " + aeroStatSurfaceArea + ", " + aeroFARFieldInfoSurfaceArea.GetValue(aeroFARModuleReference));
+                        //Debug.Log("MidChordSweep: " + aeroStatMidChordSweep + ", " + aeroFARFieldInfoMidChordSweep.GetValue(aeroFARModuleReference));
+                        //Debug.Log("TaperRatio: " + aeroStatTaperRatio + ", " + aeroFARFieldInfoTaperRatio.GetValue(aeroFARModuleReference));
+                        //Debug.Log("ctrl fraction: " + aeroConstControlSurfaceFraction + ", " + aeroFARFieldInfoControlSurfaceFraction.GetValue(aeroFARModuleReference));
                     }
                 }
             }
