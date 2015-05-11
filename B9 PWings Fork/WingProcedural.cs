@@ -2058,15 +2058,15 @@ namespace WingProcedural
                             part.SendMessage("GeometryPartModuleRebuildMeshData"); // notify FAR that geometry has changed
                         }
 
-                        Debug.Log("=========================================");
-                        Debug.Log("b_2:" + aeroStatSemispan + "," + aeroFARFieldInfoSemispan.GetValue(aeroFARModuleReference));
-                        Debug.Log("b_2_actual:" + aeroStatSemispan + "," + aeroFARFieldInfoSemispan_Actual.GetValue(aeroFARModuleReference));
-                        Debug.Log("MAC:" + aeroStatMeanAerodynamicChord + "," + aeroFARFieldInfoMAC.GetValue(aeroFARModuleReference));
-                        Debug.Log("MAC_actual:" + aeroStatMeanAerodynamicChord + "," + aeroFARFieldInfoMAC_Actual.GetValue(aeroFARModuleReference));
-                        //Debug.Log("S:" + aeroStatSurfaceArea + "," + aeroFARFieldInfoSurfaceArea.GetValue(aeroFARModuleReference));
-                        Debug.Log("MidChordSweep:" + aeroStatMidChordSweep + "," + aeroFARFieldInfoMidChordSweep.GetValue(aeroFARModuleReference));
-                        Debug.Log("TaperRatio:" + aeroStatTaperRatio + "," + aeroFARFieldInfoTaperRatio.GetValue(aeroFARModuleReference));
-                        Debug.Log("ctrl fraction:" + aeroConstControlSurfaceFraction + "," + aeroFARFieldInfoControlSurfaceFraction.GetValue(aeroFARModuleReference));
+                        //Debug.Log("=========================================");
+                        //Debug.Log("b_2:" + aeroStatSemispan + "," + aeroFARFieldInfoSemispan.GetValue(aeroFARModuleReference));
+                        //Debug.Log("b_2_actual:" + aeroStatSemispan + "," + aeroFARFieldInfoSemispan_Actual.GetValue(aeroFARModuleReference));
+                        //Debug.Log("MAC:" + aeroStatMeanAerodynamicChord + "," + aeroFARFieldInfoMAC.GetValue(aeroFARModuleReference));
+                        //Debug.Log("MAC_actual:" + aeroStatMeanAerodynamicChord + "," + aeroFARFieldInfoMAC_Actual.GetValue(aeroFARModuleReference));
+                        ////Debug.Log("S:" + aeroStatSurfaceArea + "," + aeroFARFieldInfoSurfaceArea.GetValue(aeroFARModuleReference));
+                        //Debug.Log("MidChordSweep:" + aeroStatMidChordSweep + "," + aeroFARFieldInfoMidChordSweep.GetValue(aeroFARModuleReference));
+                        //Debug.Log("TaperRatio:" + aeroStatTaperRatio + "," + aeroFARFieldInfoTaperRatio.GetValue(aeroFARModuleReference));
+                        //Debug.Log("ctrl fraction:" + aeroConstControlSurfaceFraction + "," + aeroFARFieldInfoControlSurfaceFraction.GetValue(aeroFARModuleReference));
 
                     }
                 }
