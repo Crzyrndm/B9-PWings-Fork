@@ -1833,8 +1833,10 @@ namespace WingProcedural
         private Type       aeroFARModuleType;
 
         private FieldInfo  aeroFARFieldInfoSemispan;
+        private FieldInfo  aeroFARFieldInfoSemispan_Actual; // to handle tweakscale, wings have semispan (unscaled) and semispan_actual (tweakscaled). Need to set both
         private FieldInfo  aeroFARFieldInfoMAC;
-        private FieldInfo  aeroFARFieldInfoSurfaceArea;
+        private FieldInfo  aeroFARFieldInfoMAC_Actual; //  to handle tweakscale, wings have MAC (unscaled) and MAC_actual (tweakscaled). Need to set both
+        // private FieldInfo  aeroFARFieldInfoSurfaceArea; // calculated internally from b_2_actual and MAC_actual
         private FieldInfo  aeroFARFieldInfoMidChordSweep;
         private FieldInfo  aeroFARFieldInfoTaperRatio;
         private FieldInfo  aeroFARFieldInfoControlSurfaceFraction;
@@ -1949,7 +1951,7 @@ namespace WingProcedural
 
             // Stock-only values
 
-            if ((!assemblyFARUsed) || !assemblyFARMass)
+            if (!assemblyFARUsed || !assemblyFARMass)
             {
                 if (WPDebug.logCAV)
                     DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive or FAR mass is not enabled, calculating stock part mass");
@@ -2002,10 +2004,14 @@ namespace WingProcedural
                             DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module type present");
                         if (aeroFARFieldInfoSemispan == null)
                             aeroFARFieldInfoSemispan = aeroFARModuleType.GetField ("b_2");
+                        if (aeroFARFieldInfoSemispan_Actual == null)
+                            aeroFARFieldInfoSemispan_Actual = aeroFARModuleType.GetField("b_2_actual");
                         if (aeroFARFieldInfoMAC == null)
                             aeroFARFieldInfoMAC = aeroFARModuleType.GetField ("MAC");
-                        if (aeroFARFieldInfoSurfaceArea == null)
-                            aeroFARFieldInfoSurfaceArea = aeroFARModuleType.GetField ("S");
+                        if (aeroFARFieldInfoMAC_Actual == null)
+                            aeroFARFieldInfoMAC_Actual = aeroFARModuleType.GetField("MAC_actual");
+                        //if (aeroFARFieldInfoSurfaceArea == null)
+                        //    aeroFARFieldInfoSurfaceArea = aeroFARModuleType.GetField ("S");
                         if (aeroFARFieldInfoMidChordSweep == null)
                             aeroFARFieldInfoMidChordSweep = aeroFARModuleType.GetField ("MidChordSweep");
                         if (aeroFARFieldInfoTaperRatio == null)
@@ -2034,8 +2040,10 @@ namespace WingProcedural
                             if (WPDebug.logCAV)
                                 DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info present");
                             aeroFARFieldInfoSemispan.SetValue (aeroFARModuleReference, aeroStatSemispan);
+                            aeroFARFieldInfoSemispan_Actual.SetValue(aeroFARModuleReference, aeroStatSemispan);
                             aeroFARFieldInfoMAC.SetValue (aeroFARModuleReference, aeroStatMeanAerodynamicChord);
-                            aeroFARFieldInfoSurfaceArea.SetValue (aeroFARModuleReference, aeroStatSurfaceArea);
+                            aeroFARFieldInfoMAC_Actual.SetValue(aeroFARModuleReference, aeroStatMeanAerodynamicChord);
+                            //aeroFARFieldInfoSurfaceArea.SetValue (aeroFARModuleReference, aeroStatSurfaceArea);
                             aeroFARFieldInfoMidChordSweep.SetValue (aeroFARModuleReference, aeroStatMidChordSweep);
                             aeroFARFieldInfoTaperRatio.SetValue (aeroFARModuleReference, aeroStatTaperRatio);
                             if (isCtrlSrf)
@@ -2047,8 +2055,19 @@ namespace WingProcedural
                                 DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
                             aeroFARMethodInfoUsed.Invoke (aeroFARModuleReference, null);
 
-                            part.SendMessage("GeometryPartModuleRebuildMeshData"); // for newFAR
+                            part.SendMessage("GeometryPartModuleRebuildMeshData"); // notify FAR that geometry has changed
                         }
+
+                        Debug.Log("=========================================");
+                        Debug.Log("b_2:" + aeroStatSemispan + "," + aeroFARFieldInfoSemispan.GetValue(aeroFARModuleReference));
+                        Debug.Log("b_2_actual:" + aeroStatSemispan + "," + aeroFARFieldInfoSemispan_Actual.GetValue(aeroFARModuleReference));
+                        Debug.Log("MAC:" + aeroStatMeanAerodynamicChord + "," + aeroFARFieldInfoMAC.GetValue(aeroFARModuleReference));
+                        Debug.Log("MAC_actual:" + aeroStatMeanAerodynamicChord + "," + aeroFARFieldInfoMAC_Actual.GetValue(aeroFARModuleReference));
+                        //Debug.Log("S:" + aeroStatSurfaceArea + "," + aeroFARFieldInfoSurfaceArea.GetValue(aeroFARModuleReference));
+                        Debug.Log("MidChordSweep:" + aeroStatMidChordSweep + "," + aeroFARFieldInfoMidChordSweep.GetValue(aeroFARModuleReference));
+                        Debug.Log("TaperRatio:" + aeroStatTaperRatio + "," + aeroFARFieldInfoTaperRatio.GetValue(aeroFARModuleReference));
+                        Debug.Log("ctrl fraction:" + aeroConstControlSurfaceFraction + "," + aeroFARFieldInfoControlSurfaceFraction.GetValue(aeroFARModuleReference));
+
                     }
                 }
             }

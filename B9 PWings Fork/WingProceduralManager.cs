@@ -9,7 +9,7 @@ namespace WingProcedural
     // Referenced from FAR debug manager
     // Credit goes to ferram4
 
-    [KSPAddon (KSPAddon.Startup.SpaceCentre, false)]
+    [KSPAddon (KSPAddon.Startup.SpaceCentre, true)]
     public class WingProceduralManager : MonoBehaviour
     {
         public static KSP.IO.PluginConfiguration config;
@@ -45,7 +45,8 @@ namespace WingProcedural
         public void Awake ()
         {
             LoadConfigs ();
-            GameEvents.onGUIApplicationLauncherReady.Add (OnGUIAppLauncherReady);
+            if (ApplicationLauncher.Instance != null)
+                OnGUIAppLauncherReady();
         }
 
         private void OnGUIAppLauncherReady ()
