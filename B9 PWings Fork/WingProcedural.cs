@@ -114,7 +114,7 @@ namespace WingProcedural
         private static Vector4 sharedBaseLengthLimits = new Vector4 (0.125f, 16f, 0.25f, 8f);
         private static Vector2 sharedBaseThicknessLimits = new Vector2 (0.04f, 1f);
         private static Vector4 sharedBaseWidthRootLimits = new Vector4 (0.125f, 16f, 0.125f, 1.5f);
-        private static Vector4 sharedBaseWidthTipLimits = new Vector4(0f, 16f, 0.125f, 1.5f);
+        private static Vector4 sharedBaseWidthTipLimits = new Vector4(0.0001f, 16f, 0.125f, 1.5f);
         private static Vector4 sharedBaseOffsetLimits = new Vector4 (-8f, 8f, -2f, 2f);
         private static Vector4 sharedEdgeTypeLimits = new Vector4 (1f, 4f, 1f, 3f);
         private static Vector4 sharedEdgeWidthLimits = new Vector4 (0f, 1f, 0.24f, 1f);

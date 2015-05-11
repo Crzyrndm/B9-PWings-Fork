@@ -18,9 +18,9 @@ namespace WingProcedural
             return GetEmbeddedContents (name, Assembly.GetExecutingAssembly (), out str) ? new Material (str) : null;
         }
 
-        public static bool GetEmbeddedContents (string resource, System.Reflection.Assembly assembly, out string contents)
+        public static bool GetEmbeddedContents (string resource, Assembly assembly, out string contents)
         {
-            if (WPDebug.logFuel)
+            if (WPDebug.logUpdateMaterials)
                 Debug.Log ("ResourceExtractor | GetEmbeddedContents | Resource: " + resource);
             contents = string.Empty;
             try
