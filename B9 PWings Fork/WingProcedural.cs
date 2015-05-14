@@ -59,6 +59,25 @@ namespace WingProcedural
         {
             return v.x.ToString ("F2") + ", " + v.y.ToString ("F2") + ", " + v.z.ToString ("F2");
         }
+
+        ArrowPointer pointer;
+        void DrawArrow(Vector3 dir)
+        {
+            if (pointer == null)
+                pointer = ArrowPointer.Create(part.partTransform, Vector3.zero, dir, 30, Color.red, true);
+            else
+                pointer.Direction = dir;
+        }
+
+        void destroyArrow()
+        {
+            if (pointer != null)
+            {
+                Destroy(pointer);
+                pointer = null;
+            }
+        }
+
         #endregion
 
         #region Mesh properties
