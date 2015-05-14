@@ -310,8 +310,6 @@ namespace WingProcedural
         private void OnDestroy ()
         {
             SaveConfigs ();
-            GameEvents.onGUIApplicationLauncherReady.Remove (OnGUIAppLauncherReady);
-            if (debugButtonStock != null) ApplicationLauncher.Instance.RemoveModApplication (debugButtonStock);
         }
 
     }
