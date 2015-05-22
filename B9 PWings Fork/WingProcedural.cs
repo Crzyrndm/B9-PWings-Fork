@@ -130,13 +130,13 @@ namespace WingProcedural
                 return incrementCtrl;
         }
 
-        private static Vector4 sharedBaseLengthLimits = new Vector4 (0.125f, 16f, 0.25f, 8f);
+        private static Vector4 sharedBaseLengthLimits = new Vector4 (0.125f, 16f, 0.04f, 8f);
         private static Vector2 sharedBaseThicknessLimits = new Vector2 (0.04f, 1f);
-        private static Vector4 sharedBaseWidthRootLimits = new Vector4 (0.125f, 16f, 0.125f, 1.5f);
-        private static Vector4 sharedBaseWidthTipLimits = new Vector4(0.0001f, 16f, 0.125f, 1.5f);
+        private static Vector4 sharedBaseWidthRootLimits = new Vector4 (0.125f, 16f, 0.04f, 1.6f);
+        private static Vector4 sharedBaseWidthTipLimits = new Vector4(0.0001f, 16f, 0.04f, 1.6f);
         private static Vector4 sharedBaseOffsetLimits = new Vector4 (-8f, 8f, -2f, 2f);
         private static Vector4 sharedEdgeTypeLimits = new Vector4 (1f, 4f, 1f, 3f);
-        private static Vector4 sharedEdgeWidthLimits = new Vector4 (0f, 1f, 0.24f, 1f);
+        private static Vector4 sharedEdgeWidthLimits = new Vector4 (0f, 1f, 0f, 1f);
         private static Vector2 sharedMaterialLimits = new Vector2 (0f, 4f);
         private static Vector2 sharedColorLimits = new Vector2 (0f, 1f);
 
@@ -884,6 +884,8 @@ namespace WingProcedural
                     meshFilterWingSection.mesh.uv = uv;
                     meshFilterWingSection.mesh.RecalculateBounds ();
 
+                    
+
                     MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider> ();
                     if (meshCollider == null)
                         meshCollider = meshFilterWingSection.gameObject.AddComponent<MeshCollider> ();
@@ -901,7 +903,7 @@ namespace WingProcedural
                 if (meshFilterWingSurface != null)
                 {
                     meshFilterWingSurface.transform.localPosition = Vector3.zero;
-                    meshFilterWingSurface.transform.localRotation = Quaternion.Euler (0f, 0f, 0f);
+                    meshFilterWingSurface.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
 
                     int length = meshReferenceWingSurface.vp.Length;
                     Vector3[] vp = new Vector3[length];
@@ -956,6 +958,15 @@ namespace WingProcedural
                         }
                     }
 
+                    Debug.Log("orientation: " + part.transform.rotation.eulerAngles);
+                    Debug.Log(meshFilterWingSurface.transform.rotation.eulerAngles);
+                    Debug.Log((Quaternion.Inverse(part.transform.rotation) * meshFilterWingSurface.transform.rotation).eulerAngles);
+                    //if (part.transform.rotation.eulerAngles.x > 180)
+                    //{
+                    //    meshFilterWingSurface.transform.rotation.SetLookRotation(meshFilterWingSurface.transform.forward, -meshFilterWingSurface.transform.up);
+                    //}
+                    
+
                     meshFilterWingSurface.mesh.vertices = vp;
                     meshFilterWingSurface.mesh.uv = uv;
                     meshFilterWingSurface.mesh.uv2 = uv2;
@@ -963,6 +974,7 @@ namespace WingProcedural
                     meshFilterWingSurface.mesh.RecalculateBounds ();
                     if (WPDebug.logUpdateGeometry)
                         DebugLogWithID ("UpdateGeometry", "Wing surface | Finished");
+
                 }
 
                 // Next, time for leading and trailing edges
@@ -1355,10 +1367,7 @@ namespace WingProcedural
             if (HighLogic.LoadedSceneIsEditor)
                 CalculateVolume ();
             if (updateAerodynamics)
-            {
-                UpdateCollidersForFAR();
                 CalculateAerodynamicValues();
-            }
         }
 
         public void UpdateCounterparts()
@@ -2074,7 +2083,7 @@ namespace WingProcedural
                                 DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
                             aeroFARMethodInfoUsed.Invoke (aeroFARModuleReference, null);
 
-                            part.SendMessage("GeometryPartModuleRebuildMeshData"); // notify FAR that geometry has changed
+                            StartCoroutine(updateFARGeometry());
                         }
 
                         //Debug.Log("=========================================");
@@ -2121,6 +2130,23 @@ namespace WingProcedural
                 part.DragCubes.Cubes.Add(DragCube);
                 part.DragCubes.ResetCubeWeights();
             }
+        }
+
+        float updateTimeDelay = 0;
+        IEnumerator updateFARGeometry()
+        {
+            bool running = updateTimeDelay > 0;
+            updateTimeDelay = 0.5f;
+            if (running)
+                yield break;
+            while (updateTimeDelay > 0)
+            {
+                updateTimeDelay -= TimeWarp.deltaTime;
+                yield return null;
+            }
+            UpdateCollidersForFAR();
+            part.SendMessage("GeometryPartModuleRebuildMeshData"); // notify FAR that geometry has changed
+            updateTimeDelay = 0;
         }
 
         private void UpdateCollidersForFAR ()
@@ -2342,9 +2368,9 @@ namespace WingProcedural
                 DrawFieldGroupHeader (ref sharedFieldGroupBaseStatic, "Base");
                 if (sharedFieldGroupBaseStatic)
                 {
-                    DrawField (ref sharedBaseLength, sharedIncrementMain, 1f, GetLimitsFromType (sharedBaseLengthLimits), "Length", uiColorSliderBase, 0, 0);
-                    DrawField(ref sharedBaseWidthRoot, sharedIncrementMain, 1f, GetLimitsFromType(sharedBaseWidthRootLimits), "Width (root)", uiColorSliderBase, 1, 0);
-                    DrawField(ref sharedBaseWidthTip, sharedIncrementMain, 1f, GetLimitsFromType(sharedBaseWidthTipLimits), "Width (tip)", uiColorSliderBase, 2, 0);
+                    DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), GetLimitsFromType(sharedBaseLengthLimits), "Length", uiColorSliderBase, 0, 0);
+                    DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), GetLimitsFromType(sharedBaseWidthRootLimits), "Width (root)", uiColorSliderBase, 1, 0);
+                    DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), GetLimitsFromType(sharedBaseWidthTipLimits), "Width (tip)", uiColorSliderBase, 2, 0);
                     if (isCtrlSrf)
                         DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (root)", uiColorSliderBase, 3, 0);
                     DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0);
