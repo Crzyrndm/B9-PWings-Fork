@@ -9,55 +9,34 @@ namespace WingProcedural
 {
     public static class UtilityTexture
     {
-        static Dictionary<string, Texture2D> textures;
+        static Dictionary<int, Texture2D> textures = new Dictionary<int,Texture2D>();
         static public Texture2D ToTexture2D (this string base64, string id = null)
         {
-            var tex = new Texture2D (16, 16);
+            Texture2D tex = new Texture2D (16, 16);
             tex.LoadImage (Convert.FromBase64String (base64));
 
-            if (string.IsNullOrEmpty (id)) return tex;
-            if (textures == null) textures = new Dictionary<string, Texture2D> ();
-            if (!textures.ContainsKey (id) || textures[id] == null)
-            {
-                textures.Add (id, tex);
-            }
+            int val = 0;
+            if (!int.TryParse(id, out val))
+                return tex;
+            if (!textures.ContainsKey (val) || textures[val] == null)
+                textures.Add (val, tex);
             else
             {
                 Debug.Log ("vlbTexture.ToTexture2D() Error :: id <" + id + "> already exist and will be replaced");
-                textures[id] = tex;
+                textures[val] = tex;
             }
 
             return tex;
         }
-
-        static public bool HasTextureId (string id)
-        {
-            return textures != null && textures.ContainsKey (id) && textures[id] != null;
-        }
-        static public Texture2D GetTextureFromId (this string id)
-        {
-            if (string.IsNullOrEmpty (id))
-            {
-                Debug.LogWarning ("vlbTexture.GetTextureFromId() Error :: id should not be null or empty");
-                return null;
-            }
-            if (textures == null || !textures.ContainsKey (id))
-            {
-                Debug.LogWarning ("vlbTexture.GetTextureFromId() Error :: id <" + id + "> not found, consider adding it first by calling base64Source.ToTexture2D(" + id + ")");
-                return null;
-            }
-
-            if (textures[id] != null) return textures[id];
-
-            Debug.LogWarning ("vlbTexture.GetTextureFromId() Error : texture with id <" + id + "> is destroyed, consider adding it again");
-            return null;
-        }
+        
         static public Texture2D GetTexture2D (this Color c)
         {
-            var colorKey = c.ToInt ().ToString ();
-            if (textures == null) textures = new Dictionary<string, Texture2D> ();
-            if (textures.ContainsKey (colorKey) && textures[colorKey] != null) return textures[colorKey];
-            var tex = new Texture2D (1, 1, TextureFormat.ARGB32, false);
+            int colorKey = c.ToInt();
+            if (textures == null)
+                textures = new Dictionary<int, Texture2D> ();
+            if (textures.ContainsKey (colorKey) && textures[colorKey] != null)
+                return textures[colorKey];
+            Texture2D tex = new Texture2D (1, 1, TextureFormat.ARGB32, false);
             tex.SetPixel (0, 0, c);
             tex.Apply ();
             textures.Add (colorKey, tex);

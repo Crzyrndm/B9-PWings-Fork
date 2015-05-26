@@ -882,8 +882,8 @@ namespace WingProcedural
 
                     meshFilterWingSection.mesh.vertices = vp;
                     meshFilterWingSection.mesh.uv = uv;
-                    if (meshFilterWingSection.mesh.triangles.Length <= 12)
-                        meshFilterWingSection.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterWingSection.mesh.triangles);
+                    //if (meshFilterWingSection.mesh.triangles.Length <= 12)
+                    //    meshFilterWingSection.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterWingSection.mesh.triangles);
                     meshFilterWingSection.mesh.RecalculateBounds ();
 
                     MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider> ();
@@ -961,8 +961,8 @@ namespace WingProcedural
                     meshFilterWingSurface.mesh.vertices = vp;
                     meshFilterWingSurface.mesh.uv = uv;
                     meshFilterWingSurface.mesh.uv2 = uv2;
-                    if (meshFilterWingSurface.mesh.triangles.Length <= 12)
-                        meshFilterWingSurface.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterWingSurface.mesh.triangles);
+                    //if (meshFilterWingSurface.mesh.triangles.Length <= 12)
+                    //    meshFilterWingSurface.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterWingSurface.mesh.triangles);
                     meshFilterWingSurface.mesh.colors = cl;
                     meshFilterWingSurface.mesh.RecalculateBounds ();
 
@@ -1037,8 +1037,8 @@ namespace WingProcedural
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.uv = uv;
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.uv2 = uv2;
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.colors = cl;
-                    if (meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.triangles.Length <= getSingleTriCount(wingEdgeTypeTrailingInt))
-                        meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.triangles = UtilityTexture.doubleSideTris(meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.triangles);
+                    //if (meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.triangles.Length <= getSingleTriCount(wingEdgeTypeTrailingInt))
+                    //    meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.triangles = UtilityTexture.doubleSideTris(meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.triangles);
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.RecalculateBounds();
                     if (WPDebug.logUpdateGeometry)
                         DebugLogWithID ("UpdateGeometry", "Wing edge trailing | Finished");
@@ -1079,8 +1079,8 @@ namespace WingProcedural
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.uv = uv;
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.uv2 = uv2;
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.colors = cl;
-                    if (meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.triangles.Length <= getSingleTriCount(wingEdgeTypeLeadingInt))
-                        meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.triangles = UtilityTexture.doubleSideTris(meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.triangles);
+                    //if (meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.triangles.Length <= getSingleTriCount(wingEdgeTypeLeadingInt))
+                    //    meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.triangles = UtilityTexture.doubleSideTris(meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.triangles);
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.RecalculateBounds ();
                     if (WPDebug.logUpdateGeometry)
                         DebugLogWithID ("UpdateGeometry", "Wing edge leading | Finished");
@@ -1186,8 +1186,8 @@ namespace WingProcedural
                     meshFilterCtrlFrame.mesh.uv = uv;
                     meshFilterCtrlFrame.mesh.uv2 = uv2;
                     meshFilterCtrlFrame.mesh.colors = cl;
-                    if (meshFilterCtrlFrame.mesh.triangles.Length <= 60)
-                        meshFilterCtrlFrame.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterCtrlFrame.mesh.triangles);
+                    //if (meshFilterCtrlFrame.mesh.triangles.Length <= 60)
+                    //    meshFilterCtrlFrame.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterCtrlFrame.mesh.triangles);
                     meshFilterCtrlFrame.mesh.RecalculateBounds ();
 
                     MeshCollider meshCollider = meshFilterCtrlFrame.gameObject.GetComponent<MeshCollider> ();
@@ -1281,8 +1281,8 @@ namespace WingProcedural
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.uv = uv;
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.uv2 = uv2;
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.colors = cl;
-                    if (meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.triangles.Length <= getSingleTriCount(ctrlEdgeTypeInt))
-                        meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.triangles = UtilityTexture.doubleSideTris(meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.triangles);
+                    //if (meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.triangles.Length <= getSingleTriCount(ctrlEdgeTypeInt))
+                    //    meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.triangles = UtilityTexture.doubleSideTris(meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.triangles);
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.RecalculateBounds ();
                     if (WPDebug.logUpdateGeometry)
                         DebugLogWithID ("UpdateGeometry", "Control surface edge | Finished");
@@ -1359,8 +1359,8 @@ namespace WingProcedural
                     meshFilterCtrlSurface.mesh.uv = uv;
                     meshFilterCtrlSurface.mesh.uv2 = uv2;
                     meshFilterCtrlSurface.mesh.colors = cl;
-                    if (meshFilterCtrlSurface.mesh.triangles.Length <= 12)
-                        meshFilterCtrlSurface.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterCtrlSurface.mesh.triangles);
+                    //if (meshFilterCtrlSurface.mesh.triangles.Length <= 12)
+                    //    meshFilterCtrlSurface.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterCtrlSurface.mesh.triangles);
                     Debug.Log(meshFilterCtrlSurface.mesh.triangles.Length);
                     meshFilterCtrlSurface.mesh.RecalculateBounds ();
                     if (WPDebug.logUpdateGeometry)
@@ -2257,8 +2257,7 @@ namespace WingProcedural
                 Fields["aeroStatVolume"].guiActiveEditor = showWingData;
 
                 // Force tweakable window to refresh
-                if (myWindow != null)
-                    myWindow.displayDirty = true;
+                UpdateWindow();
             }
         }
 
@@ -2534,52 +2533,45 @@ namespace WingProcedural
 
         private void SetupFields()
         {
-            // SetFieldVisibility ("sharedFieldGroupBase", true);
-            SetFieldType("sharedBaseLength", 1, GetLimitsFromType(sharedBaseLengthLimits), sharedIncrementMain, false, GetDefault(sharedBaseLengthDefaults));
-            SetFieldType("sharedBaseWidthRoot", GetFieldMode(), GetLimitsFromType(sharedBaseWidthRootLimits), sharedIncrementMain, false, GetDefault(sharedBaseWidthRootDefaults));
-            SetFieldType("sharedBaseWidthTip", GetFieldMode(), GetLimitsFromType(sharedBaseWidthTipLimits), sharedIncrementMain, false, GetDefault(sharedBaseWidthTipDefaults));
-            SetFieldType("sharedBaseThicknessRoot", 2, sharedBaseThicknessLimits, sharedIncrementSmall, false, GetDefault(sharedBaseThicknessRootDefaults));
-            SetFieldType("sharedBaseThicknessTip", 2, sharedBaseThicknessLimits, sharedIncrementSmall, false, GetDefault(sharedBaseThicknessTipDefaults));
-            SetFieldType("sharedBaseOffsetRoot", GetFieldMode(), GetLimitsFromType(sharedBaseOffsetLimits), GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), false, GetDefault(sharedBaseOffsetRootDefaults));
-            SetFieldType("sharedBaseOffsetTip", GetFieldMode(), GetLimitsFromType(sharedBaseOffsetLimits), GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), false, GetDefault(sharedBaseOffsetTipDefaults));
+            sharedBaseLength = SetupFieldValue(sharedBaseLength, GetLimitsFromType(sharedBaseLengthLimits), GetDefault(sharedBaseLengthDefaults));
+            sharedBaseWidthRoot = SetupFieldValue(sharedBaseWidthRoot, GetLimitsFromType(sharedBaseWidthRootLimits), GetDefault(sharedBaseWidthRootDefaults));
+            sharedBaseWidthTip = SetupFieldValue(sharedBaseWidthTip, GetLimitsFromType(sharedBaseWidthTipLimits), GetDefault(sharedBaseWidthTipDefaults));
+            sharedBaseThicknessRoot = SetupFieldValue(sharedBaseThicknessRoot, sharedBaseThicknessLimits, GetDefault(sharedBaseThicknessRootDefaults));
+            sharedBaseThicknessTip = SetupFieldValue(sharedBaseThicknessTip, sharedBaseThicknessLimits, GetDefault(sharedBaseThicknessTipDefaults));
+            sharedBaseOffsetRoot = SetupFieldValue(sharedBaseOffsetRoot, GetLimitsFromType(sharedBaseOffsetLimits), GetDefault(sharedBaseOffsetRootDefaults));
+            sharedBaseOffsetTip = SetupFieldValue(sharedBaseOffsetTip, GetLimitsFromType(sharedBaseOffsetLimits), GetDefault(sharedBaseOffsetTipDefaults));
 
-            // SetFieldVisibility ("sharedFieldGroupEdgeTrailing", true);
-            SetFieldType("sharedEdgeTypeTrailing", 2, GetLimitsFromType(sharedEdgeTypeLimits), sharedIncrementInt, false, GetDefault(sharedEdgeTypeTrailingDefaults));
-            SetFieldType("sharedEdgeWidthTrailingRoot", 2, GetLimitsFromType(sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault(sharedEdgeWidthTrailingRootDefaults));
-            SetFieldType("sharedEdgeWidthTrailingTip", 2, GetLimitsFromType(sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault(sharedEdgeWidthTrailingTipDefaults));
+            sharedEdgeTypeTrailing = SetupFieldValue(sharedEdgeTypeTrailing, GetLimitsFromType(sharedEdgeTypeLimits), GetDefault(sharedEdgeTypeTrailingDefaults));
+            sharedEdgeWidthTrailingRoot = SetupFieldValue(sharedEdgeWidthTrailingRoot, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthTrailingRootDefaults));
+            sharedEdgeWidthTrailingTip = SetupFieldValue(sharedEdgeWidthTrailingTip, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthTrailingTipDefaults));
 
-            // SetFieldVisibility ("sharedFieldGroupEdgeLeading", !isCtrlSrf);
-            SetFieldType("sharedEdgeTypeLeading", 2, GetLimitsFromType(sharedEdgeTypeLimits), sharedIncrementInt, false, GetDefault(sharedEdgeTypeLeadingDefaults));
-            SetFieldType("sharedEdgeWidthLeadingRoot", 2, GetLimitsFromType(sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault(sharedEdgeWidthLeadingRootDefaults));
-            SetFieldType("sharedEdgeWidthLeadingTip", 2, GetLimitsFromType(sharedEdgeWidthLimits), sharedIncrementSmall, false, GetDefault(sharedEdgeWidthLeadingTipDefaults));
+            sharedEdgeTypeLeading = SetupFieldValue(sharedEdgeTypeLeading, GetLimitsFromType(sharedEdgeTypeLimits), GetDefault(sharedEdgeTypeLeadingDefaults));
+            sharedEdgeWidthLeadingRoot = SetupFieldValue(sharedEdgeWidthLeadingRoot, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthLeadingRootDefaults));
+            sharedEdgeWidthLeadingTip = SetupFieldValue(sharedEdgeWidthLeadingTip, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthLeadingTipDefaults));
 
-            // SetFieldVisibility ("sharedFieldGroupColorST", true);
-            SetFieldType("sharedMaterialST", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault(sharedMaterialSTDefaults));
-            SetFieldType("sharedColorSTOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSTOpacityDefaults));
-            SetFieldType("sharedColorSTHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSTHueDefaults));
-            SetFieldType("sharedColorSTSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSTSaturationDefaults));
-            SetFieldType("sharedColorSTBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSTBrightnessDefaults));
+            sharedMaterialST = SetupFieldValue(sharedMaterialST, sharedMaterialLimits, GetDefault(sharedMaterialSTDefaults));
+            sharedColorSTOpacity = SetupFieldValue(sharedColorSTOpacity, sharedColorLimits, GetDefault(sharedColorSTOpacityDefaults));
+            sharedColorSTHue = SetupFieldValue(sharedColorSTHue, sharedColorLimits, GetDefault(sharedColorSTHueDefaults));
+            sharedColorSTSaturation = SetupFieldValue(sharedColorSTSaturation, sharedColorLimits, GetDefault(sharedColorSTSaturationDefaults));
+            sharedColorSTBrightness = SetupFieldValue(sharedColorSTBrightness, sharedColorLimits, GetDefault(sharedColorSTBrightnessDefaults));
 
-            // SetFieldVisibility ("sharedFieldGroupColorSB", true);
-            SetFieldType("sharedMaterialSB", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault(sharedMaterialSBDefaults));
-            SetFieldType("sharedColorSBOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSBOpacityDefaults));
-            SetFieldType("sharedColorSBHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSBHueDefaults));
-            SetFieldType("sharedColorSBSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSBSaturationDefaults));
-            SetFieldType("sharedColorSBBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorSBBrightnessDefaults));
+            sharedMaterialSB = SetupFieldValue(sharedMaterialSB, sharedMaterialLimits, GetDefault(sharedMaterialSBDefaults));
+            sharedColorSBOpacity = SetupFieldValue(sharedColorSBOpacity, sharedColorLimits, GetDefault(sharedColorSBOpacityDefaults));
+            sharedColorSBHue = SetupFieldValue(sharedColorSBHue, sharedColorLimits, GetDefault(sharedColorSBHueDefaults));
+            sharedColorSBSaturation = SetupFieldValue(sharedColorSBSaturation, sharedColorLimits, GetDefault(sharedColorSBSaturationDefaults));
+            sharedColorSBBrightness = SetupFieldValue(sharedColorSBBrightness, sharedColorLimits, GetDefault(sharedColorSBBrightnessDefaults));
 
-            // SetFieldVisibility ("sharedFieldGroupColorET", true);
-            SetFieldType("sharedMaterialET", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault(sharedMaterialETDefaults));
-            SetFieldType("sharedColorETOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorETOpacityDefaults));
-            SetFieldType("sharedColorETHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorETHueDefaults));
-            SetFieldType("sharedColorETSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorETSaturationDefaults));
-            SetFieldType("sharedColorETBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorETBrightnessDefaults));
+            sharedMaterialET = SetupFieldValue(sharedMaterialET, sharedMaterialLimits, GetDefault(sharedMaterialETDefaults));
+            sharedColorETOpacity = SetupFieldValue(sharedColorETOpacity, sharedColorLimits, GetDefault(sharedColorETOpacityDefaults));
+            sharedColorETHue = SetupFieldValue(sharedColorETHue, sharedColorLimits, GetDefault(sharedColorETHueDefaults));
+            sharedColorETSaturation = SetupFieldValue(sharedColorETSaturation, sharedColorLimits, GetDefault(sharedColorETSaturationDefaults));
+            sharedColorETBrightness = SetupFieldValue(sharedColorETBrightness, sharedColorLimits, GetDefault(sharedColorETBrightnessDefaults));
 
-            // SetFieldVisibility ("sharedFieldGroupColorEL", !isCtrlSrf);
-            SetFieldType("sharedMaterialEL", 2, sharedMaterialLimits, sharedIncrementInt, false, GetDefault(sharedMaterialELDefaults));
-            SetFieldType("sharedColorELOpacity", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorELOpacityDefaults));
-            SetFieldType("sharedColorELHue", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorELHueDefaults));
-            SetFieldType("sharedColorELSaturation", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorELSaturationDefaults));
-            SetFieldType("sharedColorELBrightness", 2, sharedColorLimits, sharedIncrementColor, false, GetDefault(sharedColorELBrightnessDefaults));
+            sharedMaterialEL = SetupFieldValue(sharedMaterialEL, sharedMaterialLimits, GetDefault(sharedMaterialELDefaults));
+            sharedColorELOpacity = SetupFieldValue(sharedColorELOpacity, sharedColorLimits, GetDefault(sharedColorELOpacityDefaults));
+            sharedColorELHue = SetupFieldValue(sharedColorELHue, sharedColorLimits, GetDefault(sharedColorELHueDefaults));
+            sharedColorELSaturation = SetupFieldValue(sharedColorELSaturation, sharedColorLimits, GetDefault(sharedColorELSaturationDefaults));
+            sharedColorELBrightness = SetupFieldValue(sharedColorELBrightness, sharedColorLimits, GetDefault(sharedColorELBrightnessDefaults));
 
             UpdateWindow();
             isSetToDefaultValues = true;
@@ -2591,14 +2583,12 @@ namespace WingProcedural
             else return 2;
         }
 
-        private void SetFieldType(string name, int type, Vector2 limits, float increment, bool visible, float defaultValue)
+        private float SetupFieldValue(float value, Vector2 limits, float defaultValue)
         {
-            FieldInfo field = this.GetType().GetField(name);
-            float value = (float)field.GetValue(this);
             if (!isSetToDefaultValues)
-                field.SetValue(this, defaultValue);
+                return defaultValue;
             else
-                field.SetValue(this, Mathf.Clamp(value, limits.x, limits.y));
+                return Mathf.Clamp(value, limits.x, limits.y);
         }
 
         /// <summary>
@@ -2612,6 +2602,7 @@ namespace WingProcedural
         /// <param name="hsbColor">field colour</param>
         /// <param name="fieldID">tooltip stuff</param>
         /// <param name="fieldType">tooltip stuff</param>
+        /// <param name="allowFine">Whether right click drag behaves as fine control or not</param>
         private void DrawField (ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
         {
             bool changed = false;
@@ -2916,8 +2907,10 @@ namespace WingProcedural
 
         private Vector2 GetVertexUV2 (float selectedLayer)
         {
-            if (selectedLayer == 0) return new Vector2 (0f, 1f);
-            else return new Vector2 ((selectedLayer - 1f) / 3f, 0f);
+            if (selectedLayer == 0)
+                return new Vector2 (0f, 1f);
+            else
+                return new Vector2 ((selectedLayer - 1f) / 3f, 0f);
         }
 
         private Color ColorHSBToRGB (Vector4 hsbColor)
