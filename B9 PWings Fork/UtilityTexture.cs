@@ -80,7 +80,7 @@ namespace WingProcedural
             return new Color (c.r, c.g, c.b, a);
         }
 
-        public static int[] invertTris(int[] toinvert)
+        public static int[] doubleSideTris(int[] toinvert)
         {
             List<int> invertTris = toinvert.ToList();
             for (int i = 0; i < toinvert.Length; i += 3)
