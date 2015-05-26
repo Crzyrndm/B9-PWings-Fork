@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace WingProcedural
@@ -77,6 +78,18 @@ namespace WingProcedural
         public static Color WithAlpha (this Color c, float a)
         {
             return new Color (c.r, c.g, c.b, a);
+        }
+
+        public static int[] invertTris(int[] toinvert)
+        {
+            List<int> invertTris = toinvert.ToList();
+            for (int i = 0; i < toinvert.Length; i += 3)
+            {
+                invertTris.Add(toinvert[i + 2]);
+                invertTris.Add(toinvert[i + 1]);
+                invertTris.Add(toinvert[i]);
+            }
+            return invertTris.ToArray();
         }
     }
 }
