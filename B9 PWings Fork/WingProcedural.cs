@@ -871,8 +871,6 @@ namespace WingProcedural
 
                     meshFilterWingSection.mesh.vertices = vp;
                     meshFilterWingSection.mesh.uv = uv;
-                    //if (meshFilterWingSection.mesh.triangles.Length <= 12)
-                    //    meshFilterWingSection.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterWingSection.mesh.triangles);
                     meshFilterWingSection.mesh.RecalculateBounds ();
 
                     MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider> ();
@@ -950,8 +948,6 @@ namespace WingProcedural
                     meshFilterWingSurface.mesh.vertices = vp;
                     meshFilterWingSurface.mesh.uv = uv;
                     meshFilterWingSurface.mesh.uv2 = uv2;
-                    //if (meshFilterWingSurface.mesh.triangles.Length <= 12)
-                    //    meshFilterWingSurface.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterWingSurface.mesh.triangles);
                     meshFilterWingSurface.mesh.colors = cl;
                     meshFilterWingSurface.mesh.RecalculateBounds ();
 
@@ -1026,8 +1022,6 @@ namespace WingProcedural
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.uv = uv;
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.uv2 = uv2;
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.colors = cl;
-                    //if (meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.triangles.Length <= getSingleTriCount(wingEdgeTypeTrailingInt))
-                    //    meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.triangles = UtilityTexture.doubleSideTris(meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.triangles);
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.RecalculateBounds();
                     if (WPDebug.logUpdateGeometry)
                         DebugLogWithID ("UpdateGeometry", "Wing edge trailing | Finished");
@@ -1068,8 +1062,6 @@ namespace WingProcedural
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.uv = uv;
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.uv2 = uv2;
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.colors = cl;
-                    //if (meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.triangles.Length <= getSingleTriCount(wingEdgeTypeLeadingInt))
-                    //    meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.triangles = UtilityTexture.doubleSideTris(meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.triangles);
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.RecalculateBounds ();
                     if (WPDebug.logUpdateGeometry)
                         DebugLogWithID ("UpdateGeometry", "Wing edge leading | Finished");
@@ -1175,8 +1167,6 @@ namespace WingProcedural
                     meshFilterCtrlFrame.mesh.uv = uv;
                     meshFilterCtrlFrame.mesh.uv2 = uv2;
                     meshFilterCtrlFrame.mesh.colors = cl;
-                    //if (meshFilterCtrlFrame.mesh.triangles.Length <= 60)
-                    //    meshFilterCtrlFrame.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterCtrlFrame.mesh.triangles);
                     meshFilterCtrlFrame.mesh.RecalculateBounds ();
 
                     MeshCollider meshCollider = meshFilterCtrlFrame.gameObject.GetComponent<MeshCollider> ();
@@ -1270,8 +1260,6 @@ namespace WingProcedural
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.uv = uv;
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.uv2 = uv2;
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.colors = cl;
-                    //if (meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.triangles.Length <= getSingleTriCount(ctrlEdgeTypeInt))
-                    //    meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.triangles = UtilityTexture.doubleSideTris(meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.triangles);
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.RecalculateBounds ();
                     if (WPDebug.logUpdateGeometry)
                         DebugLogWithID ("UpdateGeometry", "Control surface edge | Finished");
@@ -1348,9 +1336,6 @@ namespace WingProcedural
                     meshFilterCtrlSurface.mesh.uv = uv;
                     meshFilterCtrlSurface.mesh.uv2 = uv2;
                     meshFilterCtrlSurface.mesh.colors = cl;
-                    //if (meshFilterCtrlSurface.mesh.triangles.Length <= 12)
-                    //    meshFilterCtrlSurface.mesh.triangles = UtilityTexture.doubleSideTris(meshFilterCtrlSurface.mesh.triangles);
-                    Debug.Log(meshFilterCtrlSurface.mesh.triangles.Length);
                     meshFilterCtrlSurface.mesh.RecalculateBounds ();
                     if (WPDebug.logUpdateGeometry)
                         DebugLogWithID ("UpdateGeometry", "Control surface top | Finished");
@@ -1362,40 +1347,6 @@ namespace WingProcedural
                 CalculateVolume ();
             if (updateAerodynamics)
                 StartCoroutine(updateAeroDelayed());
-        }
-
-        private int getSingleTriCount(int edgeType)
-        {
-            if (!isCtrlSrf)
-            {
-                switch (edgeType)
-                {
-                    case 0: // no edge
-                        return 6;
-                    case 1: // rounded
-                        return 258;
-                    case 2: // biconvex
-                        return 270;
-                    case 3: // triangular
-                        return 90;
-                    default:
-                        return 0;
-                }
-            }
-            else
-            {
-                switch (edgeType)
-                {
-                    case 0: // rounded
-                        return 390;
-                    case 1: // biconvex
-                        return 438;
-                    case 2: // triangular
-                        return 150;
-                    default:
-                        return 0;
-                }
-            }
         }
 
         public void UpdateCounterparts()
