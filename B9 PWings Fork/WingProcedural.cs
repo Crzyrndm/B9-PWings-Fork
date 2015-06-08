@@ -2121,19 +2121,7 @@ namespace WingProcedural
                             if (WPDebug.logCAV)
                                 DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
                             aeroFARMethodInfoUsed.Invoke (aeroFARModuleReference, null);
-
-                            StartCoroutine(updateFARGeometry());
                         }
-
-                        //Debug.Log("=========================================");
-                        //Debug.Log("b_2: " + aeroStatSemispan + ", " + aeroFARFieldInfoSemispan.GetValue(aeroFARModuleReference));
-                        //Debug.Log("b_2_actual: " + aeroStatSemispan + ", " + aeroFARFieldInfoSemispan_Actual.GetValue(aeroFARModuleReference));
-                        //Debug.Log("MAC: " + aeroStatMeanAerodynamicChord + ", " + aeroFARFieldInfoMAC.GetValue(aeroFARModuleReference));
-                        //Debug.Log("MAC_actual: " + aeroStatMeanAerodynamicChord + ", " + aeroFARFieldInfoMAC_Actual.GetValue(aeroFARModuleReference));
-                        //Debug.Log("S: " + aeroStatSurfaceArea + ", " + aeroFARFieldInfoSurfaceArea.GetValue(aeroFARModuleReference));
-                        //Debug.Log("MidChordSweep: " + aeroStatMidChordSweep + ", " + aeroFARFieldInfoMidChordSweep.GetValue(aeroFARModuleReference));
-                        //Debug.Log("TaperRatio: " + aeroStatTaperRatio + ", " + aeroFARFieldInfoTaperRatio.GetValue(aeroFARModuleReference));
-                        //Debug.Log("ctrl fraction: " + aeroConstControlSurfaceFraction + ", " + aeroFARFieldInfoControlSurfaceFraction.GetValue(aeroFARModuleReference));
                     }
                 }
             }
@@ -2162,17 +2150,11 @@ namespace WingProcedural
             if (WPDebug.logCAV)
                 DebugLogWithID ("CalculateAerodynamicValues", "Finished");
 
-            if (!assemblyFARUsed)
-            {
-                DragCube DragCube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
-                part.DragCubes.ClearCubes();
-                part.DragCubes.Cubes.Add(DragCube);
-                part.DragCubes.ResetCubeWeights();
-            }
+            StartCoroutine(updateGeometry());
         }
 
         float updateTimeDelay = 0;
-        IEnumerator updateFARGeometry()
+        IEnumerator updateGeometry()
         {
             bool running = updateTimeDelay > 0;
             updateTimeDelay = 0.5f;
@@ -2183,8 +2165,18 @@ namespace WingProcedural
                 updateTimeDelay -= TimeWarp.deltaTime;
                 yield return null;
             }
-            UpdateCollidersForFAR();
-            part.SendMessage("GeometryPartModuleRebuildMeshData"); // notify FAR that geometry has changed
+            if (assemblyFARUsed)
+            {
+                UpdateCollidersForFAR();
+                part.SendMessage("GeometryPartModuleRebuildMeshData"); // notify FAR that geometry has changed
+            }
+            else
+            {
+                DragCube DragCube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
+                part.DragCubes.ClearCubes();
+                part.DragCubes.Cubes.Add(DragCube);
+                part.DragCubes.ResetCubeWeights();
+            }
             updateTimeDelay = 0;
         }
 
