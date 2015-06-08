@@ -2017,30 +2017,27 @@ namespace WingProcedural
                 DebugLogWithID ("CalculateAerodynamicValues", "Passed cost/force/torque");
 
             // Stock-only values
-
-            if (!assemblyFARUsed || !assemblyFARMass)
-            {
-                if (WPDebug.logCAV)
-                    DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive or FAR mass is not enabled, calculating stock part mass");
-                part.mass = Mathf.Round ((float) aeroStatMass * 100f) / 100f;
-            }
             if (!assemblyFARUsed)
             {
+                float stockLiftCoefficient = (float)aeroStatSurfaceArea / 3.52f;
                 if (!isCtrlSrf && !isWingAsCtrlSrf)
                 {
                     if (WPDebug.logCAV)
                         DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
-                    ((ModuleLiftingSurface)this.part.Modules["ModuleLiftingSurface"]).deflectionLiftCoeff = (float)Math.Round(aeroStatCl, 2);
+                    ((ModuleLiftingSurface)this.part.Modules["ModuleLiftingSurface"]).deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
+                    part.mass = stockLiftCoefficient * 0.1f;
                 }
                 else
                 {
                     if (WPDebug.logCAV)
                         DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
                     ModuleControlSurface mCtrlSrf = part.Modules.OfType<ModuleControlSurface> ().FirstOrDefault ();
-                    mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(aeroStatCl, 2);
+                    mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
+                    part.mass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
                 }
             }
+
             if (WPDebug.logCAV)
                 DebugLogWithID ("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
 
