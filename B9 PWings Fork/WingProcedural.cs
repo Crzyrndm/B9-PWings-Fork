@@ -2030,14 +2030,14 @@ namespace WingProcedural
                 {
                     if (WPDebug.logCAV)
                         DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
-                    ((ModuleLiftingSurface)this.part.Modules["ModuleLiftingSurface"]).deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
+                    ((ModuleLiftingSurface)this.part.Modules["ModuleLiftingSurface"]).deflectionLiftCoeff = (float)Math.Round(aeroStatCl, 2);
                 }
                 else
                 {
                     if (WPDebug.logCAV)
                         DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
-                    var mCtrlSrf = part.Modules.OfType<ModuleControlSurface> ().FirstOrDefault ();
-                    mCtrlSrf.deflectionLiftCoeff = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
+                    ModuleControlSurface mCtrlSrf = part.Modules.OfType<ModuleControlSurface> ().FirstOrDefault ();
+                    mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(aeroStatCl, 2);
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
                 }
             }

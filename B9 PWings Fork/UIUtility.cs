@@ -31,16 +31,16 @@ namespace WingProcedural
             if (GUI.Button(rectButtonL, "", WingProceduralManager.uiStyleButton))
             {
                 if (Input.GetMouseButtonUp(0) || !allowFine)
-                    value01 -= incrementLarge;
+                    value01 -= incrementLarge / range;
                 else if (Input.GetMouseButtonUp(1) && allowFine)
-                    value01 -= incrementLarge * increment01;
+                    value01 -= incrementLarge * increment01 / range;
             }
             if (GUI.Button(rectButtonR, "", WingProceduralManager.uiStyleButton))
             {
                 if (Input.GetMouseButtonUp(0) || !allowFine)
-                    value01 += incrementLarge;
+                    value01 += incrementLarge / range;
                 else if (Input.GetMouseButtonUp(1) && allowFine)
-                    value01 += incrementLarge * increment01;
+                    value01 += incrementLarge * increment01 / range;
             }
 
             if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work properly without the event check
