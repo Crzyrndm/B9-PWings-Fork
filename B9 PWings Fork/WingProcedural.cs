@@ -2218,12 +2218,8 @@ namespace WingProcedural
                 {
                     Fields["aeroUICd"].guiActiveEditor = showWingData;
                     Fields["aeroUICl"].guiActiveEditor = showWingData;
-                }
-
-                // If FAR|NEAR are not present, or its a version without wing mass calculations, toggle wing mass
-                if (!assemblyFARUsed)
                     Fields["aeroUIMass"].guiActive = showWingData;
-
+                }
                 // Toggle the rest of the info values
                 Fields["aeroUICost"].guiActiveEditor = showWingData;
                 Fields["aeroUIMeanAerodynamicChord"].guiActiveEditor = showWingData;
