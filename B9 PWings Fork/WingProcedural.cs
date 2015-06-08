@@ -787,7 +787,7 @@ namespace WingProcedural
                 if (parentModule != null)
                 {
                     parentModule.CalculateVolume();
-                    parentModule.CalculateAerodynamicValues();
+                    parentModule.StartCoroutine(parentModule.updateAeroDelayed());
                 }
             }
             isAttached = false;
@@ -1372,7 +1372,7 @@ namespace WingProcedural
             if (HighLogic.LoadedSceneIsEditor)
                 CalculateVolume ();
             if (updateAerodynamics)
-                CalculateAerodynamicValues();
+                StartCoroutine(updateAeroDelayed());
         }
 
         private int getSingleTriCount(int edgeType)
@@ -2150,21 +2150,6 @@ namespace WingProcedural
             if (WPDebug.logCAV)
                 DebugLogWithID ("CalculateAerodynamicValues", "Finished");
 
-            StartCoroutine(updateGeometry());
-        }
-
-        float updateTimeDelay = 0;
-        IEnumerator updateGeometry()
-        {
-            bool running = updateTimeDelay > 0;
-            updateTimeDelay = 0.5f;
-            if (running)
-                yield break;
-            while (updateTimeDelay > 0)
-            {
-                updateTimeDelay -= TimeWarp.deltaTime;
-                yield return null;
-            }
             if (assemblyFARUsed)
             {
                 UpdateCollidersForFAR();
@@ -2177,6 +2162,21 @@ namespace WingProcedural
                 part.DragCubes.Cubes.Add(DragCube);
                 part.DragCubes.ResetCubeWeights();
             }
+        }
+
+        float updateTimeDelay = 0;
+        IEnumerator updateAeroDelayed()
+        {
+            bool running = updateTimeDelay > 0;
+            updateTimeDelay = 0.5f;
+            if (running)
+                yield break;
+            while (updateTimeDelay > 0)
+            {
+                updateTimeDelay -= TimeWarp.deltaTime;
+                yield return null;
+            }
+            CalculateAerodynamicValues();
             updateTimeDelay = 0;
         }
 
