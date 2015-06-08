@@ -643,7 +643,6 @@ namespace WingProcedural
 
         public static bool assembliesChecked = false;
         public static bool assemblyFARUsed = false;
-        public static bool assemblyFARMass = false;
         public static bool assemblyDREUsed = false;
         public static bool assemblyRFUsed = false;
         public static bool assemblyMFTUsed = false;
@@ -656,19 +655,9 @@ namespace WingProcedural
                 assemblyRFUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("RealFuels", StringComparison.InvariantCultureIgnoreCase));
                 assemblyMFTUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("modularFuelTanks", StringComparison.InvariantCultureIgnoreCase));
                 assemblyDREUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("DeadlyReentry", StringComparison.InvariantCultureIgnoreCase));
-                if (assemblyFARUsed)
-                {
-                    ConfigNode[] nodes = GameDatabase.Instance.GetConfigNodes ("FARAeroData");
-                    for (int i = 0; i < nodes.Length; ++i)
-                    {
-                        if (nodes[i] == null)
-                            continue;
-                        if (nodes[i].HasValue ("massPerWingAreaSupported"))
-                            assemblyFARMass = true;
-                    }
-                }
+
                 if (WPDebug.logEvents)
-                    DebugLogWithID ("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | FAR mass: " + assemblyFARMass + " | DRE: " + assemblyDREUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
+                    DebugLogWithID ("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | DRE: " + assemblyDREUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
                 if (isCtrlSrf && isWingAsCtrlSrf && WPDebug.logEvents)
                     DebugLogWithID ("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
                 if (assemblyRFUsed && assemblyMFTUsed && WPDebug.logEvents) 
@@ -2132,7 +2121,7 @@ namespace WingProcedural
                 aeroUICd = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
                 aeroUICl = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
             }
-            if (!assemblyFARUsed || !assemblyFARMass)
+            if (!assemblyFARUsed)
                 aeroUIMass = part.mass;
 
             aeroUIMeanAerodynamicChord = (float) aeroStatMeanAerodynamicChord;
@@ -2232,7 +2221,7 @@ namespace WingProcedural
                 }
 
                 // If FAR|NEAR are not present, or its a version without wing mass calculations, toggle wing mass
-                if (!assemblyFARUsed || !assemblyFARMass)
+                if (!assemblyFARUsed)
                     Fields["aeroUIMass"].guiActive = showWingData;
 
                 // Toggle the rest of the info values
