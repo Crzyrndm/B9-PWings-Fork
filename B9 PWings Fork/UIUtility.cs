@@ -33,18 +33,18 @@ namespace WingProcedural
                 if (Input.GetMouseButtonUp(0) || !allowFine)
                     value01 -= incrementLarge / range;
                 else if (Input.GetMouseButtonUp(1) && allowFine)
-                    value01 -= incrementLarge * increment01;
+                    value01 -= incrementLarge / increment * increment01;
             }
             if (GUI.Button(rectButtonR, "", WingProceduralManager.uiStyleButton))
             {
                 if (Input.GetMouseButtonUp(0) || !allowFine)
                     value01 += incrementLarge / range;
                 else if (Input.GetMouseButtonUp(1) && allowFine)
-                    value01 += incrementLarge * increment01;
+                    value01 += incrementLarge / increment * increment01;
             }
 
             if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work properly without the event check
-                    && !(Input.GetMouseButtonUp(0) || Input.GetMouseButtonUp(1))) // drag event covers this, but don't want it to
+                    && Event.current.type != EventType.MouseUp) // drag event covers this, but don't want it to
             {
                 value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
