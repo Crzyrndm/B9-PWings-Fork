@@ -745,7 +745,8 @@ namespace WingProcedural
 
             DebugTimerUpdate();
             UpdateUI();
-            
+
+            DeformWing();
             bool updateGeo, updateAero;
             CheckAllFieldValues(out updateGeo, out updateAero);
 
@@ -776,7 +777,7 @@ namespace WingProcedural
                 if (parentModule != null)
                 {
                     parentModule.CalculateVolume();
-                    parentModule.StartCoroutine(parentModule.updateAeroDelayed());
+                    parentModule.CalculateAerodynamicValues();
                 }
             }
             isAttached = false;
@@ -1346,7 +1347,7 @@ namespace WingProcedural
             if (HighLogic.LoadedSceneIsEditor)
                 CalculateVolume ();
             if (updateAerodynamics)
-                StartCoroutine(updateAeroDelayed());
+                CalculateAerodynamicValues();
         }
 
         public void UpdateCounterparts()
@@ -2082,23 +2083,10 @@ namespace WingProcedural
             aeroUISurfaceArea = (float) aeroStatSurfaceArea;
             aeroUIAspectRatio = (float) aeroStatAspectRatio;
 
-            if (HighLogic.LoadedSceneIsEditor)
-                GameEvents.onEditorShipModified.Fire (EditorLogic.fetch.ship);
             if (WPDebug.logCAV)
                 DebugLogWithID ("CalculateAerodynamicValues", "Finished");
 
-            if (assemblyFARUsed)
-            {
-                UpdateCollidersForFAR();
-                part.SendMessage("GeometryPartModuleRebuildMeshData"); // notify FAR that geometry has changed
-            }
-            else
-            {
-                DragCube DragCube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
-                part.DragCubes.ClearCubes();
-                part.DragCubes.Cubes.Add(DragCube);
-                part.DragCubes.ResetCubeWeights();
-            }
+            StartCoroutine(updateAeroDelayed());
         }
 
         float updateTimeDelay = 0;
@@ -2113,21 +2101,18 @@ namespace WingProcedural
                 updateTimeDelay -= TimeWarp.deltaTime;
                 yield return null;
             }
-            CalculateAerodynamicValues();
-            updateTimeDelay = 0;
-        }
-
-        private void UpdateCollidersForFAR ()
-        {
             if (assemblyFARUsed)
+                part.SendMessage("GeometryPartModuleRebuildMeshData"); // notify FAR that geometry has changed
+            else
             {
-                if (part.Modules.Contains ("FARWingAerodynamicModel"))
-                {
-                    PartModule moduleFAR = part.Modules["FARWingAerodynamicModel"];
-                    Type typeFAR = moduleFAR.GetType ();
-                    typeFAR.GetMethod ("TriggerPartColliderUpdate").Invoke (moduleFAR, null);
-                }
+                DragCube DragCube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
+                part.DragCubes.ClearCubes();
+                part.DragCubes.Cubes.Add(DragCube);
+                part.DragCubes.ResetCubeWeights();
             }
+            if (HighLogic.LoadedSceneIsEditor)
+                GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+            updateTimeDelay = 0;
         }
 
         public void GatherChildrenCl ()
@@ -2660,31 +2645,91 @@ namespace WingProcedural
 
         private void OnMouseOver ()
         {
-            if (HighLogic.LoadedSceneIsEditor)
+            if (!HighLogic.LoadedSceneIsEditor)
+                return;
+            
+            if (this.part.parent != null && isAttached && !uiEditModeTimeout)
             {
-                // if (logPropertyWindow) DebugLogWithID ("OnMouseOver", "Parent: " + this.part.parent + " | Attached: " + isAttached + " | Timeout: " + uiEditModeTimeout + " | ID (local): " + uiInstanceIDLocal + " | ID (static): " + uiInstanceIDTarget);
-                if (this.part.parent != null && isAttached && !uiEditModeTimeout)
+                if (uiEditMode)
                 {
-                    if (uiEditMode)
+                    if (Input.GetKeyDown(KeyCode.Mouse1))
                     {
-                        if (Input.GetKeyDown (KeyCode.Mouse1))
-                        {
-                            uiEditMode = false;
-                            uiEditModeTimeout = true;
-                        }
-                    }
-                    if (Input.GetKeyDown (uiKeyCodeEdit))
-                    {
-                        uiInstanceIDTarget = part.GetInstanceID ();
-                        uiEditMode = true;
+                        uiEditMode = false;
                         uiEditModeTimeout = true;
-                        uiAdjustWindow = true;
-                        uiWindowActive = true;
-                        stockButton.SetTrue(false);
-                        InheritanceStatusUpdate ();
                     }
                 }
+                if (Input.GetKeyDown(uiKeyCodeEdit))
+                {
+                    uiInstanceIDTarget = part.GetInstanceID();
+                    uiEditMode = true;
+                    uiEditModeTimeout = true;
+                    uiAdjustWindow = true;
+                    uiWindowActive = true;
+                    stockButton.SetTrue(false);
+                    InheritanceStatusUpdate();
+                }
             }
+            if (state == 0)
+            {
+                lastMousePos = Input.mousePosition;
+                if (Input.GetKeyDown(keyTranslation))
+                    state = 1;
+                else if (Input.GetKeyDown(keyTipWidth))
+                    state = 2;
+                else if (Input.GetKeyDown(keyRootWidth))
+                    state = 3;
+            }
+        }
+
+        KeyCode keyTranslation = KeyCode.G, keyTipWidth = KeyCode.T, keyRootWidth = KeyCode.B;
+        Vector3 lastMousePos;
+        int state = 0; // 0 == nothing, 1 == translate, 2 == tipScale, 3 == rootScale
+        public void DeformWing()
+        {
+            if (!isAttached || state == 0)
+                return;
+
+            float depth = EditorCamera.Instance.camera.WorldToScreenPoint(part.transform.position).z;
+            Vector3 diff = depth * (Input.mousePosition - lastMousePos) / 1000;
+            lastMousePos = Input.mousePosition;
+            if (state == 1)
+            {
+                if (!Input.GetKey(keyTranslation))
+                {
+                    state = 0;
+                    return;
+                }
+
+                sharedBaseLength += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, part.transform.right) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.right);
+                sharedBaseLength = Mathf.Clamp(sharedBaseLength, GetLimitsFromType(sharedBaseLengthLimits).x, GetLimitsFromType(sharedBaseLengthLimits).y);
+                if (!isCtrlSrf)
+                {
+                    sharedBaseOffsetTip -= diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.up);
+                    sharedBaseOffsetTip = Mathf.Clamp(sharedBaseOffsetTip, GetLimitsFromType(sharedBaseOffsetLimits).x, GetLimitsFromType(sharedBaseOffsetLimits).y);
+                }
+            }
+            else if (state == 2)
+            {
+                if (!Input.GetKey(keyTipWidth))
+                {
+                    state = 0;
+                    return;
+                }
+                sharedBaseWidthTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.up);
+                sharedBaseWidthTip = Mathf.Clamp(sharedBaseWidthTip, GetLimitsFromType(sharedBaseWidthTipLimits).x, GetLimitsFromType(sharedBaseWidthTipLimits).y);
+            }
+            else if (state == 3)
+            {
+                if (!Input.GetKey(keyRootWidth))
+                {
+                    state = 0;
+                    return;
+                }
+                sharedBaseWidthRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.up);
+                sharedBaseWidthRoot = Mathf.Clamp(sharedBaseWidthRoot, GetLimitsFromType(sharedBaseWidthRootLimits).x, GetLimitsFromType(sharedBaseWidthRootLimits).y);
+            }
+            RefreshGeometry();
+            UpdateCounterparts();
         }
 
         private void UpdateUI ()
