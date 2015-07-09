@@ -2681,7 +2681,7 @@ namespace WingProcedural
             }
         }
 
-        KeyCode keyTranslation = KeyCode.G, keyTipWidth = KeyCode.T, keyRootWidth = KeyCode.B;
+        static KeyCode keyTranslation = KeyCode.G, keyTipWidth = KeyCode.T, keyRootWidth = KeyCode.B, keyLeading = KeyCode.LeftAlt, keyTrailing = KeyCode.LeftControl;
         Vector3 lastMousePos;
         int state = 0; // 0 == nothing, 1 == translate, 2 == tipScale, 3 == rootScale
         public void DeformWing()
@@ -2715,10 +2715,23 @@ namespace WingProcedural
                         state = 0;
                         return;
                     }
-                    sharedBaseWidthTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, -part.transform.up);
-                    sharedBaseWidthTip = Mathf.Clamp(sharedBaseWidthTip, GetLimitsFromType(sharedBaseWidthTipLimits).x, GetLimitsFromType(sharedBaseWidthTipLimits).y);
-                    sharedBaseThicknessTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.forward) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.forward * (part.isMirrored ? 1 : -1));
-                    sharedBaseThicknessTip = Mathf.Clamp(sharedBaseThicknessTip, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
+                    if (Input.GetKey(keyLeading) && !isCtrlSrf)
+                    {
+                        sharedEdgeWidthLeadingTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.up);
+                        sharedEdgeWidthLeadingTip = Mathf.Clamp(sharedEdgeWidthLeadingTip, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
+                    }
+                    else if (Input.GetKey(keyTrailing))
+                    {
+                        sharedEdgeWidthTrailingTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, -part.transform.up);
+                        sharedEdgeWidthTrailingTip = Mathf.Clamp(sharedEdgeWidthTrailingTip, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
+                    }
+                    else
+                    {
+                        sharedBaseWidthTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, -part.transform.up);
+                        sharedBaseWidthTip = Mathf.Clamp(sharedBaseWidthTip, GetLimitsFromType(sharedBaseWidthTipLimits).x, GetLimitsFromType(sharedBaseWidthTipLimits).y);
+                        sharedBaseThicknessTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.forward) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.forward * (part.isMirrored ? 1 : -1));
+                        sharedBaseThicknessTip = Mathf.Clamp(sharedBaseThicknessTip, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
+                    }
                     break;
                 case 3:
                     if (!Input.GetKey(keyRootWidth))
@@ -2726,14 +2739,25 @@ namespace WingProcedural
                         state = 0;
                         return;
                     }
-                    sharedBaseWidthRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, -part.transform.up);
-                    sharedBaseWidthRoot = Mathf.Clamp(sharedBaseWidthRoot, GetLimitsFromType(sharedBaseWidthRootLimits).x, GetLimitsFromType(sharedBaseWidthRootLimits).y);
-                    sharedBaseThicknessRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.forward) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.forward * (part.isMirrored ? 1 : -1));
-                    sharedBaseThicknessRoot = Mathf.Clamp(sharedBaseThicknessRoot, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
+                    if (Input.GetKey(keyLeading) && !isCtrlSrf)
+                    {
+                        sharedEdgeWidthLeadingRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.up);
+                        sharedEdgeWidthLeadingRoot = Mathf.Clamp(sharedEdgeWidthLeadingRoot, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
+                    }
+                    else if (Input.GetKey(keyTrailing))
+                    {
+                        sharedEdgeWidthTrailingRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, -part.transform.up);
+                        sharedEdgeWidthTrailingRoot = Mathf.Clamp(sharedEdgeWidthTrailingRoot, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
+                    }
+                    else
+                    {
+                        sharedBaseWidthRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, -part.transform.up);
+                        sharedBaseWidthRoot = Mathf.Clamp(sharedBaseWidthRoot, GetLimitsFromType(sharedBaseWidthRootLimits).x, GetLimitsFromType(sharedBaseWidthRootLimits).y);
+                        sharedBaseThicknessRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.forward) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.forward * (part.isMirrored ? 1 : -1));
+                        sharedBaseThicknessRoot = Mathf.Clamp(sharedBaseThicknessRoot, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
+                    }
                     break;
             }
-            RefreshGeometry();
-            UpdateCounterparts();
         }
 
         private void UpdateUI ()
