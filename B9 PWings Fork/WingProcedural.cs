@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace WingProcedural
 {
-    public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier
+    public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier, IPartMassModifier
     {
         // Some handy bools
         [KSPField] public bool isCtrlSrf = false;
@@ -874,9 +874,9 @@ namespace WingProcedural
                     meshFilterWingSection.mesh.uv = uv;
                     meshFilterWingSection.mesh.RecalculateBounds ();
 
-                    MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider> ();
+                    MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider>();
                     if (meshCollider == null)
-                        meshCollider = meshFilterWingSection.gameObject.AddComponent<MeshCollider> ();
+                        meshCollider = meshFilterWingSection.gameObject.AddComponent<MeshCollider>();
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterWingSection.mesh;
                     meshCollider.convex = true;
@@ -1170,9 +1170,9 @@ namespace WingProcedural
                     meshFilterCtrlFrame.mesh.colors = cl;
                     meshFilterCtrlFrame.mesh.RecalculateBounds ();
 
-                    MeshCollider meshCollider = meshFilterCtrlFrame.gameObject.GetComponent<MeshCollider> ();
+                    MeshCollider meshCollider = meshFilterCtrlFrame.gameObject.GetComponent<MeshCollider>();
                     if (meshCollider == null)
-                        meshCollider = meshFilterCtrlFrame.gameObject.AddComponent<MeshCollider> ();
+                        meshCollider = meshFilterCtrlFrame.gameObject.AddComponent<MeshCollider>();
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterCtrlFrame.mesh;
                     meshCollider.convex = true;
@@ -2852,6 +2852,7 @@ namespace WingProcedural
                 fieldCache = fieldValue;
                 return true;
             }
+
             return false;
         }
 
@@ -2860,6 +2861,7 @@ namespace WingProcedural
             uiAdjustWindow = true;
             uiEditModeTimeout = false;
             uiEditModeTimer = 0.0f;
+
         }
 
         private void ExitEditMode ()
@@ -3309,6 +3311,11 @@ namespace WingProcedural
             // it is called 4(!) times per part, the first two the vessel size has not changed, the second two it has changed
             // the return value is # meters to add/subtract from the vessel size, which happens even if the part is completely occluded by other parts (seriously, wtf)
             return Vector3.zero;
+        }
+
+        public float GetModuleMass(float defaultMass)
+        {
+            return part.mass - part.partInfo.partPrefab.mass;
         }
         #endregion
 
