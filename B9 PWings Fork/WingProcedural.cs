@@ -669,7 +669,7 @@ namespace WingProcedural
 
         #region Unity stuff and Callbacks/events
 
-        public static bool isStarted = false;
+        public bool isStarted = false;
         /// <summary>
         /// run when part is created in editor, and when part is created in flight. Why is OnStart and Start both being used other than to sparate flight and editor startup?
         /// </summary>
@@ -715,8 +715,11 @@ namespace WingProcedural
         // may resolve errors reported by Hodo
         public override void OnSave(ConfigNode node)
         {
+            if (WPDebug.logEvents)
+                DebugLogWithID("OnSave", "Invoked");
             try
             {
+                vesselList.FirstOrDefault(vs => vs.vessel == vessel).isUpdated = false;
                 WingProceduralManager.SaveConfigs();
             }
             catch
@@ -725,10 +728,12 @@ namespace WingProcedural
             }
         }
 
-        //public override void OnLoad(ConfigNode node)
-        //{
-        //    WingProceduralManager.LoadConfigs();
-        //}
+        public override void OnLoad(ConfigNode node)
+        {
+            if (WPDebug.logEvents)
+                DebugLogWithID("OnLoad", "Invoked");
+            //WingProceduralManager.LoadConfigs();
+        }
 
         public void OnDestroy()
         {
@@ -2250,7 +2255,7 @@ namespace WingProcedural
 
         private void OnGUI ()
         {
-            if (!HighLogic.LoadedSceneIsEditor || !uiWindowActive)
+            if (!isStarted || !HighLogic.LoadedSceneIsEditor || !uiWindowActive)
                 return;
 
             if (uiInstanceIDLocal == 0)
