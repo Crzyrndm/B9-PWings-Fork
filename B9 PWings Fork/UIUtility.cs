@@ -1,5 +1,6 @@
 ﻿using KSP;
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -9,7 +10,8 @@ namespace WingProcedural
 {
     public static class UIUtility
     {
-        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
+        
+        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true, int delta = 0)
         {
             if (!WingProceduralManager.uiStyleConfigured)
                 WingProceduralManager.ConfigureStyles ();
@@ -28,19 +30,41 @@ namespace WingProcedural
             Rect rectButtonR = new Rect (rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
             Rect rectLabelValue = new Rect (rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
 
+            //Debug.Log("Slider created.");
+
             if (GUI.Button(rectButtonL, "", WingProceduralManager.uiStyleButton))
             {
-                if (Input.GetMouseButtonUp(0) || !allowFine)
-                    value01 -= incrementLarge / range;
-                else if (Input.GetMouseButtonUp(1) && allowFine)
-                    value01 -= increment01;
+               /* if (Input.GetMouseButtonUp(0) || !allowFine)
+                    if ( limits.x - range >= 0)
+                    {
+                        delta -= 1;
+                    }
+                else
+                    {
+                        value01 = limits.x;
+                    }
+                    else if (Input.GetMouseButtonUp(1))*/
+                      if (limits.x - range >= 0)
+                       {
+                            delta -= 1;
+                      }
+                      else
+                        {
+                          value01 = limits.x;
+                       }
+                // value01 -= increment01;
+                //Debug.Log("Left: Allow fine = " + allowFine);
             }
             if (GUI.Button(rectButtonR, "", WingProceduralManager.uiStyleButton))
             {
-                if (Input.GetMouseButtonUp(0) || !allowFine)
-                    value01 += incrementLarge / range;
-                else if (Input.GetMouseButtonUp(1) && allowFine)
-                    value01 += increment01;
+                //if (Input.GetMouseButtonUp(1))
+                //{
+                    delta += 1;
+                    
+                //}
+               // else if (Input.GetMouseButtonUp(1) && allowFine)
+               //     value01 += increment01;
+                //Debug.Log("Right: Allow fine = " + allowFine);
             }
 
             if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work properly without the event check
@@ -54,18 +78,22 @@ namespace WingProcedural
                     {
                         double excess = value01 / increment01;
                         value01 -= (excess - Math.Round(excess)) * increment01;
+                        Debug.Log("Normal: value01 => " + value01);
                     }
                     else if (Input.GetMouseButton(1) && allowFine) // fine control
                     {
                         double excess = valueOld / increment01;
                         value01 = (valueOld - (excess - Math.Round(excess)) * increment01) + Math.Min(value01 - 0.5, 0.4999) * increment01;
+                        Debug.Log("Fine: value01 => " + value01);
                     }
                 }
             }
             else
                 GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
-            value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+
+            value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), (float)limits.x), (float)limits.y) + delta * (float)range; // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+            //value = (float)(value01 * range + limits.x);  //releases clamp
             changed = valueOld != value ? true : false;
 
             GUI.DrawTexture (rectSliderValue, backgroundColor.GetTexture2D ());
@@ -73,6 +101,9 @@ namespace WingProcedural
             GUI.Label (rectLabelValue, GetValueTranslation (value, valueType), WingProceduralManager.uiStyleLabelHint);
 
             GUILayout.EndHorizontal ();
+            //Vector2 value1 = new Vector2(value, delta);
+            //Debug.Log("B9PW: Value changed to " + value + ", delta = " + delta);  //log it
+            //return value1;
             return value;
         }
 

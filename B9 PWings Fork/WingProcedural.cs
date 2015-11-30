@@ -1,4 +1,6 @@
-﻿using KSP;
+﻿//Code by Bac9
+//Heavily modified by Lithane
+using KSP;
 using KSP.IO;
 using System;
 using System.Collections;
@@ -129,7 +131,7 @@ namespace WingProcedural
             else
                 return incrementCtrl;
         }
-
+        
         private static Vector4 sharedBaseLengthLimits = new Vector4 (0.125f, 16f, 0.04f, 8f);
         private static Vector2 sharedBaseThicknessLimits = new Vector2 (0.04f, 1f);
         private static Vector4 sharedBaseWidthRootLimits = new Vector4 (0.125f, 16f, 0.04f, 1.6f);
@@ -139,10 +141,11 @@ namespace WingProcedural
         private static Vector4 sharedEdgeWidthLimits = new Vector4 (0f, 1f, 0f, 1f);
         private static Vector2 sharedMaterialLimits = new Vector2 (0f, 4f);
         private static Vector2 sharedColorLimits = new Vector2 (0f, 1f);
-
+        
         private static float sharedIncrementColor = 0.01f;
         private static float sharedIncrementColorLarge = 0.10f;
         private static float sharedIncrementMain = 0.125f;
+        //private static float sharedIncrementPrecise = 0.001f;
         private static float sharedIncrementSmall = 0.04f;
         private static float sharedIncrementInt = 1f;
         #endregion
@@ -561,24 +564,35 @@ namespace WingProcedural
             sharedBaseThicknessRoot = parent.sharedBaseThicknessTip;
 
             float tip = sharedBaseWidthRoot + ((parent.sharedBaseWidthTip - parent.sharedBaseWidthRoot) / (parent.sharedBaseLength)) * sharedBaseLength;
-            if (sharedBaseWidthTip < sharedBaseWidthTipLimits.x)
-                sharedBaseLength *= (sharedBaseWidthRoot - sharedBaseWidthTipLimits.x) / (sharedBaseWidthRoot - sharedBaseWidthTip);
-            else if (sharedBaseWidthTip > sharedBaseWidthTipLimits.y)
-                sharedBaseLength *= sharedBaseWidthTipLimits.y / sharedBaseWidthTip;
+            if (sharedBaseWidthTip < 0)
+                sharedBaseLength *= sharedBaseWidthRoot  / (sharedBaseWidthRoot - sharedBaseWidthTip);
+            //else if (sharedBaseWidthTip > sharedBaseWidthTipLimits.y)
+            //    sharedBaseLength *= sharedBaseWidthTipLimits.y / sharedBaseWidthTip;
 
             float offset = sharedBaseLength / parent.sharedBaseLength * parent.sharedBaseOffsetTip;
+            /*
             if (offset > sharedBaseOffsetLimits.y)
                 sharedBaseLength *= sharedBaseOffsetLimits.y / offset;
             else if (offset < sharedBaseOffsetLimits.x)
                 sharedBaseLength *= sharedBaseOffsetLimits.x / offset;
-
-            sharedBaseLength = Mathf.Clamp(sharedBaseLength, sharedBaseLengthLimits.x, sharedBaseLengthLimits.y);
-            sharedBaseWidthTip = Mathf.Clamp(tip, sharedBaseWidthTipLimits.x, sharedBaseWidthTipLimits.y);
-            sharedBaseOffsetTip = Mathf.Clamp(offset, sharedBaseOffsetLimits.x, sharedBaseOffsetLimits.y);
-            sharedBaseThicknessTip = Mathf.Clamp(sharedBaseThicknessRoot + sharedBaseLength / parent.sharedBaseLength * (parent.sharedBaseThicknessTip - parent.sharedBaseThicknessRoot), sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
+                */
+            
+            //sharedBaseLength = Mathf.Clamp(sharedBaseLength, sharedBaseLengthLimits.x, sharedBaseLengthLimits.y);
+            sharedBaseWidthTip =tip;
+            sharedBaseOffsetTip = offset;
+                //Mathf.Clamp(offset, sharedBaseOffsetLimits.x, sharedBaseOffsetLimits.y);
+            sharedBaseThicknessTip = min(sharedBaseThicknessRoot + (float)(sharedBaseLength / parent.sharedBaseLength) * (float)(parent.sharedBaseThicknessTip - parent.sharedBaseThicknessRoot), 0);
 
             if (Input.GetMouseButtonUp(0))
                 inheritEdges(parent);
+        }
+
+        private float min(float v1, float v2)
+        {
+            if (v1 <= v2)
+                return v1;
+            else
+                return v2;
         }
 
         private void inheritBase(WingProcedural parent)
@@ -2211,6 +2225,7 @@ namespace WingProcedural
 
         #region Alternative UI/input
 
+
         public KeyCode uiKeyCodeEdit = KeyCode.J;
         public static bool uiWindowActive = true;
         public static float uiMouseDeltaCache = 0f;
@@ -2226,6 +2241,28 @@ namespace WingProcedural
         public static bool uiEditModeTimeout = false;
         private float uiEditModeTimeoutDuration = 0.25f;
         private float uiEditModeTimer = 0f;
+
+        public Vector2 getLimits(double value, double step)
+        {
+            float x = (float)(value - value % step);
+            float y = (float)(value - value % step + step);
+            Vector2 limits = new Vector2(x, y);
+            return limits;
+        }
+        public float getStep(Vector4 limits)
+        {
+            float step;
+            if (!isCtrlSrf)
+                step = limits.y;
+            else
+                step = limits.w;
+            return step;
+        }
+        public float getStep2(Vector2 limits)
+        {
+            return limits.y;
+        }
+        
 
         // Supposed to fix context menu updates
         // Proposed by NathanKell, if I'm not mistaken
@@ -2321,14 +2358,15 @@ namespace WingProcedural
                 DrawFieldGroupHeader (ref sharedFieldGroupBaseStatic, "Base");
                 if (sharedFieldGroupBaseStatic)
                 {
-                    DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), GetLimitsFromType(sharedBaseLengthLimits), "Length", uiColorSliderBase, 0, 0);
-                    DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), GetLimitsFromType(sharedBaseWidthRootLimits), "Width (root)", uiColorSliderBase, 1, 0);
-                    DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), GetLimitsFromType(sharedBaseWidthTipLimits), "Width (tip)", uiColorSliderBase, 2, 0);
+                    DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseLength, getStep(sharedBaseLengthLimits)), "Length", uiColorSliderBase, 0, 0);
+                    DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits)), "Width (root)", uiColorSliderBase, 1, 0);
+                    DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), "Width (tip)", uiColorSliderBase, 2, 0);
                     if (isCtrlSrf)
-                        DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (root)", uiColorSliderBase, 3, 0);
-                    DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0);
-                    DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, sharedBaseThicknessLimits, "Thickness (root)", uiColorSliderBase, 5, 0);
-                    DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, sharedBaseThicknessLimits, "Thickness (tip)", uiColorSliderBase, 6, 0);
+                        DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getLimits(sharedBaseOffsetRoot, getStep(sharedBaseOffsetLimits)), "Offset (root)", uiColorSliderBase, 3, 0);
+                    DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0);
+                    DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessRoot, getStep2(sharedBaseThicknessLimits)), "Thickness (root)", uiColorSliderBase, 5, 0);
+                    DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessTip, getStep2(sharedBaseThicknessLimits)), "Thickness (tip)", uiColorSliderBase, 6, 0);
+                    //Debug.Log("B9PW: base complete");
                 }
 
                 if (!isCtrlSrf)
@@ -2337,17 +2375,18 @@ namespace WingProcedural
                     if (sharedFieldGroupEdgeLeadingStatic)
                     {
                         DrawField (ref sharedEdgeTypeLeading, sharedIncrementInt, sharedIncrementInt, GetLimitsFromType (sharedEdgeTypeLimits), "Shape", uiColorSliderEdgeL, 7, 2, false);
-                        DrawField (ref sharedEdgeWidthLeadingRoot, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (root)", uiColorSliderEdgeL, 8, 0);
-                        DrawField (ref sharedEdgeWidthLeadingTip, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (tip)", uiColorSliderEdgeL, 9, 0);
+                        DrawField (ref sharedEdgeWidthLeadingRoot, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedEdgeWidthLeadingRoot, getStep(sharedEdgeWidthLimits)), "Width (root)", uiColorSliderEdgeL, 8, 0);
+                        DrawField (ref sharedEdgeWidthLeadingTip, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedEdgeWidthLeadingTip, getStep(sharedEdgeWidthLimits)), "Width (tip)", uiColorSliderEdgeL, 9, 0);
                     }
+                    //Debug.Log("B9PW: leading edge complete");
                 }
 
                 DrawFieldGroupHeader (ref sharedFieldGroupEdgeTrailingStatic, "Edge (trailing)");
                 if (sharedFieldGroupEdgeTrailingStatic)
                 {
                     DrawField (ref sharedEdgeTypeTrailing, sharedIncrementInt, sharedIncrementInt, GetLimitsFromType (sharedEdgeTypeLimits), "Shape", uiColorSliderEdgeT, 10, isCtrlSrf ? 3 : 2, false);
-                    DrawField (ref sharedEdgeWidthTrailingRoot, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (root)", uiColorSliderEdgeT, 11, 0);
-                    DrawField (ref sharedEdgeWidthTrailingTip, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (tip)", uiColorSliderEdgeT, 12, 0);
+                    DrawField (ref sharedEdgeWidthTrailingRoot, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedEdgeWidthTrailingRoot, getStep(sharedEdgeWidthLimits)), "Width (root)", uiColorSliderEdgeT, 11, 0);
+                    DrawField (ref sharedEdgeWidthTrailingTip, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedEdgeWidthTrailingTip, getStep(sharedEdgeWidthLimits)), "Width (tip)", uiColorSliderEdgeT, 12, 0);
                 }
 
                 DrawFieldGroupHeader (ref sharedFieldGroupColorSTStatic, "Surface (top)");
@@ -2448,21 +2487,21 @@ namespace WingProcedural
 
         private void SetupFields()
         {
-            sharedBaseLength = SetupFieldValue(sharedBaseLength, GetLimitsFromType(sharedBaseLengthLimits), GetDefault(sharedBaseLengthDefaults));
-            sharedBaseWidthRoot = SetupFieldValue(sharedBaseWidthRoot, GetLimitsFromType(sharedBaseWidthRootLimits), GetDefault(sharedBaseWidthRootDefaults));
-            sharedBaseWidthTip = SetupFieldValue(sharedBaseWidthTip, GetLimitsFromType(sharedBaseWidthTipLimits), GetDefault(sharedBaseWidthTipDefaults));
-            sharedBaseThicknessRoot = SetupFieldValue(sharedBaseThicknessRoot, sharedBaseThicknessLimits, GetDefault(sharedBaseThicknessRootDefaults));
-            sharedBaseThicknessTip = SetupFieldValue(sharedBaseThicknessTip, sharedBaseThicknessLimits, GetDefault(sharedBaseThicknessTipDefaults));
-            sharedBaseOffsetRoot = SetupFieldValue(sharedBaseOffsetRoot, GetLimitsFromType(sharedBaseOffsetLimits), GetDefault(sharedBaseOffsetRootDefaults));
-            sharedBaseOffsetTip = SetupFieldValue(sharedBaseOffsetTip, GetLimitsFromType(sharedBaseOffsetLimits), GetDefault(sharedBaseOffsetTipDefaults));
+            sharedBaseLength = SetupFieldValue(sharedBaseLength, getLimits(sharedBaseLength,getStep(sharedBaseLengthLimits)), GetDefault(sharedBaseLengthDefaults));
+            sharedBaseWidthRoot = SetupFieldValue(sharedBaseWidthRoot, getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits)), GetDefault(sharedBaseWidthRootDefaults));
+            sharedBaseWidthTip = SetupFieldValue(sharedBaseWidthTip, getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), GetDefault(sharedBaseWidthTipDefaults));
+            sharedBaseThicknessRoot = SetupFieldValue(sharedBaseThicknessRoot, getLimits(sharedBaseThicknessRoot, getStep(sharedBaseThicknessLimits)), GetDefault(sharedBaseThicknessRootDefaults));
+            sharedBaseThicknessTip = SetupFieldValue(sharedBaseThicknessTip, getLimits(sharedBaseThicknessTip, getStep(sharedBaseThicknessLimits)) ,GetDefault(sharedBaseThicknessTipDefaults));
+            sharedBaseOffsetRoot = SetupFieldValue(sharedBaseOffsetRoot, getLimits(sharedBaseOffsetRoot, getStep(sharedBaseOffsetLimits)), GetDefault(sharedBaseOffsetRootDefaults));
+            sharedBaseOffsetTip = SetupFieldValue(sharedBaseOffsetTip, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), GetDefault(sharedBaseOffsetTipDefaults));
 
-            sharedEdgeTypeTrailing = SetupFieldValue(sharedEdgeTypeTrailing, GetLimitsFromType(sharedEdgeTypeLimits), GetDefault(sharedEdgeTypeTrailingDefaults));
-            sharedEdgeWidthTrailingRoot = SetupFieldValue(sharedEdgeWidthTrailingRoot, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthTrailingRootDefaults));
-            sharedEdgeWidthTrailingTip = SetupFieldValue(sharedEdgeWidthTrailingTip, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthTrailingTipDefaults));
+            sharedEdgeTypeTrailing = SetupFieldValue(sharedEdgeTypeTrailing, sharedEdgeTypeLimits, GetDefault(sharedEdgeTypeTrailingDefaults));
+            sharedEdgeWidthTrailingRoot = SetupFieldValue(sharedEdgeWidthTrailingRoot, getLimits(sharedEdgeWidthTrailingRoot, getStep(sharedEdgeWidthLimits)), GetDefault(sharedEdgeWidthTrailingRootDefaults));
+            sharedEdgeWidthTrailingTip = SetupFieldValue(sharedEdgeWidthTrailingTip, getLimits(sharedEdgeWidthTrailingRoot, getStep(sharedEdgeWidthLimits)), GetDefault(sharedEdgeWidthTrailingTipDefaults));
 
-            sharedEdgeTypeLeading = SetupFieldValue(sharedEdgeTypeLeading, GetLimitsFromType(sharedEdgeTypeLimits), GetDefault(sharedEdgeTypeLeadingDefaults));
-            sharedEdgeWidthLeadingRoot = SetupFieldValue(sharedEdgeWidthLeadingRoot, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthLeadingRootDefaults));
-            sharedEdgeWidthLeadingTip = SetupFieldValue(sharedEdgeWidthLeadingTip, GetLimitsFromType(sharedEdgeWidthLimits), GetDefault(sharedEdgeWidthLeadingTipDefaults));
+            sharedEdgeTypeLeading = SetupFieldValue(sharedEdgeTypeLeading, sharedEdgeTypeLimits, GetDefault(sharedEdgeTypeLeadingDefaults));
+            sharedEdgeWidthLeadingRoot = SetupFieldValue(sharedEdgeWidthLeadingRoot, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), GetDefault(sharedEdgeWidthLeadingRootDefaults));
+            sharedEdgeWidthLeadingTip = SetupFieldValue(sharedEdgeWidthLeadingTip, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), GetDefault(sharedEdgeWidthLeadingTipDefaults));
 
             sharedMaterialST = SetupFieldValue(sharedMaterialST, sharedMaterialLimits, GetDefault(sharedMaterialSTDefaults));
             sharedColorSTOpacity = SetupFieldValue(sharedColorSTOpacity, sharedColorLimits, GetDefault(sharedColorSTOpacityDefaults));
@@ -2518,10 +2557,12 @@ namespace WingProcedural
         /// <param name="fieldID">tooltip stuff</param>
         /// <param name="fieldType">tooltip stuff</param>
         /// <param name="allowFine">Whether right click drag behaves as fine control or not</param>
-        private void DrawField (ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
+        //Vector2 field0;  //it need definition
+        private void DrawField ( ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
         {
             bool changed = false;
             field = UIUtility.FieldSlider (field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB (hsbColor), fieldType, allowFine);
+            
             if (changed)
             {
                 uiLastFieldName = name;
