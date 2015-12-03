@@ -281,6 +281,11 @@ namespace WingProcedural
             WPDebug.logFuel = Convert.ToBoolean (config.GetValue ("logFuel", "false"));
             WPDebug.logLimits = Convert.ToBoolean (config.GetValue ("logLimits", "false"));
             WPDebug.logEvents = Convert.ToBoolean (config.GetValue ("logEvents", "false"));
+
+            //prefs
+            WingProcedural.sharedPropAnglePref = Convert.ToBoolean(config.GetValue("AnglePref", "false"));
+            WingProcedural.sharedPropEdgePref = Convert.ToBoolean(config.GetValue("EdgePref", "false"));
+            WingProcedural.sharedPropEThickPref = Convert.ToBoolean(config.GetValue("ThickPref", "false"));
         }
 
         public static void SaveConfigs ()
@@ -303,6 +308,11 @@ namespace WingProcedural
             config.SetValue ("logFuel", WPDebug.logFuel.ToString ());
             config.SetValue ("logLimits", WPDebug.logLimits.ToString ());
             config.SetValue ("logEvents", WPDebug.logEvents.ToString ());
+
+            //Prefs
+            config.SetValue("AnglePref", WingProcedural.sharedPropAnglePref.ToString());
+            config.SetValue("EdgePref", WingProcedural.sharedPropEdgePref.ToString());
+            config.SetValue("ThickPref", WingProcedural.sharedPropEThickPref.ToString());
 
             config.save ();
         }

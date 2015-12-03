@@ -197,5 +197,38 @@ namespace WingProcedural
             }
             else return value.ToString ("F3");
         }
+        public static bool CheckBox (string desc, string choice1, string choice2, bool value, out bool changed)
+        {
+            float buttonWidth = 50;
+            //float spaceWidth = 3;
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("", WingProceduralManager.uiStyleLabelHint);
+            Rect rectLast = GUILayoutUtility.GetLastRect();
+            Rect rectButton = new Rect(rectLast.x + rectLast.width - 53, rectLast.y, buttonWidth, rectLast.height);
+            //Rect rectChoice = new Rect(rectButton.xMin, rectButton.yMin, rectButton.width, rectButton.height); 
+            Rect rectDesc = new Rect(rectLast.x, rectLast.y, rectLast.width  - 53, rectLast.height);
+            string choice;
+            changed = false;
+            choice = getChoice(choice1, choice2, value);
+            if (GUI.Button(rectButton, choice, WingProceduralManager.uiStyleButton))
+            {
+                value = !value;
+                changed = true;
+            }
+            GUI.Label(rectDesc, "  " + desc, WingProceduralManager.uiStyleLabelHint);
+            
+
+            GUILayout.EndHorizontal();
+            return value;
+        }
+        public static string getChoice(string choice1, string choice2, bool state)
+        {
+            string choice;
+            if (!state)
+                choice = choice1;
+            else
+                choice = choice2;
+            return choice;
+        }
     }
 }

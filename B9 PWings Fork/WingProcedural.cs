@@ -192,6 +192,8 @@ namespace WingProcedural
         public float sharedBaseThicknessTipCached = 0.24f;
         public static Vector4 sharedBaseThicknessTipDefaults = new Vector4 (0.24f, 0.24f, 0.24f, 0.24f);
 
+        
+
         #endregion
 
         #region Shared properties / Edge / Leading
@@ -368,6 +370,30 @@ namespace WingProcedural
         public float sharedColorELBrightness = 0.6f;
         public float sharedColorELBrightnessCached = 0.6f;
         public static Vector4 sharedColorELBrightnessDefaults = new Vector4 (0.6f, 0.6f, 0.6f, 0.6f);
+
+        #endregion
+
+        #region Shared properties / Misc + Angles
+        //Angles
+        private static Vector2 sharedSweptAngleLimits = new Vector2(1f, 180f);
+
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Swept angle(front)", guiFormat = "F3")]
+        public float sharedSweptAngleFront = 90f;
+        public float sharedSweptAngleFrontCached = 90f;
+        public static Vector4 sharedSweptAngleFrontCachedDefaults = new Vector4(90f, 90f, 90f, 90f);
+
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Swept angle(back)", guiFormat = "F3")]
+        public float sharedSweptAngleBack = 90f;
+        public float sharedSweptAngleBackCached = 90f;
+        public static Vector4 sharedSweptAngleBackDefaults = new Vector4(90f, 90f, 90f, 90f);
+        
+        
+        //Prefs
+        public static bool sharedFieldPrefStatic = true;
+        public static bool sharedPropAnglePref = false;
+        public static bool sharedPropEdgePref = false;
+        public static bool sharedPropEThickPref = false;
+
 
         #endregion
 
@@ -755,6 +781,18 @@ namespace WingProcedural
             GameEvents.onGameSceneLoadRequested.Remove(OnSceneSwitch);
         }
 
+        public void CalcBase()
+        {
+            sharedBaseWidthTip = sharedBaseWidthRoot - 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleFront)) * sharedBaseLength + 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleBack)) * sharedBaseLength;
+            sharedBaseOffsetTip = ( 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleFront)) * sharedBaseLength + 1 / (float)(Math.Tan(Mathf.Deg2Rad * sharedSweptAngleBack)) * sharedBaseLength ) / 2;
+        }
+
+        public void CalcAngle()
+        {
+            sharedSweptAngleFront = (float)Math.Atan((sharedBaseWidthRoot - sharedBaseWidthTip + sharedBaseOffsetTip) / sharedBaseLength);
+            sharedSweptAngleBack = (float)Math.Atan((sharedBaseWidthRoot - sharedBaseWidthTip - sharedBaseOffsetTip) / sharedBaseLength);
+        }
+
         public void Update()
         {
             if (canBeFueled)
@@ -762,7 +800,13 @@ namespace WingProcedural
             if (!HighLogic.LoadedSceneIsEditor || !isStarted)
                 return;
 
+            if (sharedPropAnglePref)
+                CalcBase();
+            else
+                CalcAngle();
+
             DebugTimerUpdate();
+
             UpdateUI();
 
             DeformWing();
@@ -833,10 +877,15 @@ namespace WingProcedural
         #endregion
 
         #region Geometry
+        
+        
         public void UpdateGeometry (bool updateAerodynamics)
         {
             if (WPDebug.logUpdateGeometry)
                 DebugLogWithID ("UpdateGeometry", "Started | isCtrlSrf: " + isCtrlSrf);
+            
+            
+
             if (!isCtrlSrf)
             {
                 float wingThicknessDeviationRoot = sharedBaseThicknessRoot / 0.24f;
@@ -844,7 +893,7 @@ namespace WingProcedural
                 float wingWidthTipBasedOffsetTrailing = sharedBaseWidthTip / 2f + sharedBaseOffsetTip;
                 float wingWidthTipBasedOffsetLeading = -sharedBaseWidthTip / 2f + sharedBaseOffsetTip;
                 float wingWidthRootBasedOffset = sharedBaseWidthRoot / 2f;
-
+            
                 // First, wing cross section
                 // No need to filter vertices by normals
 
@@ -2354,19 +2403,43 @@ namespace WingProcedural
                 }
                 GUILayout.EndHorizontal ();
                 if (returnEarly) return;
-
+                DrawFieldGroupHeader(ref sharedFieldPrefStatic, "Preference");
+                if(sharedFieldPrefStatic)
+                {
+                    DrawCheck(ref sharedPropAnglePref, "Use angles to define the wing", "No", "Yes", "AngleDefine", 101);
+                    DrawCheck(ref sharedPropEdgePref, "[Disabled]Include edges in definitions", "No", "Yes", "EdgeIncluded", 102);
+                    DrawCheck(ref sharedPropEThickPref, "[Disabled]Scale edges to thickness ", "No", "Yes", "ThickScale", 103);
+                }
                 DrawFieldGroupHeader (ref sharedFieldGroupBaseStatic, "Base");
-                if (sharedFieldGroupBaseStatic)
+                if (sharedFieldGroupBaseStatic && !isCtrlSrf)
+                {
+                    DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseLength, getStep(sharedBaseLengthLimits)), "Length", uiColorSliderBase, 0, 0);
+                    DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits)), "Width (root)", uiColorSliderBase, 1, 0);
+                    if (!sharedPropAnglePref)
+                    {                        
+                        DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), "Width (tip)", uiColorSliderBase, 2, 0);
+                        DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0);
+                        
+                    }
+                    else
+                    {
+                        DrawField(ref sharedSweptAngleFront, 1f, 1f, sharedSweptAngleLimits, "Swept angle(front)", uiColorSliderBase, 2, 0);
+                        DrawField(ref sharedSweptAngleBack, 1f, 1f, sharedSweptAngleLimits, "Swept angle(back)", uiColorSliderBase, 4, 0);
+                        
+                    }
+                    DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessRoot, getStep2(sharedBaseThicknessLimits)), "Thickness (root)", uiColorSliderBase, 5, 0);
+                    DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessTip, getStep2(sharedBaseThicknessLimits)), "Thickness (tip)", uiColorSliderBase, 6, 0);
+                    //Debug.Log("B9PW: base complete");
+                }
+                else
                 {
                     DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseLength, getStep(sharedBaseLengthLimits)), "Length", uiColorSliderBase, 0, 0);
                     DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits)), "Width (root)", uiColorSliderBase, 1, 0);
                     DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), "Width (tip)", uiColorSliderBase, 2, 0);
-                    if (isCtrlSrf)
-                        DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getLimits(sharedBaseOffsetRoot, getStep(sharedBaseOffsetLimits)), "Offset (root)", uiColorSliderBase, 3, 0);
+                   DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getLimits(sharedBaseOffsetRoot, getStep(sharedBaseOffsetLimits)), "Offset (root)", uiColorSliderBase, 3, 0);
                     DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0);
                     DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessRoot, getStep2(sharedBaseThicknessLimits)), "Thickness (root)", uiColorSliderBase, 5, 0);
                     DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessTip, getStep2(sharedBaseThicknessLimits)), "Thickness (tip)", uiColorSliderBase, 6, 0);
-                    //Debug.Log("B9PW: base complete");
                 }
 
                 if (!isCtrlSrf)
@@ -2378,7 +2451,7 @@ namespace WingProcedural
                         DrawField (ref sharedEdgeWidthLeadingRoot, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedEdgeWidthLeadingRoot, getStep(sharedEdgeWidthLimits)), "Width (root)", uiColorSliderEdgeL, 8, 0);
                         DrawField (ref sharedEdgeWidthLeadingTip, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedEdgeWidthLeadingTip, getStep(sharedEdgeWidthLimits)), "Width (tip)", uiColorSliderEdgeL, 9, 0);
                     }
-                    //Debug.Log("B9PW: leading edge complete");
+                    
                 }
 
                 DrawFieldGroupHeader (ref sharedFieldGroupEdgeTrailingStatic, "Edge (trailing)");
@@ -2487,6 +2560,8 @@ namespace WingProcedural
 
         private void SetupFields()
         {
+            
+
             sharedBaseLength = SetupFieldValue(sharedBaseLength, getLimits(sharedBaseLength,getStep(sharedBaseLengthLimits)), GetDefault(sharedBaseLengthDefaults));
             sharedBaseWidthRoot = SetupFieldValue(sharedBaseWidthRoot, getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits)), GetDefault(sharedBaseWidthRootDefaults));
             sharedBaseWidthTip = SetupFieldValue(sharedBaseWidthTip, getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), GetDefault(sharedBaseWidthTipDefaults));
@@ -2567,8 +2642,22 @@ namespace WingProcedural
             {
                 uiLastFieldName = name;
                 uiLastFieldTooltip = UpdateTooltipText (fieldID);
+                Debug.Log("B9PW:" + name  + " Value changed to " + field);
             }
         }
+
+        private void DrawCheck(ref bool value, string desc, string choice1, string choice2, string name, int fieldID)
+        {
+            bool changed = false;
+            value = UIUtility.CheckBox(desc, choice1, choice2, value, out changed);
+            if (changed)
+            {
+                uiLastFieldName = name;
+                uiLastFieldTooltip = UpdateTooltipText(fieldID);
+                Debug.Log("B9PW:" + value + " Value changed to " + value);
+            }
+        }
+        
 
         private void DrawFieldGroupHeader (ref bool fieldGroupBoolStatic, string header)
         {
@@ -2684,7 +2773,18 @@ namespace WingProcedural
                 if (!isCtrlSrf) return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
                 else            return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
             }
-
+            else if (fieldID == 101)
+            {
+                return "Use front and back sweptback angles to define wings,\nor just select no to use the good old lengths.";
+            }
+            else if(fieldID == 102)
+            {
+                return "Include or exclude edges \nwhen changing propertiesof the wing.";
+            }
+            else if(fieldID == 103)
+            {
+                return "Scale edge lengths when changing thickness.";
+            }
             // This should not really happen
             else return "Unknown field\n";
         }
