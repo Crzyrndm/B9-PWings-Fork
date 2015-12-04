@@ -789,8 +789,12 @@ namespace WingProcedural
 
         public void CalcAngle()
         {
-            sharedSweptAngleFront = (float)Math.Atan(sharedBaseLength / (sharedBaseWidthRoot - sharedBaseWidthTip + sharedBaseOffsetTip)) / Mathf.Deg2Rad;
-            sharedSweptAngleBack = (float)Math.Atan(sharedBaseLength / (sharedBaseWidthRoot - sharedBaseWidthTip - sharedBaseOffsetTip)) / Mathf.Deg2Rad;
+            sharedSweptAngleBack = (float)Math.Atan(sharedBaseLength / ( - sharedBaseWidthRoot/2 + sharedBaseWidthTip/2 + sharedBaseOffsetTip)) / Mathf.Deg2Rad;
+            sharedSweptAngleFront = (float)Math.Atan(sharedBaseLength / (sharedBaseWidthRoot/2 - sharedBaseWidthTip/2 + sharedBaseOffsetTip)) / Mathf.Deg2Rad;
+            if (sharedSweptAngleFront < 0)
+                sharedSweptAngleFront += 180;
+            if (sharedSweptAngleBack < 0)
+                sharedSweptAngleBack += 180;
         }
 
         public void Update()
@@ -2655,6 +2659,7 @@ namespace WingProcedural
                 uiLastFieldName = name;
                 uiLastFieldTooltip = UpdateTooltipText(fieldID);
                 Debug.Log("B9PW:" + value + " Value changed to " + value);
+                WingProceduralManager.SaveConfigs();
             }
         }
         
