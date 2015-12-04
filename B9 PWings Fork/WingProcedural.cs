@@ -789,8 +789,8 @@ namespace WingProcedural
 
         public void CalcAngle()
         {
-            sharedSweptAngleFront = (float)Math.Atan((sharedBaseWidthRoot - sharedBaseWidthTip + sharedBaseOffsetTip) / sharedBaseLength);
-            sharedSweptAngleBack = (float)Math.Atan((sharedBaseWidthRoot - sharedBaseWidthTip - sharedBaseOffsetTip) / sharedBaseLength);
+            sharedSweptAngleFront = (float)Math.Atan(sharedBaseLength / (sharedBaseWidthRoot - sharedBaseWidthTip + sharedBaseOffsetTip)) / Mathf.Deg2Rad;
+            sharedSweptAngleBack = (float)Math.Atan(sharedBaseLength / (sharedBaseWidthRoot - sharedBaseWidthTip - sharedBaseOffsetTip)) / Mathf.Deg2Rad;
         }
 
         public void Update()

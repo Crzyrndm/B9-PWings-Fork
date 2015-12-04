@@ -34,24 +34,22 @@ namespace WingProcedural
 
             if (GUI.Button(rectButtonL, "", WingProceduralManager.uiStyleButton))
             {
-               /* if (Input.GetMouseButtonUp(0) || !allowFine)
-                    if ( limits.x - range >= 0)
-                    {
-                        delta -= 1;
-                    }
-                else
-                    {
-                        value01 = limits.x;
-                    }
-                    else if (Input.GetMouseButtonUp(1))*/
-                      if (limits.x - range >= 0)
-                       {
-                            delta -= 1;
-                      }
-                      else
-                        {
-                          value01 = limits.x;
-                       }
+                /* if (Input.GetMouseButtonUp(0) || !allowFine)
+                     if ( limits.x - range >= 0)
+                     {
+                         delta -= 1;
+                     }
+                 else
+                     {
+                         value01 = limits.x;
+                     }
+                     else if (Input.GetMouseButtonUp(1))*/
+                if (limits.x - range >= 0 && name != "Offset (tip)")
+                    delta -= 1;
+                else if (name == "Offset (tip)")
+                    delta -= 1;
+                else                
+                    value01 = limits.x;                
                 // value01 -= increment01;
                 //Debug.Log("Left: Allow fine = " + allowFine);
             }
