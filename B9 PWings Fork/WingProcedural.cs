@@ -2427,8 +2427,8 @@ namespace WingProcedural
                     }
                     else
                     {
-                        DrawField(ref sharedSweptAngleFront, 1f, 1f, sharedSweptAngleLimits, "Swept angle(front)", uiColorSliderBase, 2, 0);
-                        DrawField(ref sharedSweptAngleBack, 1f, 1f, sharedSweptAngleLimits, "Swept angle(back)", uiColorSliderBase, 4, 0);
+                        DrawField(ref sharedSweptAngleFront, 1f, 1f, sharedSweptAngleLimits, "Swept angle(front)", uiColorSliderBase, 201, 0);
+                        DrawField(ref sharedSweptAngleBack, 1f, 1f, sharedSweptAngleLimits, "Swept angle(back)", uiColorSliderBase, 202, 0);
                         
                     }
                     DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessRoot, getStep2(sharedBaseThicknessLimits)), "Thickness (root)", uiColorSliderBase, 5, 0);
@@ -2576,11 +2576,11 @@ namespace WingProcedural
 
             sharedEdgeTypeTrailing = SetupFieldValue(sharedEdgeTypeTrailing, sharedEdgeTypeLimits, GetDefault(sharedEdgeTypeTrailingDefaults));
             sharedEdgeWidthTrailingRoot = SetupFieldValue(sharedEdgeWidthTrailingRoot, getLimits(sharedEdgeWidthTrailingRoot, getStep(sharedEdgeWidthLimits)), GetDefault(sharedEdgeWidthTrailingRootDefaults));
-            sharedEdgeWidthTrailingTip = SetupFieldValue(sharedEdgeWidthTrailingTip, getLimits(sharedEdgeWidthTrailingRoot, getStep(sharedEdgeWidthLimits)), GetDefault(sharedEdgeWidthTrailingTipDefaults));
+            sharedEdgeWidthTrailingTip = SetupFieldValue(sharedEdgeWidthTrailingTip, getLimits(sharedEdgeWidthTrailingTip, getStep(sharedEdgeWidthLimits)), GetDefault(sharedEdgeWidthTrailingTipDefaults));
 
             sharedEdgeTypeLeading = SetupFieldValue(sharedEdgeTypeLeading, sharedEdgeTypeLimits, GetDefault(sharedEdgeTypeLeadingDefaults));
-            sharedEdgeWidthLeadingRoot = SetupFieldValue(sharedEdgeWidthLeadingRoot, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), GetDefault(sharedEdgeWidthLeadingRootDefaults));
-            sharedEdgeWidthLeadingTip = SetupFieldValue(sharedEdgeWidthLeadingTip, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), GetDefault(sharedEdgeWidthLeadingTipDefaults));
+            sharedEdgeWidthLeadingRoot = SetupFieldValue(sharedEdgeWidthLeadingRoot, getLimits(sharedEdgeWidthLeadingRoot, getStep(sharedBaseOffsetLimits)), GetDefault(sharedEdgeWidthLeadingRootDefaults));
+            sharedEdgeWidthLeadingTip = SetupFieldValue(sharedEdgeWidthLeadingTip, getLimits(sharedEdgeWidthLeadingTip, getStep(sharedBaseOffsetLimits)), GetDefault(sharedEdgeWidthLeadingTipDefaults));
 
             sharedMaterialST = SetupFieldValue(sharedMaterialST, sharedMaterialLimits, GetDefault(sharedMaterialSTDefaults));
             sharedColorSTOpacity = SetupFieldValue(sharedColorSTOpacity, sharedColorLimits, GetDefault(sharedColorSTOpacityDefaults));
@@ -2687,109 +2687,108 @@ namespace WingProcedural
             if (fieldID == 0) // sharedBaseLength))
             {
                 if (!isCtrlSrf) return "Lateral measurement of the wing, \nalso referred to as semispan";
-                else            return "Lateral measurement of the control \nsurface at it's root";
+                else return "Lateral measurement of the control \nsurface at it's root";
             }
             else if (fieldID == 1) // sharedBaseWidthRoot))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the wing \nat the root cross section";
-                else            return "Longitudinal measurement of \nthe root chord";
+                else return "Longitudinal measurement of \nthe root chord";
             }
             else if (fieldID == 2) // sharedBaseWidthTip))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the wing \nat the tip cross section";
-                else            return "Longitudinal measurement of \nthe tip chord";
+                else return "Longitudinal measurement of \nthe tip chord";
             }
             else if (fieldID == 3) // sharedBaseOffsetRoot))
             {
                 if (!isCtrlSrf) return "This property shouldn't be accessible \non a wing";
-                else            return "Offset of the trailing edge \nroot corner on the lateral axis";
+                else return "Offset of the trailing edge \nroot corner on the lateral axis";
             }
             else if (fieldID == 4) // sharedBaseOffsetTip))
             {
                 if (!isCtrlSrf) return "Distance between midpoints of the cross \nsections on the longitudinal axis";
-                else            return "Offset of the trailing edge \ntip corner on the lateral axis";
+                else return "Offset of the trailing edge \ntip corner on the lateral axis";
             }
             else if (fieldID == 5) // sharedBaseThicknessRoot))
             {
                 if (!isCtrlSrf) return "Thickness at the root cross section \nUsually kept proportional to edge width";
-                else            return "Thickness at the root cross section \nUsually kept proportional to edge width";
+                else return "Thickness at the root cross section \nUsually kept proportional to edge width";
             }
             else if (fieldID == 6) // sharedBaseThicknessTip))
             {
                 if (!isCtrlSrf) return "Thickness at the tip cross section \nUsually kept proportional to edge width";
-                else            return "Thickness at the tip cross section \nUsually kept proportional to edge width";
+                else return "Thickness at the tip cross section \nUsually kept proportional to edge width";
             }
 
             // Edge descriptions
             else if (fieldID == 7) // sharedEdgeTypeTrailing))
             {
                 if (!isCtrlSrf) return "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
-                else            return "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
+                else return "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
             }
             else if (fieldID == 8) // sharedEdgeWidthTrailingRoot))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the trailing \nedge cross section at wing root";
-                else            return "Longitudinal measurement of the trailing \nedge cross section at with root";
+                else return "Longitudinal measurement of the trailing \nedge cross section at with root";
             }
             else if (fieldID == 9) // sharedEdgeWidthTrailingTip))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the trailing \nedge cross section at wing tip";
-                else            return "Longitudinal measurement of the trailing \nedge cross section at with tip";
+                else return "Longitudinal measurement of the trailing \nedge cross section at with tip";
             }
             else if (fieldID == 10) // sharedEdgeTypeLeading))
             {
                 if (!isCtrlSrf) return "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
-                else            return "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
+                else return "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
             }
             else if (fieldID == 11) // sharedEdgeWidthLeadingRoot))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the leading \nedge cross section at wing root";
-                else            return "Longitudinal measurement of the leading \nedge cross section at wing root";
+                else return "Longitudinal measurement of the leading \nedge cross section at wing root";
             }
             else if (fieldID == 12) // sharedEdgeWidthLeadingTip))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the leading \nedge cross section at with tip";
-                else            return "Longitudinal measurement of the leading \nedge cross section at with tip";
+                else return "Longitudinal measurement of the leading \nedge cross section at with tip";
             }
 
             // Surface descriptions
             else if (fieldID == 13)
             {
                 if (!isCtrlSrf) return "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
-                else            return "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
+                else return "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
             }
             else if (fieldID == 14)
             {
                 if (!isCtrlSrf) return "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
-                else            return "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
+                else return "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
             }
             else if (fieldID == 15)
             {
                 if (!isCtrlSrf) return "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
-                else            return "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
+                else return "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
             }
             else if (fieldID == 16)
             {
                 if (!isCtrlSrf) return "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
-                else            return "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
+                else return "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
             }
             else if (fieldID == 17)
             {
                 if (!isCtrlSrf) return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
-                else            return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
-            }
+                else return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
+            }//Modified part start
             else if (fieldID == 101)
-            {
                 return "Use front and back sweptback angles to define wings,\nor just select no to use the good old lengths.";
-            }
-            else if(fieldID == 102)
-            {
+            else if (fieldID == 102)
                 return "Include or exclude edges \nwhen changing propertiesof the wing.";
-            }
-            else if(fieldID == 103)
-            {
+            else if (fieldID == 103)
                 return "Scale edge lengths when changing thickness.";
-            }
+            else if (fieldID == 201)
+                return "Angle between front edge and root.\n<90 deg is to the back";
+            else if (fieldID == 202)
+                return "Angle between back edge and root.\n<90 deg is to the back.";
+
             // This should not really happen
             else return "Unknown field\n";
         }
