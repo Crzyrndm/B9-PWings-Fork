@@ -2302,6 +2302,14 @@ namespace WingProcedural
             Vector2 limits = new Vector2(x, y);
             return limits;
         }
+
+        public Vector2 getOffsetLimits(double value, double step)
+        {
+            float x = (float)(value - value % step - step/2);
+            float y = (float)(value - value % step + step/2);
+            Vector2 limits = new Vector2(x, y);
+            return limits;
+        }
         public float getStep(Vector4 limits)
         {
             float step;
@@ -2422,7 +2430,7 @@ namespace WingProcedural
                     if (!sharedPropAnglePref)
                     {                        
                         DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), "Width (tip)", uiColorSliderBase, 2, 0);
-                        DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0);
+                        DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getOffsetLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0);
                         
                     }
                     else
@@ -2440,8 +2448,8 @@ namespace WingProcedural
                     DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseLength, getStep(sharedBaseLengthLimits)), "Length", uiColorSliderBase, 0, 0);
                     DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits)), "Width (root)", uiColorSliderBase, 1, 0);
                     DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), "Width (tip)", uiColorSliderBase, 2, 0);
-                   DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getLimits(sharedBaseOffsetRoot, getStep(sharedBaseOffsetLimits)), "Offset (root)", uiColorSliderBase, 3, 0);
-                    DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0);
+                   DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getOffsetLimits(sharedBaseOffsetRoot, getStep(sharedBaseOffsetLimits)), "Offset (root)", uiColorSliderBase, 3, 0);
+                    DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getOffsetLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0);
                     DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessRoot, getStep2(sharedBaseThicknessLimits)), "Thickness (root)", uiColorSliderBase, 5, 0);
                     DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessTip, getStep2(sharedBaseThicknessLimits)), "Thickness (tip)", uiColorSliderBase, 6, 0);
                 }
