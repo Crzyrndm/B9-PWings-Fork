@@ -2305,8 +2305,8 @@ namespace WingProcedural
 
         public Vector2 getOffsetLimits(double value, double step)
         {
-            float x = (float)(value - value % step - step/2);
-            float y = (float)(value - value % step + step/2);
+            float x = (float)(value - (value - step / 2) % step);
+            float y = (float)(value - (value - step / 2) % step);
             Vector2 limits = new Vector2(x, y);
             return limits;
         }
