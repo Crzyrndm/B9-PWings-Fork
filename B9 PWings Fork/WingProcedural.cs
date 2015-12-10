@@ -2305,9 +2305,9 @@ namespace WingProcedural
 
         public Vector2 getOffsetLimits(double value, double step)
         {
-            float x = (float)(value - (value - step / 2) % step - step);
-            float y = (float)(value - (value - step / 2) % step);
-            Vector2 limits = new Vector2(x, y);
+            float x = (float)(value - (value - step / 2) % step - 1.5 * step);
+            float y = (float)(value - (value - step / 2) % step + step / 2);
+            Vector2 limits = new Vector2(x, y); 
             return limits;
         }
         /*
@@ -2663,7 +2663,7 @@ namespace WingProcedural
             {
                 uiLastFieldName = name;
                 uiLastFieldTooltip = UpdateTooltipText (fieldID);
-                Debug.Log("B9PW:" + name  + " Value changed to " + field);
+                //Debug.Log("B9PW:" + name  + " Value changed to " + field);
             }
         }
 

@@ -11,7 +11,7 @@ namespace WingProcedural
     public static class UIUtility
     {
         
-        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true, int delta = 0)
+        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true, int delta = 0, int isOffset = 0)
         {
             if (!WingProceduralManager.uiStyleConfigured)
                 WingProceduralManager.ConfigureStyles ();
@@ -44,9 +44,9 @@ namespace WingProcedural
                          value01 = limits.x;
                      }
                      else if (Input.GetMouseButtonUp(1))*/
-                if (limits.x - range >= 0 && name != "Offset (tip)")
+                if (limits.x - range >= 0 && isOffset != 1)
                     delta -= 1;
-                else if (name == "Offset (tip)")
+                else if (isOffset == 1)
                     delta -= 1;
                 else                
                     value01 = limits.x;                
@@ -76,13 +76,13 @@ namespace WingProcedural
                     {
                         double excess = value01 / increment01;
                         value01 -= (excess - Math.Round(excess)) * increment01;
-                        Debug.Log("Normal: value01 => " + value01);
+                        //Debug.Log("Normal: value01 => " + value01);
                     }
                     else if (Input.GetMouseButton(1) && allowFine) // fine control
                     {
                         double excess = valueOld / increment01;
                         value01 = (valueOld - (excess - Math.Round(excess)) * increment01) + Math.Min(value01 - 0.5, 0.4999) * increment01;
-                        Debug.Log("Fine: value01 => " + value01);
+                        //Debug.Log("Fine: value01 => " + value01);
                     }
                 }
             }
@@ -90,7 +90,7 @@ namespace WingProcedural
                 GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
 
-            value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), (float)limits.x), (float)limits.y) + delta * (float)range; // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+            value = Mathf.Clamp((float)(value01 * range + limits.x),  (float)limits.x, (float)limits.y) + delta * (float)range; // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
             //value = (float)(value01 * range + limits.x);  //releases clamp
             changed = valueOld != value ? true : false;
 
