@@ -2305,8 +2305,10 @@ namespace WingProcedural
 
         public Vector2 getOffsetLimits(double value, double step)
         {
-            float x = (float)(value - (value - step / 2) % step - 1.5 * step);
-            float y = (float)(value - (value - step / 2) % step + step / 2);
+            value -= step / 2;
+            step *= 2;
+            float x = (float)(value - value % step - 3*step/2);
+            float y = (float)(value - value % step + step/2);
             Vector2 limits = new Vector2(x, y); 
             return limits;
         }
@@ -2439,7 +2441,7 @@ namespace WingProcedural
                     if (!sharedPropAnglePref)
                     {                        
                         DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), "Width (tip)", uiColorSliderBase, 2, 0);
-                        DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getOffsetLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0);
+                        DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getOffsetLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0,true ,1);
                         
                     }
                     else
@@ -2457,8 +2459,8 @@ namespace WingProcedural
                     DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseLength, getStep(sharedBaseLengthLimits)), "Length", uiColorSliderBase, 0, 0);
                     DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits)), "Width (root)", uiColorSliderBase, 1, 0);
                     DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits)), "Width (tip)", uiColorSliderBase, 2, 0);
-                   DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getOffsetLimits(sharedBaseOffsetRoot, getStep(sharedBaseOffsetLimits)), "Offset (root)", uiColorSliderBase, 3, 0);
-                    DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getOffsetLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0);
+                   DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getOffsetLimits(sharedBaseOffsetRoot, getStep(sharedBaseOffsetLimits)), "Offset (root)", uiColorSliderBase, 3, 0, true ,1);
+                    DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getOffsetLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0,true, 1);
                     DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessRoot, getStep2(sharedBaseThicknessLimits)), "Thickness (root)", uiColorSliderBase, 5, 0);
                     DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessTip, getStep2(sharedBaseThicknessLimits)), "Thickness (tip)", uiColorSliderBase, 6, 0);
                 }
@@ -2654,10 +2656,10 @@ namespace WingProcedural
         /// <param name="fieldType">tooltip stuff</param>
         /// <param name="allowFine">Whether right click drag behaves as fine control or not</param>
         //Vector2 field0;  //it need definition
-        private void DrawField ( ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
+        private void DrawField ( ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true, int isOffset = 0)
         {
             bool changed = false;
-            field = UIUtility.FieldSlider (field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB (hsbColor), fieldType, allowFine);
+            field = UIUtility.FieldSlider (field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB (hsbColor), fieldType, allowFine, isOffset);
             
             if (changed)
             {
