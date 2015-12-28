@@ -90,7 +90,7 @@ namespace WingProcedural
                 GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
 
-            value = Mathf.Clamp((float)(value01 * range + limits.x),  (float)limits.x, (float)limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+            value = Mathf.Clamp((float)(value01 * range + range * delta) , limits.x, limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
             //value = (float)(value01 * range + limits.x);  //releases clamp
             changed = valueOld != value ? true : false;
 

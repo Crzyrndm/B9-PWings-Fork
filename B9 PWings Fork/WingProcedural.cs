@@ -2309,7 +2309,7 @@ namespace WingProcedural
 
         public Vector2 getLimits(double value, double step, int i = 0)
         {
-            if (value % step != 0 || ((int)(value / step) != i & (int)((value / step)-1) != i))
+            if (value % step != 0 || ((int)(value / step) != i & (int)((value / step) - 1) != i)) 
                 i = (int) (value / step);
             float x = (float)(i * step);
             float y = (float)((i + 1) * step);
@@ -2320,7 +2320,7 @@ namespace WingProcedural
         public Vector2 getOffsetLimits(float value, float step, int i = 0)
         {
             value -= step / 2;
-            if (value % step != 0 || ((int)(value / step) != i & (int)((value / step) - 1) != i))
+            if (value % step != 0 || ((int)(value / step) != i & (int)((value / step)) != i - 1))
                 i = (int)(value / step);
             float x = i * step - step / 2;
             float y = (i + 1) * step - step / 2;
