@@ -11,7 +11,7 @@ namespace WingProcedural
     public static class UIUtility
     {
         
-        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true, int delta = 0, int isOffset = 0)
+        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true, int isOffset = 0)
         {
             if (!WingProceduralManager.uiStyleConfigured)
                 WingProceduralManager.ConfigureStyles ();
@@ -21,7 +21,7 @@ namespace WingProcedural
             double increment01 = increment / range;
             double valueOld = value01;
             float buttonWidth = 12, spaceWidth = 3;
-
+         
             GUILayout.Label ("", WingProceduralManager.uiStyleLabelHint);
             Rect rectLast = GUILayoutUtility.GetLastRect ();
             Rect rectSlider = new Rect(rectLast.xMin + buttonWidth + spaceWidth, rectLast.yMin, rectLast.width - 2 * (buttonWidth + spaceWidth), rectLast.height);
@@ -90,7 +90,7 @@ namespace WingProcedural
                 GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
 
-            value = Mathf.Clamp((float)(value01 * range + limits.x),  (float)limits.x, (float)limits.y) + delta * (float)range; // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+            value = Mathf.Clamp((float)(value01 * range + limits.x),  (float)limits.x, (float)limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
             //value = (float)(value01 * range + limits.x);  //releases clamp
             changed = valueOld != value ? true : false;
 
