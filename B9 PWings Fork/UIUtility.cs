@@ -11,7 +11,7 @@ namespace WingProcedural
     public static class UIUtility
     {
         
-        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true, int isOffset = 0)
+        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, ref int delta, bool allowFine = true, int isOffset = 0, bool needDelta = true)
         {
             if (!WingProceduralManager.uiStyleConfigured)
                 WingProceduralManager.ConfigureStyles ();
@@ -21,6 +21,8 @@ namespace WingProcedural
             double increment01 = increment / range;
             double valueOld = value01;
             float buttonWidth = 12, spaceWidth = 3;
+            if (!needDelta)
+                delta = 0;
          
             GUILayout.Label ("", WingProceduralManager.uiStyleLabelHint);
             Rect rectLast = GUILayoutUtility.GetLastRect ();
@@ -44,12 +46,15 @@ namespace WingProcedural
                          value01 = limits.x;
                      }
                      else if (Input.GetMouseButtonUp(1))*/
-                if (limits.x - range >= 0 && isOffset != 1)
-                    delta -= 1;
-                else if (isOffset == 1)
-                    delta -= 1;
-                else                
-                    value01 = limits.x;                
+                if (needDelta)
+                {
+                    if (limits.x - range >= 0 && isOffset != 1)
+                        delta -= 1;
+                    else if (isOffset == 1)
+                        delta -= 1;
+                    else
+                        value01 = limits.x;
+                }           
                 // value01 -= increment01;
                 //Debug.Log("Left: Allow fine = " + allowFine);
             }
@@ -57,6 +62,7 @@ namespace WingProcedural
             {
                 //if (Input.GetMouseButtonUp(1))
                 //{
+                if (needDelta)
                     delta += 1;
                     
                 //}
