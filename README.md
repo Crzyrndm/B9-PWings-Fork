@@ -5,6 +5,8 @@ Pre-modified by Crzyrndm.
 
 This is a modified version made by Lithane, or 01010101lzy.
 
+*THIS IS AN ALPHA VERSION OF THE MOD, SO EXPECT WIERD ISSUES*
+
 Modification includes:
 
 * Expanding wing properties range;
