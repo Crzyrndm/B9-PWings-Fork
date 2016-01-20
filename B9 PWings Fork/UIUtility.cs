@@ -49,9 +49,15 @@ namespace WingProcedural
                 if (needDelta)
                 {
                     if (limits.x - range >= 0 && isOffset != 1)
+                    {
                         delta -= 1;
+                        value01 = 0;
+                    }
                     else if (isOffset == 1)
+                    {
                         delta -= 1;
+                        value01 = 0;
+                    }
                     else
                         value01 = limits.x;
                 }           
@@ -97,8 +103,8 @@ namespace WingProcedural
 
 
             value = Mathf.Clamp((float)(value01 * range + range * delta) , limits.x, limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
-            if (isOffset == 1)
-                value -= (float)range / 2;
+           // if (isOffset == 1)
+           //     value -= (float)range / 2;
             //value = (float)(value01 * range + limits.x);  //releases clamp
             changed = valueOld != value ? true : false;
 

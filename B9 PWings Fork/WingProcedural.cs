@@ -2451,8 +2451,8 @@ namespace WingProcedural
                 if(sharedFieldPrefStatic)
                 {
                     DrawCheck(ref sharedPropAnglePref, "Use angles to define the wing", "No", "Yes", "AngleDefine", 101);
-                    DrawCheck(ref sharedPropEdgePref, "[Disabled]Include edges in definitions", "No", "Yes", "EdgeIncluded", 102);
-                    DrawCheck(ref sharedPropEThickPref, "[Disabled]Scale edges to thickness ", "No", "Yes", "ThickScale", 103);
+                   // DrawCheck(ref sharedPropEdgePref, "Include edges in definitions", "No", "Yes", "EdgeIncluded", 102);
+                   // DrawCheck(ref sharedPropEThickPref, "Scale edges to thickness ", "No", "Yes", "ThickScale", 103);
                 }
                 DrawFieldGroupHeader (ref sharedFieldGroupBaseStatic, "Base");
                 if (sharedFieldGroupBaseStatic && !isCtrlSrf)
@@ -2467,7 +2467,9 @@ namespace WingProcedural
                     }
                     else
                     {
+                        dummyValueInt = 0;
                         DrawField(ref sharedSweptAngleFront, 1f, 1f, sharedSweptAngleLimits, "Swept angle(front)", uiColorSliderBase, 201, 0, ref dummyValueInt, true, 0, false);
+                        dummyValueInt = 0;
                         DrawField(ref sharedSweptAngleBack, 1f, 1f, sharedSweptAngleLimits, "Swept angle(back)", uiColorSliderBase, 202, 0, ref dummyValueInt, true, 0, false);
                         
                     }
