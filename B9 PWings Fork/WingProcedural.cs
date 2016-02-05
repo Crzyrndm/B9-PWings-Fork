@@ -405,6 +405,8 @@ namespace WingProcedural
         public static bool sharedPropAnglePref = false;
         public static bool sharedPropEdgePref = false;
         public static bool sharedPropEThickPref = false;
+        private static float sharedIncrementAngle = 0.01f;
+        private static float sharedIncrementAngleLarge = 0.10f;
 
 
         #endregion
@@ -2457,27 +2459,27 @@ namespace WingProcedural
                 DrawFieldGroupHeader (ref sharedFieldGroupBaseStatic, "Base");
                 if (sharedFieldGroupBaseStatic && !isCtrlSrf)
                 {
-                    DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseLength, getStep(sharedBaseLengthLimits), sharedBaseLengthInt), "Length", uiColorSliderBase, 0, 0, ref sharedBaseLengthInt);
-                    DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits), sharedBaseWidthRInt), "Width (root)", uiColorSliderBase, 1, 0, ref sharedBaseWidthRInt);
+                    DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getStep(sharedBaseLengthLimits), "Length", uiColorSliderBase, 0, 0, ref sharedBaseLengthInt);
+                    DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getStep(sharedBaseWidthRootLimits), "Width (root)", uiColorSliderBase, 1, 0, ref sharedBaseWidthRInt);
                     if (!sharedPropAnglePref)
                     {                        
-                        DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthTip, getStep(sharedBaseWidthTipLimits), sharedBaseWidthTInt), "Width (tip)", uiColorSliderBase, 2, 0, ref sharedBaseWidthTInt, true);
-                        DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getOffsetLimits(sharedBaseOffsetTip, getStep(sharedBaseOffsetLimits)), "Offset (tip)", uiColorSliderBase, 4, 0, ref sharedBaseOffsetTInt, true, 1);
+                        DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f),getStep(sharedBaseWidthTipLimits), "Width (tip)", uiColorSliderBase, 2, 0, ref sharedBaseWidthTInt, true);
+                        DrawOffset(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getStep(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0, ref sharedBaseOffsetTInt, true);
                         
                     }
                     else
                     {
-                        dummyValueInt = 0;
-                        DrawField(ref sharedSweptAngleFront, 1f, 1f, sharedSweptAngleLimits, "Swept angle(front)", uiColorSliderBase, 201, 0, ref dummyValueInt, true, 0, false);
-                        dummyValueInt = 0;
-                        DrawField(ref sharedSweptAngleBack, 1f, 1f, sharedSweptAngleLimits, "Swept angle(back)", uiColorSliderBase, 202, 0, ref dummyValueInt, true, 0, false);
+                        //dummyValueInt = 0;
+                        DrawLimited(ref sharedSweptAngleFront, sharedIncrementAngle, sharedIncrementAngleLarge, sharedSweptAngleLimits, "Swept angle(front)", uiColorSliderBase, 201, 0, ref dummyValueInt, true);
+                        //dummyValueInt = 0;
+                        DrawLimited(ref sharedSweptAngleBack, sharedIncrementAngle, sharedIncrementAngleLarge, sharedSweptAngleLimits, "Swept angle(back)", uiColorSliderBase, 202, 0, ref dummyValueInt, true);
                         
                     }
                     DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessRoot, getStep2(sharedBaseThicknessLimits)), "Thickness (root)", uiColorSliderBase, 5, 0, ref sharedBaseThicknessRInt);
                     DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, getLimits(sharedBaseThicknessTip, getStep2(sharedBaseThicknessLimits)), "Thickness (tip)", uiColorSliderBase, 6, 0, ref sharedBaseThicknessTInt);
                     //Debug.Log("B9PW: base complete");
                 }
-                else
+                else if (sharedFieldGroupBaseStatic && isCtrlSrf)
                 {
                     DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseLength, getStep(sharedBaseLengthLimits)), "Length", uiColorSliderBase, 0, 0, ref sharedBaseLengthInt);
                     DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getLimits(sharedBaseWidthRoot, getStep(sharedBaseWidthRootLimits)), "Width (root)", uiColorSliderBase, 1, 0, ref sharedBaseWidthRInt);
@@ -2679,15 +2681,51 @@ namespace WingProcedural
         /// <param name="fieldType">tooltip stuff</param>
         /// <param name="allowFine">Whether right click drag behaves as fine control or not</param>
         //Vector2 field0;  //it need definition
-        private void DrawField ( ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, ref int delta, bool allowFine = true, int isOffset = 0, bool needDelta = true)
+        private void DrawField ( ref float field, float increment, float incrementLarge, float step, string name, Vector4 hsbColor, int fieldID, int fieldType, ref int delta, bool allowFine = true)
         {
             bool changed = false;
-            field = UIUtility.FieldSlider (field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB (hsbColor), fieldType, ref delta, allowFine, isOffset, needDelta);
+            field = UIUtility.FieldSlider (field, increment, incrementLarge, step, name, out changed, ColorHSBToRGB (hsbColor), fieldType, ref delta, allowFine);
             
             if (changed)
             {
                 uiLastFieldName = name;
                 uiLastFieldTooltip = UpdateTooltipText (fieldID);
+                //Debug.Log("B9PW:" + name  + " Value changed to " + field);
+            }
+        }
+        private void DrawOffset(ref float field, float increment, float incrementLarge, float range, string name, Vector4 hsbColor, int fieldID, int fieldType, ref int delta, bool allowFine = true)
+        {
+            bool changed = false;
+            field = UIUtility.OffsetSlider(field, increment, incrementLarge, range, name, out changed, ColorHSBToRGB(hsbColor), fieldType, ref delta, allowFine);
+
+            if (changed)
+            {
+                uiLastFieldName = name;
+                uiLastFieldTooltip = UpdateTooltipText(fieldID);
+                //Debug.Log("B9PW:" + name  + " Value changed to " + field);
+            }
+        }
+        private void DrawLimited(ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, ref int delta, bool allowFine = true)
+        {
+            bool changed = false;
+            field = UIUtility.LimitedSlider(field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB(hsbColor), fieldType, allowFine);
+
+            if (changed)
+            {
+                uiLastFieldName = name;
+                uiLastFieldTooltip = UpdateTooltipText(fieldID);
+                //Debug.Log("B9PW:" + name  + " Value changed to " + field);
+            }
+        }
+        private void DrawInt(ref float field, float increment, float incrementLarge, int max, string name, Vector4 hsbColor, int fieldID, int fieldType)
+        {
+            bool changed = false;
+            field = UIUtility.IntegerSlider(field, increment, incrementLarge, max, name, out changed, ColorHSBToRGB(hsbColor), fieldType);
+
+            if (changed)
+            {
+                uiLastFieldName = name;
+                uiLastFieldTooltip = UpdateTooltipText(fieldID);
                 //Debug.Log("B9PW:" + name  + " Value changed to " + field);
             }
         }
@@ -2709,14 +2747,14 @@ namespace WingProcedural
         private void DrawFieldGroupHeader (ref bool fieldGroupBoolStatic, string header)
         {
             GUILayout.BeginHorizontal ();
-            if (GUILayout.Button (header, WingProceduralManager.uiStyleLabelHint))
+            if (GUILayout.Button ((fieldGroupBoolStatic?"\\/  ":">  ") + header, WingProceduralManager.uiStyleLabelHint))
             {
                 fieldGroupBoolStatic = !fieldGroupBoolStatic;
                 if (WPDebug.logPropertyWindow) DebugLogWithID ("DrawFieldGroupHeader", "Header of " + header + " pressed | Group state: " + fieldGroupBoolStatic);
                 uiAdjustWindow = true;
             }
-            if (fieldGroupBoolStatic) GUILayout.Label ("|", WingProceduralManager.uiStyleLabelHint, GUILayout.MaxWidth (15f));
-            else GUILayout.Label ("+", WingProceduralManager.uiStyleLabelHint, GUILayout.MaxWidth (15f));
+            //if (fieldGroupBoolStatic) GUILayout.Label ("-", WingProceduralManager.uiStyleLabelHint, GUILayout.MaxWidth (15f));
+            //else GUILayout.Label ("+", WingProceduralManager.uiStyleLabelHint, GUILayout.MaxWidth (15f));
             GUILayout.EndHorizontal ();
         }
 
