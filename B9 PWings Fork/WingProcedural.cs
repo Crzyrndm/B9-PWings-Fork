@@ -490,12 +490,9 @@ namespace WingProcedural
             
             fuelSelectedTankSetup++;
 
-            if (fuelSelectedTankSetup >= fuelConfigurationsList.Count)
+            if (fuelSelectedTankSetup >= StaticWingGlobals.wingTankConfigurations.Count)
                 fuelSelectedTankSetup = 0;
-            if (HighLogic.LoadedSceneIsFlight)
-                fuelCurrentAmount = Vector4.zero;
-
-            FuelSetConfigurationToParts (true);
+            FuelTankTypeChanged();
         }
         #endregion
 
@@ -643,7 +640,6 @@ namespace WingProcedural
 
         public static bool assembliesChecked = false;
         public static bool assemblyFARUsed = false;
-        public static bool assemblyDREUsed = false;
         public static bool assemblyRFUsed = false;
         public static bool assemblyMFTUsed = false;
 
@@ -654,10 +650,9 @@ namespace WingProcedural
                 assemblyFARUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("FerramAerospaceResearch", StringComparison.InvariantCultureIgnoreCase));
                 assemblyRFUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("RealFuels", StringComparison.InvariantCultureIgnoreCase));
                 assemblyMFTUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("modularFuelTanks", StringComparison.InvariantCultureIgnoreCase));
-                assemblyDREUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("DeadlyReentry", StringComparison.InvariantCultureIgnoreCase));
 
                 if (WPDebug.logEvents)
-                    DebugLogWithID ("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | DRE: " + assemblyDREUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
+                    DebugLogWithID ("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
                 if (isCtrlSrf && isWingAsCtrlSrf && WPDebug.logEvents)
                     DebugLogWithID ("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
                 if (assemblyRFUsed && assemblyMFTUsed && WPDebug.logEvents) 
@@ -743,8 +738,6 @@ namespace WingProcedural
 
         public void Update()
         {
-            if (canBeFueled)
-                FuelOnUpdate();
             if (!HighLogic.LoadedSceneIsEditor || !isStarted)
                 return;
 
@@ -781,7 +774,7 @@ namespace WingProcedural
                 WingProcedural parentModule = this.part.parent.Modules.OfType<WingProcedural>().FirstOrDefault();
                 if (parentModule != null)
                 {
-                    parentModule.CalculateVolume();
+                    parentModule.FuelVolumeChanged();
                     parentModule.CalculateAerodynamicValues();
                 }
             }
@@ -791,7 +784,7 @@ namespace WingProcedural
 
         public void OnSceneSwitch(GameScenes scene)
         {
-            isStarted = false; // fixes nullrefs when switching scenes and things haven't been destroyed yet
+            isStarted = false; // fixes annoying nullrefs when switching scenes and things haven't been destroyed yet
         }
 
         /// <summary>
@@ -1350,7 +1343,7 @@ namespace WingProcedural
             if (WPDebug.logUpdateGeometry)
                 DebugLogWithID ("UpdateGeometry", "Finished");
             if (HighLogic.LoadedSceneIsEditor)
-                CalculateVolume ();
+                FuelVolumeChanged ();
             if (updateAerodynamics)
                 CalculateAerodynamicValues();
         }
@@ -1856,18 +1849,6 @@ namespace WingProcedural
         private FieldInfo  aeroFARFieldInfoRootChordOffset;
         private MethodInfo aeroFARMethodInfoUsed;
 
-        public void CalculateVolume ()
-        {
-            if (!canBeFueled || isPanel)
-                return;
-
-            aeroStatVolume = (sharedBaseWidthTip * sharedBaseThicknessTip * sharedBaseLength) + ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * sharedBaseThicknessTip * sharedBaseLength)
-                                + (sharedBaseWidthTip * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength)
-                                + ((sharedBaseWidthRoot - sharedBaseWidthTip) / 2f * (sharedBaseThicknessRoot - sharedBaseThicknessTip) / 2f * sharedBaseLength);
-
-            FuelUpdateAmountsFromVolume (aeroStatVolume, true);
-        }
-
         public void CalculateAerodynamicValues ()
         {
             if (WPDebug.logCAV)
@@ -1957,6 +1938,8 @@ namespace WingProcedural
                 aeroUICost = Mathf.Round (aeroUICost / 5f) * 5f;
                 part.CoMOffset = new Vector3 (0f, -(sharedWidthRootSum + sharedWidthTipSum) / 4f, 0f);
             }
+            aeroUICost -= part.partInfo.cost; // it's additional cost
+
             part.breakingForce = Mathf.Round ((float) aeroStatConnectionForce);
             part.breakingTorque = Mathf.Round ((float) aeroStatConnectionForce);
             if (WPDebug.logCAV)
@@ -2075,8 +2058,8 @@ namespace WingProcedural
 
             if (!assemblyFARUsed)
             {
-                aeroUICd = Mathf.Round ((float) aeroStatCd * 100f) / 100f;
-                aeroUICl = Mathf.Round ((float) aeroStatCl * 100f) / 100f;
+                aeroUICd = (float)Math.Round(aeroStatCd, 2);
+                aeroUICl = (float)Math.Round(aeroStatCl, 2);
             }
             if (!assemblyFARUsed)
                 aeroUIMass = part.mass;
@@ -2107,7 +2090,15 @@ namespace WingProcedural
                 yield return null;
             }
             if (assemblyFARUsed)
+            {
+                if (part.Modules.Contains("FARWingAerodynamicModel"))
+                {
+                    PartModule FARmodule = part.Modules["FARWingAerodynamicModel"];
+                    Type FARtype = FARmodule.GetType();
+                    FARtype.GetMethod("StartInitialization").Invoke(FARmodule, null);
+                }
                 part.SendMessage("GeometryPartModuleRebuildMeshData"); // notify FAR that geometry has changed
+            }
             else
             {
                 DragCube DragCube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
@@ -2981,56 +2972,13 @@ namespace WingProcedural
         // Original code by Snjo
         // Modified to remove config support and string parsing and to add support for arbitrary volumes
 
-        public class WPResource
-        {
-            public string name;
-            public int ID;
-            public float ratio;
-            public double currentSupply = 0f;
-            public float amount = 0f;
-            public float maxAmount = 0f;
-
-            public WPResource(string _name, float _ratio)
-            {
-                name = _name;
-                ID = _name.GetHashCode();
-                ratio = _ratio;
-            }
-
-            public WPResource(string _name)
-            {
-                name = _name;
-                ID = _name.GetHashCode();
-                ratio = 1f;
-            }
-        }
-
-        public class WPInnerTank
-        {
-            public List<WPResource> resources = new List<WPResource> ();
-        }
-
-        private List<WPInnerTank> fuelConfigurationsList = new List<WPInnerTank> ();
-
-        // Reference values for 3.25m3 tank and 1.0m3 tank
-        // LF    | LFO
-        // 420.0 | 189.0, 231.0
-        // 134.4 | 60.48, 73.92
-
-        public string[][] fuelResourceNames = new string[][] { new string[] { "Structural" }, new string[] { "LiquidFuel" }, new string[] { "LiquidFuel", "Oxidizer"}, new string[] { "MonoPropellant" } };
-        public float[][] fuelPerCubicMeter = new float[][] { new float[] { 0.0f }, new float[] { 134.4f }, new float[] { 60.48f, 73.92f }, new float[] { 134.4f } };
-        public float[] fuelCostPerUnit = new float[] { 0.0f, 0.6f, 0.875f, 0.750f };
-
         public bool fuelDisplayCurrentTankCost = false;
         public bool fuelShowInfo = false;
 
-        [KSPField(isPersistant = true)] public Vector4 fuelCurrentAmount = new Vector4(-1, -1, -1, -1); // if val < 0, then fill to max, otherwise don't change
         [KSPField (isPersistant = true)] public int fuelSelectedTankSetup = 0;
 
         [KSPField (guiActive = false, guiActiveEditor = false, guiName = "Added cost")] public float fuelAddedCost = 0f;
         [KSPField (guiActive = false, guiActiveEditor = false, guiName = "Dry mass")] public float fuelDryMassInfo = 0f;
-
-        private float fuelVolumeOld = 0f;
 
         /// <summary>
         /// Called from setup (part of Start() for editor and flight)
@@ -3042,147 +2990,101 @@ namespace WingProcedural
             if (!(canBeFueled && useStockFuel))
                 return;
 
-            fuelConfigurationsList.Clear();
-            for (int configID = 0; configID < fuelResourceNames.Length; configID++)
+            if (HighLogic.LoadedSceneIsEditor && fuelSelectedTankSetup < 0)
             {
-                WPInnerTank newTank = new WPInnerTank();
-                for (int nameID = 0; nameID < fuelResourceNames[configID].Length; nameID++)
-                {
-                    newTank.resources.Add(new WPResource(fuelResourceNames[configID][nameID].Trim(' ')));
-                }
-                fuelConfigurationsList.Add(newTank);
-            }
-
-            if (HighLogic.LoadedSceneIsEditor)
-                FuelSetConfigurationToParts(false);
-            FuelUpdateAmountsFromVolume(aeroStatVolume, false);
-        }
-
-        /// <summary>
-        /// called in Update for standard wing panels, sets fuelCurrentAmount to the current part resource volume.
-        /// The Vector4 of fuels is required because the stock resources get cleared frequently(?)
-        /// </summary>
-        private void FuelOnUpdate()
-        {
-            if (fuelSelectedTankSetup < fuelConfigurationsList.Count && fuelSelectedTankSetup >= 0 && fuelConfigurationsList[fuelSelectedTankSetup] != null)
-            {
-                for (int i = 0; i < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; i++)
-                {
-                    if (fuelConfigurationsList[fuelSelectedTankSetup].resources[i].name != "Structural")
-                        FuelSetResource(i, (float)part.Resources[fuelConfigurationsList[fuelSelectedTankSetup].resources[i].name].amount);
-                }
+                fuelSelectedTankSetup = 0;
+                FuelTankTypeChanged();
             }
         }
 
         /// <summary>
-        /// takes a volume in m^3 and sets up max amounts (and current for stock)
+        /// wing geometry changed, update fuel volumes
         /// </summary>
-        private void FuelUpdateAmountsFromVolume(float volume, bool reassignAfter)
+        public void FuelVolumeChanged()
         {
-            if (!canBeFueled)
+            if (!canBeFueled || isPanel)
                 return;
 
-            if (!useStockFuel)
-            {
-                if (WPDebug.logFuel)
-                    DebugLogWithID("FuelUpdateAmountsFromVolume", "Started for RF or MFT");
-                if (part.Modules.Contains("ModuleFuelTanks"))
-                {
-                    PartModule module = part.Modules["ModuleFuelTanks"];
-                    Type type = module.GetType();
+            aeroStatVolume = 0.7f * sharedBaseLength * (sharedBaseWidthRoot + sharedBaseWidthTip) * (sharedBaseThicknessRoot + sharedBaseThicknessTip) / 4; // fudgeFactor * length * average thickness * average width
 
-                    double volumeRF = (double)volume;
-                    if (assemblyRFUsed)
-                        volumeRF *= 1000;     // RF requests units in liters instead of cubic meters
-                    else if (assemblyMFTUsed)
-                        volumeRF *= 173.9;  // MFT requests volume in units
-                    type.GetField("volume").SetValue(module, volumeRF);
-                    type.GetMethod("ChangeVolume").Invoke(module, new object[] { volumeRF });
-                }
-                else if (WPDebug.logFuel)
-                    DebugLogWithID("FuelUpdateAmountsFromVolume", "Module not found");
-            }
-            else
+            for (int i = 0; i < part.Resources.Count; ++i)
             {
-                if (WPDebug.logFuel)
-                    DebugLogWithID("FuelUpdateAmountsFromVolume", "Started for stock fuel");
-                for (int i = 0; i < fuelConfigurationsList.Count; ++i)
-                {
-                    for (int r = 0; r < fuelConfigurationsList[i].resources.Count; ++r)
-                    {
-                        float newAmount = fuelPerCubicMeter[i][r] * volume * 0.7f; // since not all volume is used
-                        float prevPct = FuelGetResource(r) >= 0 ? FuelGetResource(r) / fuelConfigurationsList[i].resources[r].maxAmount : 1;
-                        fuelConfigurationsList[i].resources[r].maxAmount = newAmount;
-                        fuelConfigurationsList[i].resources[r].amount = !float.IsNaN(prevPct) ? Mathf.Min(newAmount * prevPct, newAmount) : newAmount;
-                    }
-                }
-                if (reassignAfter)
-                    FuelSetConfigurationToParts(false);
+                PartResource res = part.Resources[i];
+                double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
+                res.maxAmount = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume * aeroStatVolume;
+                res.amount = res.maxAmount * fillPct;
             }
-            fuelVolumeOld = volume;
+            part.Resources.UpdateList();
         }
 
         /// <summary>
-        /// calls FuelSetResourcesToPart on this part and all it's symmetry counterparts. Only call from the editor
+        /// fuel type changed, re set wing fuel configurations
         /// </summary>
-        private void FuelSetConfigurationToParts(bool calledByPlayer)
+        public void FuelTankTypeChanged()
         {
             if (WPDebug.logFuel)
                 DebugLogWithID("FuelAssignResourcesToPart", "Started");
 
-            FuelSetResourcesToPart(part, calledByPlayer);
+            FuelSetResources();
             for (int s = 0; s < part.symmetryCounterparts.Count; s++)
             {
                 if (part.symmetryCounterparts[s] == null) // fixes nullref caused by removing mirror sym while hovering over attach location
                     continue;
-                FuelSetResourcesToPart(part.symmetryCounterparts[s], calledByPlayer);
                 WingProcedural wing = part.symmetryCounterparts[s].Modules.OfType<WingProcedural>().FirstOrDefault();
                 if (wing != null)
+                {
                     wing.fuelSelectedTankSetup = fuelSelectedTankSetup;
+                    wing.FuelSetResources();
+                }
             }
 
             UpdateWindow();
         }
 
         /// <summary>
-        /// Updates part.Resources to match the changes
+        /// Updates part.Resources to match the changes or notify MFT/RF if applicable
         /// </summary>
-        private void FuelSetResourcesToPart(Part currentPart, bool calledByPlayer)
+        public void FuelSetResources()
         {
+            if (!(canBeFueled && HighLogic.LoadedSceneIsEditor))
+                return;
             if (WPDebug.logFuel)
                 DebugLogWithID("FuelSetupTankInPart", "Started");
 
-            currentPart.Resources.list.Clear();
-            PartResource[] partResources = currentPart.GetComponents<PartResource>();
-            for (int i = 0; i < partResources.Length; i++)
-                DestroyImmediate(partResources[i]);
-
-
-            if (fuelVolumeOld != aeroStatVolume)
-                FuelUpdateAmountsFromVolume(aeroStatVolume, false);
-            
-            for (int resourceIndex = 0; resourceIndex < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; resourceIndex++)
+            if (!useStockFuel)
             {
-                if (fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].name != "Structural")
-                {
-                    if (WPDebug.logFuel)
-                        DebugLogWithID("FuelSetResourcesToPart", "Found wing with fuel | Stored amounts: " + fuelCurrentAmount);
+                PartModule module = part.Modules["ModuleFuelTanks"];
+                if (module == null)
+                    return;
 
-                    ConfigNode newResourceNode = new ConfigNode("RESOURCE");
-                    newResourceNode.AddValue("name", fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].name);
-                    if (calledByPlayer) // || fuelBrandNewPart)
-                    {
-                        if (WPDebug.logFuel)
-                            DebugLogWithID("FuelSetResourcesToPart", "CBP, setting amount from max of " + fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].maxAmount);
-                        FuelSetResource(resourceIndex, fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].amount);
-                    }
-                    newResourceNode.AddValue("amount", fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].amount);
-                    newResourceNode.AddValue("maxAmount", fuelConfigurationsList[fuelSelectedTankSetup].resources[resourceIndex].maxAmount);
-                    currentPart.AddResource(newResourceNode);
-                }
+                Type type = module.GetType();
+
+                double volumeRF = aeroStatVolume;
+                if (assemblyRFUsed)
+                    volumeRF *= 1000;     // RF requests units in liters instead of cubic meters
+                else // assemblyMFTUsed
+                    volumeRF *= 173.9;  // MFT requests volume in units
+                type.GetField("volume").SetValue(module, volumeRF);
+                type.GetMethod("ChangeVolume").Invoke(module, new object[] { volumeRF });
             }
-            currentPart.Resources.UpdateList();
-            fuelAddedCost = FuelGetAddedCost();
+            else
+            {
+                part.Resources.list.Clear();
+                PartResource[] partResources = part.GetComponents<PartResource>();
+                for (int i = 0; i < partResources.Length; i++)
+                    DestroyImmediate(partResources[i]);
+
+                foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
+                {
+                    ConfigNode newResourceNode = new ConfigNode("RESOURCE");
+                    newResourceNode.AddValue("name", kvp.Value.resource.name);
+                    newResourceNode.AddValue("amount", kvp.Value.unitsPerVolume * aeroStatVolume);
+                    newResourceNode.AddValue("maxAmount", kvp.Value.unitsPerVolume * aeroStatVolume);
+                    part.AddResource(newResourceNode);
+                }
+                part.Resources.UpdateList();
+                fuelAddedCost = FuelGetAddedCost();
+            }
         }
 
         /// <summary>
@@ -3192,56 +3094,14 @@ namespace WingProcedural
         private float FuelGetAddedCost ()
         {
             float result = 0f;
-            if (fuelSelectedTankSetup < fuelCostPerUnit.Length && fuelSelectedTankSetup < fuelConfigurationsList.Count && fuelSelectedTankSetup >= 0)
+            if (fuelSelectedTankSetup < StaticWingGlobals.wingTankConfigurations.Count && fuelSelectedTankSetup >= 0)
             {
-                for (int i = 0; i < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; ++i)
+                foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                 {
-                    result += fuelCostPerUnit[fuelSelectedTankSetup] * fuelConfigurationsList[fuelSelectedTankSetup].resources[i].maxAmount;
+                    result += kvp.Value.resource.unitCost * aeroStatVolume * kvp.Value.unitsPerVolume;
                 }
             }
             return result;
-        }
-
-        /// <summary>
-        /// returns the current volume of fuel for internal use at the specified index. Valid indices are 0-3
-        /// </summary>
-        private float FuelGetResource (int number)
-        {
-            switch (number)
-            {
-                case 0:
-                    return fuelCurrentAmount.x;
-                case 1:
-                    return fuelCurrentAmount.y;
-                case 2:
-                    return fuelCurrentAmount.z;
-                case 3:
-                    return fuelCurrentAmount.w;
-                default:
-                    return 0f;
-            }
-        }
-
-        /// <summary>
-        /// sets the current volume of fuel for internal use at the specified index. Valid indices are 0-3
-        /// </summary>
-        private void FuelSetResource (int number, float amount)
-        {
-            switch (number)
-            {
-                case 0:
-                    fuelCurrentAmount.x = amount;
-                    break;
-                case 1:
-                    fuelCurrentAmount.y = amount;
-                    break;
-                case 2:
-                    fuelCurrentAmount.z = amount;
-                    break;
-                case 3:
-                    fuelCurrentAmount.w = amount;
-                    break;
-            }
         }
 
         /// <summary>
@@ -3249,31 +3109,21 @@ namespace WingProcedural
         /// </summary>
         private string FuelGUIGetConfigDesc()
         {
-            if (fuelSelectedTankSetup == -1)
+            if (fuelSelectedTankSetup == -1 || StaticWingGlobals.wingTankConfigurations.Count == 0)
                 return "Invalid";
             else
             {
-                string units = "";
-                if (fuelSelectedTankSetup == 1)
-                    units += "LF (";
-                else if (fuelSelectedTankSetup == 2)
-                    units += "LFO (";
-                else if (fuelSelectedTankSetup == 3)
-                    units += "RCS (";
-                else
-                    units += "STR (";
-                if (fuelConfigurationsList.Count > 0)
+                string units = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].GUIName + " (";
+                if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.Count != 0)
                 {
-                    for (int i = 0; i < fuelConfigurationsList[fuelSelectedTankSetup].resources.Count; ++i)
+                    foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                     {
-                        units += ((int)fuelConfigurationsList[fuelSelectedTankSetup].resources[i].maxAmount).ToString();
-                        if (i == fuelConfigurationsList[fuelSelectedTankSetup].resources.Count - 1)
-                            units += ")";
-                        else
-                            units += "/";
+                        units += " " + (kvp.Value.unitsPerVolume * aeroStatVolume).ToString("G3") + " /";
                     }
+                    units = units.Substring(0, units.Length - 1);
                 }
-                return units;
+
+                return units + ")";
             }
         }
 
@@ -3320,7 +3170,7 @@ namespace WingProcedural
 
         public float GetModuleMass(float defaultMass)
         {
-            return part.mass - part.partInfo.partPrefab.mass;
+            return (float)aeroStatMass - part.partInfo.partPrefab.mass;
         }
         #endregion
 
@@ -3330,7 +3180,7 @@ namespace WingProcedural
 
         private void OnStockButtonSetup ()
         {
-            stockButton = ApplicationLauncher.Instance.AddModApplication (OnStockButtonClick, OnStockButtonClick, null, null, null, null, ApplicationLauncher.AppScenes.SPH, (Texture) GameDatabase.Instance.GetTexture ("B9_Aerospace/Plugins/icon_stock", false));
+            stockButton = ApplicationLauncher.Instance.AddModApplication (OnStockButtonClick, OnStockButtonClick, null, null, null, null, ApplicationLauncher.AppScenes.SPH, (Texture) GameDatabase.Instance.GetTexture ("B9_Aerospace_ProceduralWings/Plugins/icon_stock", false));
         }
 
         public void OnStockButtonClick ()

@@ -1,0 +1,1 @@
+Overwrite B9_Aerospace folder in your GameData with this (or overwrite the textures directly) to use an alternative wing texture.
