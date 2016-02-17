@@ -3170,7 +3170,9 @@ namespace WingProcedural
 
         public float GetModuleMass(float defaultMass)
         {
-            return (float)aeroStatMass - part.partInfo.partPrefab.mass;
+            if (!assemblyFARUsed)
+                return (float)aeroStatMass - part.partInfo.partPrefab.mass;
+            return 0; // FAR does its own mass stuff
         }
         #endregion
 
