@@ -1965,14 +1965,15 @@ namespace WingProcedural
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
                     part.mass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
                 }
+                aeroUICd = (float)Math.Round(aeroStatCd, 2);
+                aeroUICl = (float)Math.Round(aeroStatCl, 2);
+                aeroUIMass = part.mass;
+                Debug.Log(aeroUIMass);
+
+                if (WPDebug.logCAV)
+                    DebugLogWithID("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
             }
-
-            if (WPDebug.logCAV)
-                DebugLogWithID ("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
-
-            // FAR values
-
-            if (assemblyFARUsed)
+            else
             {
                 if (WPDebug.logCAV)
                     DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Entered segment");
@@ -2050,20 +2051,11 @@ namespace WingProcedural
                         }
                     }
                 }
+                if (WPDebug.logCAV)
+                    DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Segment ended");
             }
-            if (WPDebug.logCAV)
-                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Segment ended");
 
             // Update GUI values and finish
-
-            if (!assemblyFARUsed)
-            {
-                aeroUICd = (float)Math.Round(aeroStatCd, 2);
-                aeroUICl = (float)Math.Round(aeroStatCl, 2);
-            }
-            if (!assemblyFARUsed)
-                aeroUIMass = part.mass;
-
             aeroUIMeanAerodynamicChord = (float) aeroStatMeanAerodynamicChord;
             aeroUISemispan = (float) aeroStatSemispan;
             aeroUIMidChordSweep = (float) aeroStatMidChordSweep;
@@ -3039,6 +3031,8 @@ namespace WingProcedural
             }
 
             UpdateWindow();
+            if (HighLogic.LoadedSceneIsEditor)
+                GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
         /// <summary>
@@ -3171,7 +3165,7 @@ namespace WingProcedural
         public float GetModuleMass(float defaultMass)
         {
             if (!assemblyFARUsed)
-                return (float)aeroStatMass - part.partInfo.partPrefab.mass;
+                return (float)aeroUIMass - part.partInfo.partPrefab.mass;
             return 0; // FAR does its own mass stuff
         }
         #endregion
