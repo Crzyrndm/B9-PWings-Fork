@@ -278,7 +278,7 @@ namespace WingProcedural
             {
                 value01 = GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
-                if (valueOld != value01)
+             /*   if (valueOld != value01)
                 {
                     if (Input.GetMouseButton(0) || !allowFine) // normal control
                     {
@@ -292,13 +292,13 @@ namespace WingProcedural
                         value01 = (valueOld - (excess - Math.Round(excess)) * increment01) + Math.Min(value01 - 0.5, 0.4999) * increment01;
                         //Debug.Log("Fine: value01 => " + value01);
                     }
-                }
+                }*/
             }
             else
                 GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
 
-            value = Mathf.Round((float)value01); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+            value = Mathf.Round((float)value01 * max); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
             //value = (float)(value01 * range + limits.x);  //releases clamp
             changed = valueOld != value ? true : false;
 
