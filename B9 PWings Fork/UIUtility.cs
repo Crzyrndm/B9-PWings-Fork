@@ -243,13 +243,14 @@ namespace WingProcedural
             return value;
         }
 
-        public static float IntegerSlider(float value, float increment, float incrementLarge,int max, string name, out bool changed, Color backgroundColor, int valueType)
+        public static float IntegerSlider(float value, float increment, float incrementLarge,int min,int max, string name, out bool changed, Color backgroundColor, int valueType)
         {
             if (!WingProceduralManager.uiStyleConfigured)
                 WingProceduralManager.ConfigureStyles();
             GUILayout.BeginHorizontal();
-            double value01 = value / max;
-            double increment01 = 1 / max;
+            int range = max - min;
+            double value01 = (value - min) / range;
+            double increment01 = 1 / range;
             double valueOld = value01;
             float buttonWidth = 12, spaceWidth = 3;
 
@@ -298,7 +299,7 @@ namespace WingProcedural
                 GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
 
-            value = Mathf.Round((float)value01 * max); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
+            value = Mathf.Round((float)value01 * range) + min; // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
             //value = (float)(value01 * range + limits.x);  //releases clamp
             changed = valueOld != value ? true : false;
 
