@@ -817,12 +817,7 @@ namespace WingProcedural
                 FuelOnUpdate();
             if (!HighLogic.LoadedSceneIsEditor || !isStarted)
                 return;
-
-            if (sharedPropAnglePref)
-                CalcBase();
-            else
-                CalcAngle();
-
+            
             DebugTimerUpdate();
 
             UpdateUI();
@@ -2464,17 +2459,19 @@ namespace WingProcedural
                     if (!sharedPropAnglePref)
                     {                        
                         DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f),getStep(sharedBaseWidthTipLimits), "Width (tip)", uiColorSliderBase, 2, 0, ref sharedBaseWidthTInt, true);
-                        DrawOffset(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getStep(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0, ref sharedBaseOffsetTInt, true);
-                        
+                        DrawOffset(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getStep(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0, ref sharedBaseOffsetTInt, true);                        
                     }
                     else
                     {
+                        CalcAngle();
                         //dummyValueInt = 0;
                         DrawLimited(ref sharedSweptAngleFront, sharedIncrementAngle, sharedIncrementAngleLarge, sharedSweptAngleLimits, "Swept angle(front)", uiColorSliderBase, 201, 0, true);
                         //dummyValueInt = 0;
                         DrawLimited(ref sharedSweptAngleBack, sharedIncrementAngle, sharedIncrementAngleLarge, sharedSweptAngleLimits, "Swept angle(back)", uiColorSliderBase, 202, 0,  true);
-                        
+                        CalcBase();
+                                              
                     }
+
                     DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, getStep2(sharedBaseThicknessLimits), "Thickness (root)", uiColorSliderBase, 5, 0, ref sharedBaseThicknessRInt);
                     DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, getStep2(sharedBaseThicknessLimits), "Thickness (tip)", uiColorSliderBase, 6, 0, ref sharedBaseThicknessTInt);
                     //Debug.Log("B9PW: base complete");

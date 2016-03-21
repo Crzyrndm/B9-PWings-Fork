@@ -120,14 +120,15 @@ namespace WingProcedural
 
             if (GUI.Button(rectButtonL, "", WingProceduralManager.uiStyleButton))
             {
-                if (value01 == 0) delta -= 1;
+                if (delta == 0 & value01 > 0.5) value01 = 0.5;
+                else if (value01 == 0) delta -= 1;
                 else value01 = 0;
 
             }
             if (GUI.Button(rectButtonR, "", WingProceduralManager.uiStyleButton))
             {
-
-                if (value01 == 1) delta += 1;
+                if (delta == 0 & value01 < 0.5) value01 = 0.5;
+                else if (value01 == 1) delta += 1;
                 else value01 = 1;
                 
             }
