@@ -2449,10 +2449,10 @@ namespace WingProcedural
                 {
                     DrawCheck(ref sharedPropAnglePref, "Use angles to define the wing", "No", "Yes", "AngleDefine", 101);
                    // DrawCheck(ref sharedPropEdgePref, "Include edges in definitions", "No", "Yes", "EdgeIncluded", 102);
-                   // DrawCheck(ref sharedPropEThickPref, "Scale edges to thickness ", "No", "Yes", "ThickScale", 103);
+                    DrawCheck(ref sharedPropEThickPref, "Scale edges to thickness ", "No", "Yes", "ThickScale", 103);
                 }
                 DrawFieldGroupHeader (ref sharedFieldGroupBaseStatic, "Base");
-                if (sharedFieldGroupBaseStatic && !isCtrlSrf)
+                if (sharedFieldGroupBaseStatic & !isCtrlSrf)
                 {
                     DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getStep(sharedBaseLengthLimits), "Length", uiColorSliderBase, 0, 0, ref sharedBaseLengthInt);
                     DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getStep(sharedBaseWidthRootLimits), "Width (root)", uiColorSliderBase, 1, 0, ref sharedBaseWidthRInt);
@@ -2476,12 +2476,12 @@ namespace WingProcedural
                     DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, getStep2(sharedBaseThicknessLimits), "Thickness (tip)", uiColorSliderBase, 6, 0, ref sharedBaseThicknessTInt);
                     //Debug.Log("B9PW: base complete");
                 }
-                else if (sharedFieldGroupBaseStatic && isCtrlSrf)
+                else if (sharedFieldGroupBaseStatic & isCtrlSrf)
                 {
                     DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f),getStep(sharedBaseLengthLimits), "Length", uiColorSliderBase, 0, 0, ref sharedBaseLengthInt);
                     DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getStep(sharedBaseWidthRootLimits), "Width (root)", uiColorSliderBase, 1, 0, ref sharedBaseWidthRInt);
                     DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), getStep(sharedBaseWidthTipLimits), "Width (tip)", uiColorSliderBase, 2, 0, ref sharedBaseWidthTInt);
-                   DrawOffset(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getStep(sharedBaseOffsetLimits), "Offset (root)", uiColorSliderBase, 3, 0, ref sharedBaseOffsetRInt);
+                    DrawOffset(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getStep(sharedBaseOffsetLimits), "Offset (root)", uiColorSliderBase, 3, 0, ref sharedBaseOffsetRInt);
                     DrawOffset(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, getStep(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0, ref sharedBaseOffsetTInt);
                     DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall,  getStep2(sharedBaseThicknessLimits), "Thickness (root)", uiColorSliderBase, 5, 0, ref sharedBaseThicknessRInt);
                     DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall,  getStep2(sharedBaseThicknessLimits), "Thickness (tip)", uiColorSliderBase, 6, 0, ref sharedBaseThicknessTInt);
@@ -2589,7 +2589,7 @@ namespace WingProcedural
                 else
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label("Press J while pointing at a\nprocedural part to edit it", WingProceduralManager.uiStyleLabelHint);
+                    GUILayout.Label("Press J while pointing at a\nprocedural part to edit it\nHold G to change translation\nHold T to change tip width\nHold B to chang root width", WingProceduralManager.uiStyleLabelHint);
                     if (GUILayout.Button("Close", WingProceduralManager.uiStyleButton, GUILayout.MaxWidth(50f)))
                     {
                         uiWindowActive = false;
@@ -2681,6 +2681,7 @@ namespace WingProcedural
         private void DrawField ( ref float field, float increment, float incrementLarge, float step, string name, Vector4 hsbColor, int fieldID, int fieldType, ref int delta, bool allowFine = true)
         {
             bool changed = false;
+            float Cached = field;
             field = UIUtility.FieldSlider (field, increment, incrementLarge, step, name, out changed, ColorHSBToRGB (hsbColor), fieldType, ref delta, allowFine);
             
             if (changed)
@@ -2688,6 +2689,16 @@ namespace WingProcedural
                 uiLastFieldName = name;
                 uiLastFieldTooltip = UpdateTooltipText (fieldID);
                 //Debug.Log("B9PW:" + name  + " Value changed to " + field);
+                if (fieldID == 5 & sharedPropEThickPref)
+                {
+                    sharedEdgeWidthLeadingRoot *= sharedBaseThicknessRoot / Cached;
+                    sharedEdgeWidthTrailingRoot *= sharedBaseThicknessRoot / Cached;
+                }
+                else if (fieldID == 6 & sharedPropEThickPref)
+                {
+                    sharedEdgeWidthLeadingTip *= sharedBaseThicknessTip / Cached;
+                    sharedEdgeWidthTrailingTip *= sharedBaseThicknessTip / Cached;
+                }
             }
         }
         private void DrawOffset(ref float field, float increment, float incrementLarge, float range, string name, Vector4 hsbColor, int fieldID, int fieldType, ref int delta, bool allowFine = true)
@@ -2705,6 +2716,8 @@ namespace WingProcedural
         private void DrawLimited(ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType,bool allowFine = true)
         {
             bool changed = false;
+            
+            
             field = UIUtility.LimitedSlider(field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB(hsbColor), fieldType, allowFine);
 
             if (changed)
@@ -2933,7 +2946,7 @@ namespace WingProcedural
                     if (!isCtrlSrf)
                     {
                         sharedBaseOffsetTip -= diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.up);
-                        //sharedBaseOffsetTip = Mathf.Clamp(sharedBaseOffsetTip, GetLimitsFromType(sharedBaseOffsetLimits).x, GetLimitsFromType(sharedBaseOffsetLimits).y);
+                    //sharedBaseOffsetTip = Mathf.Clamp(sharedBaseOffsetTip, GetLimitsFromType(sharedBaseOffsetLimits).x, GetLimitsFromType(sharedBaseOffsetLimits).y);
                     }
                     break;
                 case 2:
@@ -2945,18 +2958,23 @@ namespace WingProcedural
                     if (Input.GetKey(keyLeading) && !isCtrlSrf)
                     {
                         sharedEdgeWidthLeadingTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.up);
+                        sharedEdgeWidthLeadingTip = Mathf.Clamp(sharedEdgeWidthLeadingTip, 0.04f, Mathf.Infinity);
                         //sharedEdgeWidthLeadingTip = Mathf.Clamp(sharedEdgeWidthLeadingTip, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
                     }
                     else if (Input.GetKey(keyTrailing))
                     {
                         sharedEdgeWidthTrailingTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, -part.transform.up);
+                        sharedEdgeWidthTrailingTip = Mathf.Clamp(sharedEdgeWidthTrailingTip, 0.04f, Mathf.Infinity);
                         //sharedEdgeWidthTrailingTip = Mathf.Clamp(sharedEdgeWidthTrailingTip, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
                     }
                     else
                     {
                         sharedBaseWidthTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, -part.transform.up);
                         //sharedBaseWidthTip = Mathf.Clamp(sharedBaseWidthTip, GetLimitsFromType(sharedBaseWidthTipLimits).x, GetLimitsFromType(sharedBaseWidthTipLimits).y);
+                        float tipThicknessCatched = sharedBaseThicknessTip;
                         sharedBaseThicknessTip += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.forward) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.forward * (part.isMirrored ? 1 : -1));
+                        sharedEdgeWidthLeadingTip *=  sharedBaseThicknessTip / tipThicknessCatched;
+                        sharedEdgeWidthTrailingTip *= sharedBaseThicknessTip / tipThicknessCatched;
                         //sharedBaseThicknessTip = Mathf.Clamp(sharedBaseThicknessTip, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
                     }
                     break;
@@ -2969,18 +2987,23 @@ namespace WingProcedural
                     if (Input.GetKey(keyLeading) && !isCtrlSrf)
                     {
                         sharedEdgeWidthLeadingRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.up);
+                        sharedEdgeWidthLeadingRoot = Mathf.Clamp(sharedEdgeWidthLeadingRoot, 0.04f, Mathf.Infinity);
                         //sharedEdgeWidthLeadingRoot = Mathf.Clamp(sharedEdgeWidthLeadingRoot, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
                     }
                     else if (Input.GetKey(keyTrailing))
                     {
                         sharedEdgeWidthTrailingRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, -part.transform.up);
+                        sharedEdgeWidthTrailingRoot = Mathf.Clamp(sharedEdgeWidthTrailingRoot, 0.04f, Mathf.Infinity);
                         //sharedEdgeWidthTrailingRoot = Mathf.Clamp(sharedEdgeWidthTrailingRoot, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
                     }
                     else
                     {
                         sharedBaseWidthRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, -part.transform.up);
                         //sharedBaseWidthRoot = Mathf.Clamp(sharedBaseWidthRoot, GetLimitsFromType(sharedBaseWidthRootLimits).x, GetLimitsFromType(sharedBaseWidthRootLimits).y);
+                        float rootThicknessCached = sharedBaseThicknessRoot;
                         sharedBaseThicknessRoot += diff.x * Vector3.Dot(EditorCamera.Instance.camera.transform.right, -part.transform.forward) + diff.y * Vector3.Dot(EditorCamera.Instance.camera.transform.up, part.transform.forward * (part.isMirrored ? 1 : -1));
+                        sharedEdgeWidthLeadingRoot *=  sharedBaseThicknessRoot / rootThicknessCached;
+                        sharedEdgeWidthTrailingRoot *= sharedBaseThicknessRoot / rootThicknessCached;
                         //sharedBaseThicknessRoot = Mathf.Clamp(sharedBaseThicknessRoot, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
                     }
                     break;

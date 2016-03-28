@@ -18,7 +18,7 @@ namespace WingProcedural
             GUILayout.BeginHorizontal ();
 
             int newDelta = (int)(value / range);
-            if (newDelta != delta | newDelta != delta + 1)
+            if (newDelta != delta | newDelta != delta - 1)
                 delta = newDelta;
 
             //double value01 = (value - limits.x) / range; // rescaling value to be 0-100% of range for convenience

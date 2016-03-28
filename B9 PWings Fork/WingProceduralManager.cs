@@ -311,8 +311,8 @@ namespace WingProcedural
 
             //Prefs
             config.SetValue("AnglePref", WingProcedural.sharedPropAnglePref.ToString());
-            config.SetValue("EdgePref", WingProcedural.sharedPropEdgePref.ToString());
-            config.SetValue("ThickPref", WingProcedural.sharedPropEThickPref.ToString());
+            //config.SetValue("EdgePref", WingProcedural.sharedPropEdgePref.ToString());
+            //config.SetValue("ThickPref", WingProcedural.sharedPropEThickPref.ToString());
 
             config.save ();
         }
