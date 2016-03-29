@@ -24,11 +24,12 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\GameData\B9_Aerospace\Plugins\</OutputPath>
+    <OutputPath>..\GameData\B9_Aerospace_ProceduralWings\Plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -55,10 +56,13 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="ResourceExtractor.cs" />
+    <Compile Include="StaticWingGlobals.cs" />
     <Compile Include="UIUtility.cs" />
     <Compile Include="UtilityTexture.cs" />
     <Compile Include="WingProcedural.cs" />
     <Compile Include="WingProceduralManager.cs" />
+    <Compile Include="WingTankConfiguration.cs" />
+    <Compile Include="WingTankResource.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="SpecularLayered.txt" />
