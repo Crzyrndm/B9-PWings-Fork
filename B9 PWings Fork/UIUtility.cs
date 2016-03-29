@@ -18,7 +18,7 @@ namespace WingProcedural
             GUILayout.BeginHorizontal ();
 
             int newDelta = (int)(value / range);
-            if (newDelta != delta | newDelta != delta - 1)
+            if (newDelta != delta | newDelta != delta + 1)
                 delta = newDelta;
 
             //double value01 = (value - limits.x) / range; // rescaling value to be 0-100% of range for convenience
@@ -78,6 +78,8 @@ namespace WingProcedural
                 GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, WingProceduralManager.uiStyleSlider, WingProceduralManager.uiStyleSliderThumb);
 
             value = (float)((value01 + delta) * range);
+            if (value == 0)
+                value = increment;
             //value = Mathf.Clamp((float)(value01 * range + range * delta) ,0); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
             //value = (float)(value01 * range + limits.x);  //releases clamp
             changed = valueOld != value ? true : false;

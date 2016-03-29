@@ -2674,13 +2674,17 @@ namespace WingProcedural
                 //Debug.Log("B9PW:" + name  + " Value changed to " + field);
                 if (fieldID == 5 & sharedPropEThickPref)
                 {
-                    sharedEdgeWidthLeadingRoot *= sharedBaseThicknessRoot / Cached;
-                    sharedEdgeWidthTrailingRoot *= sharedBaseThicknessRoot / Cached;
+                    if (Cached == 0)
+                        Cached = field;
+                    sharedEdgeWidthLeadingRoot *= field / Cached;
+                    sharedEdgeWidthTrailingRoot *= field / Cached;
                 }
                 else if (fieldID == 6 & sharedPropEThickPref)
                 {
-                    sharedEdgeWidthLeadingTip *= sharedBaseThicknessTip / Cached;
-                    sharedEdgeWidthTrailingTip *= sharedBaseThicknessTip / Cached;
+                    if (Cached == 0)
+                        Cached = field;
+                    sharedEdgeWidthLeadingTip *= field / Cached;
+                    sharedEdgeWidthTrailingTip *= field / Cached;
                 }
             }
         }
