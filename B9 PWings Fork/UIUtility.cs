@@ -343,13 +343,14 @@ namespace WingProcedural
 
         public static double TextEntryForDouble (string label, int labelWidth, double prevValue)
         {
+            double temp;
             string valString = prevValue.ToString ();
             UIUtility.TextEntryField (label, labelWidth, ref valString);
 
-            if (!Regex.IsMatch (valString, @"^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$"))
+            if (!double.TryParse(valString, out temp))
                 return prevValue;
 
-            return double.Parse (valString);
+            return temp;
         }
 
         public static void TextEntryField (string label, int labelWidth, ref string inputOutput)

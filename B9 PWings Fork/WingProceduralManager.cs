@@ -62,7 +62,7 @@ namespace WingProcedural
                     DummyVoid,
                     DummyVoid,
                     ApplicationLauncher.AppScenes.SPACECENTER,
-                    (Texture) GameDatabase.Instance.GetTexture ("B9_Aerospace/Plugins/icon_stock", false)
+                    (Texture) GameDatabase.Instance.GetTexture ("B9_Aerospace_ProceduralWings/Plugins/icon_stock", false)
                 );
             }
         }
