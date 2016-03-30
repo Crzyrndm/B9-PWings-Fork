@@ -406,8 +406,8 @@ namespace WingProcedural
         public static bool sharedPropAnglePref = false;
         public static bool sharedPropEdgePref = false;
         public static bool sharedPropEThickPref = false;
-        private static float sharedIncrementAngle = 0.01f;
-        private static float sharedIncrementAngleLarge = 0.10f;
+        private static float sharedIncrementAngle = 1f;
+        private static float sharedIncrementAngleLarge = 5f;
 
 
         #endregion
