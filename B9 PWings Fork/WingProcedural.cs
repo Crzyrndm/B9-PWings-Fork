@@ -1,12 +1,9 @@
-﻿using KSP;
-using KSP.IO;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using UnityEngine;
 using System.Reflection;
+using UnityEngine;
 
 namespace WingProcedural
 {
@@ -2963,6 +2960,7 @@ namespace WingProcedural
         #region Resources
         // Original code by Snjo
         // Modified to remove config support and string parsing and to add support for arbitrary volumes
+        // Further modified to support custom configs
 
         public bool fuelDisplayCurrentTankCost = false;
         public bool fuelShowInfo = false;

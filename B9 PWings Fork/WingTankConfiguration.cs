@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 namespace WingProcedural
 {
@@ -18,15 +14,13 @@ namespace WingProcedural
 
         public void Load(ConfigNode node)
         {
-            Debug.Log(node);
             GUIName = node.GetValue("name");
-            Debug.Log("name is: " + GUIName);
             ConfigNode[] nodes = node.GetNodes("Resource");
-            Debug.Log(nodes.Length);
             for (int i = 0; i < nodes.Length; ++i)
             {
                 WingTankResource res = new WingTankResource(nodes[i]);
-                resources.Add(res.resource.name, res);
+                if (res.resource != null)
+                    resources.Add(res.resource.name, res);
             }
         }
 
