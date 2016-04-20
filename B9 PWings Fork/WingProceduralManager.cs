@@ -1,12 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using UnityEngine;
+<<<<<<< HEAD
 using KSP;
 using KSP.UI.Screens;
+=======
+>>>>>>> refs/remotes/Crzyrndm/master
 
 namespace WingProcedural
 {
+    using KSP.UI.Screens;
     // Referenced from FAR debug manager
     // Credit goes to ferram4
 
