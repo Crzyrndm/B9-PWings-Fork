@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>3</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -36,9 +37,7 @@
       <HintPath>..\..\..\Desktop\Kerbal Space Program Dev\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="KSPUtil">
-      <HintPath>..\..\..\..\KSP1100_T\KSP_x64_Data\Managed\KSPUtil.dll</HintPath>
-    </Reference>
+    <Reference Include="KSPUtil, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -78,11 +77,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assembly-CSharp.dll" />
+    <Content Include="KSPUtil.dll" />
     <Content Include="UnityEngine.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /y $(TargetFileName) "E:\KSP1100_T\GameData\B9_Aerospace_ProceduralWings\Plugins"</PostBuildEvent>
+    <PostBuildEvent>copy /y $(TargetFileName) "E:\KSP1100\GameData\B9_Aerospace_ProceduralWings\Plugins"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

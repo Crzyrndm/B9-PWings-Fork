@@ -13,7 +13,7 @@ using System.Reflection;
 
 namespace WingProcedural
 {
-    public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier, IPartMassModifier
+    public class WingProcedural : PartModule//, IPartCostModifier, IPartSizeModifier, IPartMassModifier
     {
         // Some handy bools
         [KSPField] public bool isCtrlSrf = false;
