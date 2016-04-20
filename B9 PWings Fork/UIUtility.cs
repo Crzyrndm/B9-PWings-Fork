@@ -1,13 +1,13 @@
-<<<<<<< HEAD
+
 ﻿using KSP;
 using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-=======
-﻿using System;
->>>>>>> refs/remotes/Crzyrndm/master
+
+
+
 using UnityEngine;
 
 namespace WingProcedural

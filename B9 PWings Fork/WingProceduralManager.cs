@@ -1,10 +1,10 @@
 ﻿using System;
 using UnityEngine;
-<<<<<<< HEAD
+
 using KSP;
 using KSP.UI.Screens;
-=======
->>>>>>> refs/remotes/Crzyrndm/master
+
+
 
 namespace WingProcedural
 {

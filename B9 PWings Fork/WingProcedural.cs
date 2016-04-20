@@ -1,13 +1,13 @@
-<<<<<<< HEAD
+
 ﻿//Code by Bac9
 //Heavily modified by Lithane
 using KSP;
 using KSP.IO;
 using KSP.UI.Screens;
 using System;
-=======
-﻿using System;
->>>>>>> refs/remotes/Crzyrndm/master
+
+
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +16,11 @@ using UnityEngine;
 
 namespace WingProcedural
 {
-<<<<<<< HEAD
-    public class WingProcedural : PartModule//, IPartCostModifier, IPartSizeModifier, IPartMassModifier
-=======
+
+
     using KSP.UI.Screens;
-    public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier, IPartMassModifier
->>>>>>> refs/remotes/Crzyrndm/master
+    public class WingProcedural : PartModule//, IPartCostModifier, IPartSizeModifier, IPartMassModifier
+
     {
         // Some handy bools
         [KSPField] public bool isCtrlSrf = false;
@@ -885,10 +884,10 @@ namespace WingProcedural
         public void OnSceneSwitch(GameScenes scene)
         {
             isStarted = false; // fixes annoying nullrefs when switching scenes and things haven't been destroyed yet
-<<<<<<< HEAD
-=======
+
+
             editorCam = null;
->>>>>>> refs/remotes/Crzyrndm/master
+
         }
 
         /// <summary>
@@ -2960,11 +2959,11 @@ namespace WingProcedural
             if (!isAttached || state == 0)
                 return;
 
-<<<<<<< HEAD
-            float depth = EditorCamera.Instance.GetComponent<Camera>().WorldToScreenPoint(part.transform.position).z;
-=======
+
+            //float depth = EditorCamera.Instance.GetComponent<Camera>().WorldToScreenPoint(part.transform.position).z;
+
             float depth = EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).WorldToScreenPoint(part.transform.position).z;
->>>>>>> refs/remotes/Crzyrndm/master
+
             Vector3 diff = depth * (Input.mousePosition - lastMousePos) / 1000;
             lastMousePos = Input.mousePosition;
             switch (state)
@@ -2976,21 +2975,16 @@ namespace WingProcedural
                         return;
                     }
 
-<<<<<<< HEAD
+
                     sharedBaseLength += (isCtrlSrf ? 2 : 1) * diff.x * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.right, part.transform.right) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.up, part.transform.right);
                     //sharedBaseLength = Mathf.Clamp(sharedBaseLength, GetLimitsFromType(sharedBaseLengthLimits).x, GetLimitsFromType(sharedBaseLengthLimits).y);
                     if (!isCtrlSrf)
                     {
                         sharedBaseOffsetTip -= diff.x * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.up, part.transform.up);
-                    //sharedBaseOffsetTip = Mathf.Clamp(sharedBaseOffsetTip, GetLimitsFromType(sharedBaseOffsetLimits).x, GetLimitsFromType(sharedBaseOffsetLimits).y);
-=======
-                    sharedBaseLength += (isCtrlSrf ? 2 : 1) * diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, part.transform.right) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, part.transform.right);
-                    sharedBaseLength = Mathf.Clamp(sharedBaseLength, GetLimitsFromType(sharedBaseLengthLimits).x, GetLimitsFromType(sharedBaseLengthLimits).y);
-                    if (!isCtrlSrf)
-                    {
-                        sharedBaseOffsetTip -= diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, part.transform.up);
-                        sharedBaseOffsetTip = Mathf.Clamp(sharedBaseOffsetTip, GetLimitsFromType(sharedBaseOffsetLimits).x, GetLimitsFromType(sharedBaseOffsetLimits).y);
->>>>>>> refs/remotes/Crzyrndm/master
+                        //sharedBaseOffsetTip = Mathf.Clamp(sharedBaseOffsetTip, GetLimitsFromType(sharedBaseOffsetLimits).x, GetLimitsFromType(sharedBaseOffsetLimits).y);
+
+                        sharedBaseLength += (isCtrlSrf ? 2 : 1) * diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, part.transform.right) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, part.transform.right);
+                        sharedBaseLength = Mathf.Clamp(sharedBaseLength, GetLimitsFromType(sharedBaseLengthLimits).x, GetLimitsFromType(sharedBaseLengthLimits).y);
                     }
                     break;
                 case 2:
@@ -3001,19 +2995,8 @@ namespace WingProcedural
                     }
                     if (Input.GetKey(keyLeading) && !isCtrlSrf)
                     {
-<<<<<<< HEAD
-                        sharedEdgeWidthLeadingTip += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.up, part.transform.up);
-                        sharedEdgeWidthLeadingTip = Mathf.Clamp(sharedEdgeWidthLeadingTip, 0.04f, Mathf.Infinity);
-                        //sharedEdgeWidthLeadingTip = Mathf.Clamp(sharedEdgeWidthLeadingTip, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
-                    }
-                    else if (Input.GetKey(keyTrailing))
-                    {
-                        sharedEdgeWidthTrailingTip += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.up, -part.transform.up);
-                        sharedEdgeWidthTrailingTip = Mathf.Clamp(sharedEdgeWidthTrailingTip, 0.04f, Mathf.Infinity);
-                        //sharedEdgeWidthTrailingTip = Mathf.Clamp(sharedEdgeWidthTrailingTip, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
-                    }
-                    else
-                    {
+
+  
                         sharedBaseWidthTip += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.up, -part.transform.up);
                         //sharedBaseWidthTip = Mathf.Clamp(sharedBaseWidthTip, GetLimitsFromType(sharedBaseWidthTipLimits).x, GetLimitsFromType(sharedBaseWidthTipLimits).y);
                         float tipThicknessCatched = sharedBaseThicknessTip;
@@ -3021,7 +3004,7 @@ namespace WingProcedural
                         sharedEdgeWidthLeadingTip *=  sharedBaseThicknessTip / tipThicknessCatched;
                         sharedEdgeWidthTrailingTip *= sharedBaseThicknessTip / tipThicknessCatched;
                         //sharedBaseThicknessTip = Mathf.Clamp(sharedBaseThicknessTip, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
-=======
+
                         sharedEdgeWidthLeadingTip += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, part.transform.up);
                         sharedEdgeWidthLeadingTip = Mathf.Clamp(sharedEdgeWidthLeadingTip, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
                     }
@@ -3036,7 +3019,7 @@ namespace WingProcedural
                         sharedBaseWidthTip = Mathf.Clamp(sharedBaseWidthTip, GetLimitsFromType(sharedBaseWidthTipLimits).x, GetLimitsFromType(sharedBaseWidthTipLimits).y);
                         sharedBaseThicknessTip += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, -part.transform.forward) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, part.transform.forward * (part.isMirrored ? 1 : -1));
                         sharedBaseThicknessTip = Mathf.Clamp(sharedBaseThicknessTip, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
->>>>>>> refs/remotes/Crzyrndm/master
+
                     }
                     break;
                 case 3:
@@ -3047,7 +3030,7 @@ namespace WingProcedural
                     }
                     if (Input.GetKey(keyLeading) && !isCtrlSrf)
                     {
-<<<<<<< HEAD
+
                         sharedEdgeWidthLeadingRoot += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.up, part.transform.up);
                         sharedEdgeWidthLeadingRoot = Mathf.Clamp(sharedEdgeWidthLeadingRoot, 0.04f, Mathf.Infinity);
                         //sharedEdgeWidthLeadingRoot = Mathf.Clamp(sharedEdgeWidthLeadingRoot, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
@@ -3064,25 +3047,12 @@ namespace WingProcedural
                         //sharedBaseWidthRoot = Mathf.Clamp(sharedBaseWidthRoot, GetLimitsFromType(sharedBaseWidthRootLimits).x, GetLimitsFromType(sharedBaseWidthRootLimits).y);
                         float rootThicknessCached = sharedBaseThicknessRoot;
                         sharedBaseThicknessRoot += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.right, -part.transform.forward) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponent<Camera>().transform.up, part.transform.forward * (part.isMirrored ? 1 : -1));
-                        sharedEdgeWidthLeadingRoot *=  sharedBaseThicknessRoot / rootThicknessCached;
+                        sharedEdgeWidthLeadingRoot *= sharedBaseThicknessRoot / rootThicknessCached;
                         sharedEdgeWidthTrailingRoot *= sharedBaseThicknessRoot / rootThicknessCached;
                         //sharedBaseThicknessRoot = Mathf.Clamp(sharedBaseThicknessRoot, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
-=======
+
                         sharedEdgeWidthLeadingRoot += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, part.transform.up);
                         sharedEdgeWidthLeadingRoot = Mathf.Clamp(sharedEdgeWidthLeadingRoot, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
-                    }
-                    else if (Input.GetKey(keyTrailing))
-                    {
-                        sharedEdgeWidthTrailingRoot += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, -part.transform.up);
-                        sharedEdgeWidthTrailingRoot = Mathf.Clamp(sharedEdgeWidthTrailingRoot, GetLimitsFromType(sharedEdgeWidthLimits).x, GetLimitsFromType(sharedEdgeWidthLimits).y);
-                    }
-                    else
-                    {
-                        sharedBaseWidthRoot += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, -part.transform.up) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, -part.transform.up);
-                        sharedBaseWidthRoot = Mathf.Clamp(sharedBaseWidthRoot, GetLimitsFromType(sharedBaseWidthRootLimits).x, GetLimitsFromType(sharedBaseWidthRootLimits).y);
-                        sharedBaseThicknessRoot += diff.x * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.right, -part.transform.forward) + diff.y * Vector3.Dot(EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).transform.up, part.transform.forward * (part.isMirrored ? 1 : -1));
-                        sharedBaseThicknessRoot = Mathf.Clamp(sharedBaseThicknessRoot, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
->>>>>>> refs/remotes/Crzyrndm/master
                     }
                     break;
             }
@@ -3303,10 +3273,10 @@ namespace WingProcedural
         #region Resources
         // Original code by Snjo
         // Modified to remove config support and string parsing and to add support for arbitrary volumes
-<<<<<<< HEAD
-=======
+
+
         // Further modified to support custom configs
->>>>>>> refs/remotes/Crzyrndm/master
+
 
         public bool fuelDisplayCurrentTankCost = false;
         public bool fuelShowInfo = false;
