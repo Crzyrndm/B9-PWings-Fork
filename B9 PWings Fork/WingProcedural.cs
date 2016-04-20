@@ -563,7 +563,7 @@ namespace WingProcedural
             }
         }
 
-        private void InheritParentValues (int mode)
+        private void InheritParentValues (int mode, bool back = false)
         {
             if (this.part.parent == null)
                 return;
@@ -588,6 +588,9 @@ namespace WingProcedural
                     break;
                 case 3:
                     inheritColours(parentModule);
+                    break;
+                case 4:
+                    inheritCtrlOffset(parentModule, back);
                     break;
             }
         }
@@ -687,6 +690,23 @@ namespace WingProcedural
             sharedColorELHue = parent.sharedColorELHue;
             sharedColorELSaturation = parent.sharedColorELSaturation;
             sharedColorELBrightness = parent.sharedColorELBrightness;
+        }
+
+        private void inheritCtrlOffset(WingProcedural parent, bool back)
+        {
+            if(back)
+            {
+                float trueoffset = -(parent.sharedBaseOffsetRoot + parent.sharedBaseWidthTip/2 - parent.sharedBaseWidthRoot/2) / parent.sharedBaseLength;
+                sharedBaseOffsetRoot = trueoffset;
+                sharedBaseOffsetTip = trueoffset;
+
+            }
+            else
+            {
+                float trueoffset = (-parent.sharedBaseOffsetRoot + parent.sharedBaseWidthTip/2 - parent.sharedBaseWidthRoot/2) / parent.sharedBaseLength;
+                sharedBaseOffsetRoot = trueoffset;
+                sharedBaseOffsetTip = trueoffset;
+            }
         }
 
         #endregion
@@ -1647,6 +1667,8 @@ namespace WingProcedural
                 DebugLogWithID("FillMeshReference", "Mesh filter reference is null, unable to set up reference arrays");
             return reference;
         }
+
+
         #endregion
 
         #region Materials
@@ -2539,6 +2561,14 @@ namespace WingProcedural
                 {
                     if (GUILayout.Button (FuelGUIGetConfigDesc () + " | Next tank setup", WingProceduralManager.uiStyleButton)) NextConfiguration ();
                 }
+                if (isCtrlSrf)
+                {
+                    GUILayout.BeginHorizontal();
+                    if (GUILayout.Button("Align with back edges", WingProceduralManager.uiStyleButton)) InheritParentValues(4, true);
+                    if (GUILayout.Button("Align with fore edges", WingProceduralManager.uiStyleButton)) InheritParentValues(4, false);
+                    GUILayout.EndHorizontal();
+                }
+       
 
                 GUILayout.BeginHorizontal ();
                 if (GUILayout.Button ("Save as default", WingProceduralManager.uiStyleButton))
