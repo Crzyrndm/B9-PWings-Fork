@@ -302,9 +302,9 @@ namespace WingProcedural
         private static string[] sharedFieldGroupColorSBArray = new string[] { "sharedMaterialSB", "sharedColorSBOpacity", "sharedColorSBHue", "sharedColorSBSaturation", "sharedColorSBBrightness" };
 
         [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Material", guiFormat = "F3")]
-        public float sharedMaterialSB = 4f;
-        public float sharedMaterialSBCached = 4f;
-        public static Vector4 sharedMaterialSBDefaults = new Vector4 (4f, 4f, 4f, 4f);
+        public float sharedMaterialSB = 1f;
+        public float sharedMaterialSBCached = 1f;
+        public static Vector4 sharedMaterialSBDefaults = new Vector4(1f, 1f, 1f, 1f);
 
         [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Opacity", guiFormat = "F3")]
         public float sharedColorSBOpacity = 0f;
@@ -703,14 +703,14 @@ namespace WingProcedural
         {
             if(back)
             {
-                float trueoffset = -(parent.sharedBaseOffsetRoot + parent.sharedBaseWidthTip/2 - parent.sharedBaseWidthRoot/2) / parent.sharedBaseLength;
+                float trueoffset = -(parent.sharedBaseOffsetTip + parent.sharedBaseWidthTip/2 - parent.sharedBaseWidthRoot/2) / parent.sharedBaseLength;
                 sharedBaseOffsetRoot = trueoffset;
                 sharedBaseOffsetTip = trueoffset;
 
             }
             else
             {
-                float trueoffset = (-parent.sharedBaseOffsetRoot + parent.sharedBaseWidthTip/2 - parent.sharedBaseWidthRoot/2) / parent.sharedBaseLength;
+                float trueoffset = -(-parent.sharedBaseOffsetTip + parent.sharedBaseWidthTip/2 - parent.sharedBaseWidthRoot/2) / parent.sharedBaseLength;
                 sharedBaseOffsetRoot = trueoffset;
                 sharedBaseOffsetTip = trueoffset;
             }
@@ -1729,7 +1729,7 @@ namespace WingProcedural
                 materialLayeredSurface = ResourceExtractor.GetEmbeddedMaterial ("B9_Aerospace_WingStuff.SpecularLayered.txt");
             if (materialLayeredEdge == null)
                 materialLayeredEdge = ResourceExtractor.GetEmbeddedMaterial ("B9_Aerospace_WingStuff.SpecularLayered.txt");
-
+            
             if (!isCtrlSrf) SetTextures (meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
             else SetTextures (meshFilterCtrlSurface, meshFilterCtrlFrame);
 
