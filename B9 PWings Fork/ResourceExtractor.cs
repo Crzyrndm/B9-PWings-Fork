@@ -10,23 +10,25 @@ namespace WingProcedural
     {
         public static Material GetEmbeddedMaterial (string name)
         {
-            string str = string.Empty;
-            return GetEmbeddedContents (name, Assembly.GetExecutingAssembly (), out str) ? new Material (str) : null;
+            Shader shader;
+            return GetEmbeddedContents (name, Assembly.GetExecutingAssembly (), out shader) ? new Material (shader) : null;
         }
 
-        public static bool GetEmbeddedContents (string resource, Assembly assembly, out string contents)
+        public static bool GetEmbeddedContents (string resource, Assembly assembly, out Shader shader )//string contents
         {
             if (WPDebug.logUpdateMaterials)
                 Debug.Log ("ResourceExtractor | GetEmbeddedContents | Resource: " + resource);
-            contents = string.Empty;
+            //contents = string.Empty;
+            shader = null;
             try
             {
                 var stream = assembly.GetManifestResourceStream (resource);
                 if (stream != null)
                 {
                     var reader = new System.IO.StreamReader (stream);
-                    contents = reader.ReadToEnd ();
-                    return contents.Length > 0;
+                    string contents = reader.ReadToEnd ();
+                    shader = Shader.Find(contents);
+                    //return contents.Length > 0;
                 }
                 else
                 {
