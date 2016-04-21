@@ -3317,7 +3317,7 @@ namespace WingProcedural
             {
                 PartResource res = part.Resources[i];
                 double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
-                res.maxAmount = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume * aeroStatVolume;
+                res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
                 res.amount = res.maxAmount * fillPct;
             }
             part.Resources.UpdateList();
@@ -3402,7 +3402,7 @@ namespace WingProcedural
         private float FuelGetAddedCost ()
         {
             float result = 0f;
-            if (fuelSelectedTankSetup < StaticWingGlobals.wingTankConfigurations.Count && fuelSelectedTankSetup >= 0)
+            if (canBeFueled && useStockFuel && fuelSelectedTankSetup < StaticWingGlobals.wingTankConfigurations.Count && fuelSelectedTankSetup >= 0)
             {
                 foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                 {
@@ -3428,10 +3428,10 @@ namespace WingProcedural
                     {
                         units += " " + (kvp.Value.unitsPerVolume * aeroStatVolume).ToString("G3") + " /";
                     }
-                    units = units.Substring(0, units.Length - 1);
+                    units = units.Substring(0, units.Length - 1) + ")";
                 }
 
-                return units + ")";
+                return units;
             }
         }
 
@@ -3455,32 +3455,36 @@ namespace WingProcedural
 
         #region Interfaces
 
-        public float GetModuleCost ()
+        public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
         {
-            if (!useStockFuel)
-                return aeroUICost;
-            else
-                return FuelGetAddedCost () + aeroUICost;
+            return FuelGetAddedCost () + aeroUICost - defaultCost;
         }
 
-        public float GetModuleCost (float modifier)
+        public ModifierChangeWhen GetModuleCostChangeWhen()
         {
-            return GetModuleCost();
+            return ModifierChangeWhen.FIXED;
         }
 
-        public Vector3 GetModuleSize (Vector3 defaultSize)
+        public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
         {
-            // This is a seriously stupid Interface
-            // it is called 4(!) times per part, the first two the vessel size has not changed, the second two it has changed
-            // the return value is # meters to add/subtract from the vessel size, which happens even if the part is completely occluded by other parts (seriously, wtf)
+            if (assemblyFARUsed)
+                return 0;
+            return aeroUIMass - defaultMass;
+        }
+
+        public ModifierChangeWhen GetModuleMassChangeWhen()
+        {
+            return ModifierChangeWhen.FIXED;
+        }
+
+        public Vector3 GetModuleSize(Vector3 defaultSize, ModifierStagingSituation sit)
+        {
             return Vector3.zero;
         }
 
-        public float GetModuleMass(float defaultMass)
+        public ModifierChangeWhen GetModuleSizeChangeWhen()
         {
-            if (!assemblyFARUsed)
-                return (float)aeroUIMass - part.partInfo.partPrefab.mass;
-            return 0; // FAR does its own mass stuff
+            return ModifierChangeWhen.FIXED;
         }
         #endregion
 
