@@ -2572,13 +2572,7 @@ namespace WingProcedural
                 {
                     if (GUILayout.Button (FuelGUIGetConfigDesc () + " | Next tank setup", WingProceduralManager.uiStyleButton)) NextConfiguration ();
                 }
-                if (isCtrlSrf)
-                {
-                    GUILayout.BeginHorizontal();
-                    if (GUILayout.Button("Align with back edges", WingProceduralManager.uiStyleButton)) InheritParentValues(4, true);
-                    if (GUILayout.Button("Align with fore edges", WingProceduralManager.uiStyleButton)) InheritParentValues(4, false);
-                    GUILayout.EndHorizontal();
-                }
+
        
 
                 GUILayout.BeginHorizontal ();
@@ -2605,6 +2599,13 @@ namespace WingProcedural
                         if (GUILayout.Button ("Color", WingProceduralManager.uiStyleButton)) InheritParentValues (3);
                     }
                     GUILayout.EndHorizontal ();
+                    if (isCtrlSrf)
+                    {
+                        GUILayout.BeginHorizontal();
+                        if (GUILayout.Button("Align with back edges", WingProceduralManager.uiStyleButton)) InheritParentValues(4, true);
+                        if (GUILayout.Button("Align with fore edges", WingProceduralManager.uiStyleButton)) InheritParentValues(4, false);
+                        GUILayout.EndHorizontal();
+                    }
                 }
             }
             else
@@ -3402,7 +3403,7 @@ namespace WingProcedural
         private float FuelGetAddedCost ()
         {
             float result = 0f;
-            if (fuelSelectedTankSetup < StaticWingGlobals.wingTankConfigurations.Count && fuelSelectedTankSetup >= 0)
+            if (canBeFueled && useStockFuel && fuelSelectedTankSetup < StaticWingGlobals.wingTankConfigurations.Count && fuelSelectedTankSetup >= 0)
             {
                 foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                 {
@@ -3421,17 +3422,17 @@ namespace WingProcedural
                 return "Invalid";
             else
             {
-                string units = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].GUIName + " (";
+                string units = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].GUIName;
                 if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.Count != 0)
                 {
                     foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                     {
                         units += " " + (kvp.Value.unitsPerVolume * aeroStatVolume).ToString("G3") + " /";
                     }
-                    units = units.Substring(0, units.Length - 1);
+                    units =" ("+ units.Substring(0, units.Length - 1)+")";
                 }
 
-                return units + ")";
+                return units;
             }
         }
 
@@ -3455,17 +3456,25 @@ namespace WingProcedural
 
         #region Interfaces
 
-        public float GetModuleCost ()
+        public float GetModuleCost (float defaultCost, ModifierStagingSituation sit)
         {
-            if (!useStockFuel)
+            /*if (!useStockFuel)
                 return aeroUICost;
             else
-                return FuelGetAddedCost () + aeroUICost;
+                return FuelGetAddedCost () + aeroUICost;*/
+            return FuelGetAddedCost() + aeroUICost - defaultCost;
         }
 
-        public float GetModuleCost (float modifier)
+        public ModifierChangeWhen GetModuleCostChangeWhen()
+         {
+             return ModifierChangeWhen.FIXED;
+          }
+
+    public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
         {
-            return GetModuleCost();
+            if (assemblyFARUsed)
+                return 0;
+            return aeroUIMass - defaultMass;
         }
 
         public Vector3 GetModuleSize (Vector3 defaultSize)
@@ -3476,11 +3485,9 @@ namespace WingProcedural
             return Vector3.zero;
         }
 
-        public float GetModuleMass(float defaultMass)
+       public ModifierChangeWhen GetModuleSizeChangeWhen()
         {
-            if (!assemblyFARUsed)
-                return (float)aeroUIMass - part.partInfo.partPrefab.mass;
-            return 0; // FAR does its own mass stuff
+            return ModifierChangeWhen.FIXED;
         }
         #endregion
 
