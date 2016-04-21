@@ -302,9 +302,9 @@ namespace WingProcedural
         private static string[] sharedFieldGroupColorSBArray = new string[] { "sharedMaterialSB", "sharedColorSBOpacity", "sharedColorSBHue", "sharedColorSBSaturation", "sharedColorSBBrightness" };
 
         [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Material", guiFormat = "F3")]
-        public float sharedMaterialSB = 4f;
-        public float sharedMaterialSBCached = 4f;
-        public static Vector4 sharedMaterialSBDefaults = new Vector4 (4f, 4f, 4f, 4f);
+        public float sharedMaterialSB = 1f;
+        public float sharedMaterialSBCached = 1f;
+        public static Vector4 sharedMaterialSBDefaults = new Vector4(1f, 1f, 1f, 1f);
 
         [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Opacity", guiFormat = "F3")]
         public float sharedColorSBOpacity = 0f;
@@ -703,14 +703,14 @@ namespace WingProcedural
         {
             if(back)
             {
-                float trueoffset = -(parent.sharedBaseOffsetRoot + parent.sharedBaseWidthTip/2 - parent.sharedBaseWidthRoot/2) / parent.sharedBaseLength;
+                float trueoffset = -(parent.sharedBaseOffsetTip + parent.sharedBaseWidthTip/2 - parent.sharedBaseWidthRoot/2) / parent.sharedBaseLength;
                 sharedBaseOffsetRoot = trueoffset;
                 sharedBaseOffsetTip = trueoffset;
 
             }
             else
             {
-                float trueoffset = (-parent.sharedBaseOffsetRoot + parent.sharedBaseWidthTip/2 - parent.sharedBaseWidthRoot/2) / parent.sharedBaseLength;
+                float trueoffset = -(-parent.sharedBaseOffsetTip + parent.sharedBaseWidthTip/2 - parent.sharedBaseWidthRoot/2) / parent.sharedBaseLength;
                 sharedBaseOffsetRoot = trueoffset;
                 sharedBaseOffsetTip = trueoffset;
             }
@@ -1729,7 +1729,7 @@ namespace WingProcedural
                 materialLayeredSurface = ResourceExtractor.GetEmbeddedMaterial ("B9_Aerospace_WingStuff.SpecularLayered.txt");
             if (materialLayeredEdge == null)
                 materialLayeredEdge = ResourceExtractor.GetEmbeddedMaterial ("B9_Aerospace_WingStuff.SpecularLayered.txt");
-
+            
             if (!isCtrlSrf) SetTextures (meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
             else SetTextures (meshFilterCtrlSurface, meshFilterCtrlFrame);
 
@@ -3317,7 +3317,7 @@ namespace WingProcedural
             {
                 PartResource res = part.Resources[i];
                 double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
-                res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
+                res.maxAmount = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume * aeroStatVolume;
                 res.amount = res.maxAmount * fillPct;
             }
             part.Resources.UpdateList();
@@ -3402,7 +3402,7 @@ namespace WingProcedural
         private float FuelGetAddedCost ()
         {
             float result = 0f;
-            if (canBeFueled && useStockFuel && fuelSelectedTankSetup < StaticWingGlobals.wingTankConfigurations.Count && fuelSelectedTankSetup >= 0)
+            if (fuelSelectedTankSetup < StaticWingGlobals.wingTankConfigurations.Count && fuelSelectedTankSetup >= 0)
             {
                 foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                 {
@@ -3428,10 +3428,10 @@ namespace WingProcedural
                     {
                         units += " " + (kvp.Value.unitsPerVolume * aeroStatVolume).ToString("G3") + " /";
                     }
-                    units = units.Substring(0, units.Length - 1) + ")";
+                    units = units.Substring(0, units.Length - 1);
                 }
 
-                return units;
+                return units + ")";
             }
         }
 
@@ -3455,36 +3455,32 @@ namespace WingProcedural
 
         #region Interfaces
 
-        public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
+        public float GetModuleCost ()
         {
-            return FuelGetAddedCost () + aeroUICost - defaultCost;
+            if (!useStockFuel)
+                return aeroUICost;
+            else
+                return FuelGetAddedCost () + aeroUICost;
         }
 
-        public ModifierChangeWhen GetModuleCostChangeWhen()
+        public float GetModuleCost (float modifier)
         {
-            return ModifierChangeWhen.FIXED;
+            return GetModuleCost();
         }
 
-        public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
+        public Vector3 GetModuleSize (Vector3 defaultSize)
         {
-            if (assemblyFARUsed)
-                return 0;
-            return aeroUIMass - defaultMass;
-        }
-
-        public ModifierChangeWhen GetModuleMassChangeWhen()
-        {
-            return ModifierChangeWhen.FIXED;
-        }
-
-        public Vector3 GetModuleSize(Vector3 defaultSize, ModifierStagingSituation sit)
-        {
+            // This is a seriously stupid Interface
+            // it is called 4(!) times per part, the first two the vessel size has not changed, the second two it has changed
+            // the return value is # meters to add/subtract from the vessel size, which happens even if the part is completely occluded by other parts (seriously, wtf)
             return Vector3.zero;
         }
 
-        public ModifierChangeWhen GetModuleSizeChangeWhen()
+        public float GetModuleMass(float defaultMass)
         {
-            return ModifierChangeWhen.FIXED;
+            if (!assemblyFARUsed)
+                return (float)aeroUIMass - part.partInfo.partPrefab.mass;
+            return 0; // FAR does its own mass stuff
         }
         #endregion
 
