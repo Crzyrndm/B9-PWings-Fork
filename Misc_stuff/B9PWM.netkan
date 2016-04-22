@@ -1,0 +1,23 @@
+{
+    "spec_version" : 1,
+    "identifier"   : "B9PWM",
+    "$kref"        : "#/ckan/github/01010101lzy/B9-PWings-Fork",
+    "name"         : "B9 Procedural Wings Modified",
+    "abstract"     : "A modified version of the B9 Procedural Wings mod",
+    "license"      : "CC-BY-4.0",
+    "ksp_version"  : "1.1",
+    "resources": {
+        "homepage": "http://forum.kerbalspaceprogram.com/index.php?/topic/126997-plugin11b9-procedural-parts-modified-v030-edge-alignments-apr22/"
+    },
+
+	    "depends": [
+        { "name": "ModuleManager" },
+    ],
+
+	"install": [
+    {
+        "file"       : "GameData/B9_Aerospace_ProceduralWings",
+        "install_to" : "GameData"
+    }
+    ],
+}
