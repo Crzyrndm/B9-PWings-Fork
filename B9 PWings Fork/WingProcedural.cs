@@ -2995,19 +2995,25 @@ namespace WingProcedural
         /// </summary>
         public void FuelVolumeChanged()
         {
-            if (!canBeFueled || isPanel)
+            if (canBeFueled || isPanel)
                 return;
 
             aeroStatVolume = 0.7f * sharedBaseLength * (sharedBaseWidthRoot + sharedBaseWidthTip) * (sharedBaseThicknessRoot + sharedBaseThicknessTip) / 4; // fudgeFactor * length * average thickness * average width
 
-            for (int i = 0; i < part.Resources.Count; ++i)
+            // no need to worry about symmetry as all symmetric parts will experience the volume change
+            if (useStockFuel)
             {
-                PartResource res = part.Resources[i];
-                double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
-                res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
-                res.amount = res.maxAmount * fillPct;
+                for (int i = 0; i < part.Resources.Count; ++i)
+                {
+                    PartResource res = part.Resources[i];
+                    double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
+                    res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
+                    res.amount = res.maxAmount * fillPct;
+                }
+                part.Resources.UpdateList();
             }
-            part.Resources.UpdateList();
+            else
+                FuelSetResources(); // for MFT/RF.
         }
 
         /// <summary>
