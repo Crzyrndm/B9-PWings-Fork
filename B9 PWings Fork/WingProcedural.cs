@@ -953,6 +953,7 @@ namespace WingProcedural
                         // Root/tip filtering followed by leading/trailing filtering
                         if (vp[i].x < -0.05f)
                         {
+
                             if (vp[i].z < 0f)
                             {
                                 vp[i] = new Vector3 (-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetLeading);
@@ -966,6 +967,7 @@ namespace WingProcedural
                         }
                         else
                         {
+                            Debug.Log(part.transform.eulerAngles);
                             if (vp[i].z < 0f)
                             {
                                 vp[i] = new Vector3 (vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
@@ -1043,7 +1045,7 @@ namespace WingProcedural
                         }
 
                         // Top/bottom filtering
-                        if (vp[i].y > 0f)
+                        if ((vp[i].y > 0f) ^ (part.transform.eulerAngles.x > 180))
                         {
                             cl[i] = GetVertexColor (0);
                             uv2[i] = GetVertexUV2 (sharedMaterialST);
@@ -1431,7 +1433,7 @@ namespace WingProcedural
                         }
 
                         // Colors
-                        if (vp[i].x > 0f)
+                        if ((vp[i].x > 0f) ^ (part.transform.eulerAngles.x > 180))
                         {
                             cl[i] = GetVertexColor (0);
                             uv2[i] = GetVertexUV2 (sharedMaterialST);
@@ -3312,19 +3314,24 @@ namespace WingProcedural
         /// </summary>
         public void FuelVolumeChanged()
         {
-            if (!canBeFueled || isPanel)
+            if (canBeFueled || isPanel)
                 return;
 
             aeroStatVolume = 0.7f * sharedBaseLength * (sharedBaseWidthRoot + sharedBaseWidthTip) * (sharedBaseThicknessRoot + sharedBaseThicknessTip) / 4; // fudgeFactor * length * average thickness * average width
 
-            for (int i = 0; i < part.Resources.Count; ++i)
+            if (useStockFuel)
             {
-                PartResource res = part.Resources[i];
-                double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
-                res.maxAmount = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume * aeroStatVolume;
-                res.amount = res.maxAmount * fillPct;
+                for (int i = 0; i < part.Resources.Count; ++i)
+                {
+                    PartResource res = part.Resources[i];
+                    double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
+                    res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
+                    res.amount = res.maxAmount * fillPct;
+                }
+                part.Resources.UpdateList();
             }
-            part.Resources.UpdateList();
+            else
+                FuelSetResources(); // for MFT/RF.
         }
 
         /// <summary>
