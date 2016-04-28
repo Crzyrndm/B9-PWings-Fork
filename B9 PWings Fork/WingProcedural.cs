@@ -918,6 +918,7 @@ namespace WingProcedural
                         }
                         else
                         {
+                            Debug.Log(part.transform.eulerAngles);
                             if (vp[i].z < 0f)
                             {
                                 vp[i] = new Vector3 (vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
@@ -930,8 +931,9 @@ namespace WingProcedural
                             }
                         }
 
+
                         // Top/bottom filtering
-                        if (vp[i].y > 0f)
+                        if ((vp[i].y > 0f) ^ (part.transform.eulerAngles.x > 180))
                         {
                             cl[i] = GetVertexColor (0);
                             uv2[i] = GetVertexUV2 (sharedMaterialST);
@@ -1319,7 +1321,7 @@ namespace WingProcedural
                         }
 
                         // Colors
-                        if (vp[i].x > 0f)
+                        if ((vp[i].x > 0f) ^ (part.transform.eulerAngles.x > 180))
                         {
                             cl[i] = GetVertexColor (0);
                             uv2[i] = GetVertexUV2 (sharedMaterialST);
