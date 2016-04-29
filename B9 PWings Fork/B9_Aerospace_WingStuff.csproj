@@ -36,6 +36,10 @@
       <HintPath>..\..\..\Desktop\Kerbal Space Program Dev\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="KSPAssets">
+      <HintPath>..\..\..\Desktop\Kerbal Space Program Dev\KSP_Data\Managed\KSPAssets.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="KSPUtil">
       <HintPath>..\..\..\Desktop\Kerbal Space Program Dev\KSP_Data\Managed\KSPUtil.dll</HintPath>
       <Private>False</Private>

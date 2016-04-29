@@ -1617,9 +1617,9 @@ namespace WingProcedural
         private void SetMaterialReferences ()
         {
             if (materialLayeredSurface == null)
-                materialLayeredSurface = ResourceExtractor.GetEmbeddedMaterial ("B9_Aerospace_WingStuff.SpecularLayered.txt");
+                materialLayeredSurface = WingProceduralManager.wingMat;
             if (materialLayeredEdge == null)
-                materialLayeredEdge = ResourceExtractor.GetEmbeddedMaterial ("B9_Aerospace_WingStuff.SpecularLayered.txt");
+                materialLayeredEdge = WingProceduralManager.wingMat;
 
             if (!isCtrlSrf) SetTextures (meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
             else SetTextures (meshFilterCtrlSurface, meshFilterCtrlFrame);
