@@ -933,7 +933,7 @@ namespace WingProcedural
 
 
                         // Top/bottom filtering
-                        if ((vp[i].y > 0f) ^ (part.transform.eulerAngles.x > 180))
+                        if (vp[i].y > 0f)
                         {
                             cl[i] = GetVertexColor (0);
                             uv2[i] = GetVertexUV2 (sharedMaterialST);
@@ -1321,7 +1321,7 @@ namespace WingProcedural
                         }
 
                         // Colors
-                        if ((vp[i].x > 0f) ^ (part.transform.eulerAngles.x > 180))
+                        if (vp[i].x > 0f)
                         {
                             cl[i] = GetVertexColor (0);
                             uv2[i] = GetVertexUV2 (sharedMaterialST);
