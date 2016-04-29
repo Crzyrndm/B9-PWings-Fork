@@ -3152,7 +3152,7 @@ namespace WingProcedural
 
         public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
         {
-            return FuelGetAddedCost () + aeroUICost - defaultCost;
+            return FuelGetAddedCost () + aeroUICost - part.partInfo.cost;
         }
 
         public ModifierChangeWhen GetModuleCostChangeWhen()
@@ -3164,7 +3164,7 @@ namespace WingProcedural
         {
             if (assemblyFARUsed)
                 return 0;
-            return aeroUIMass - defaultMass;
+            return aeroUIMass - part.partInfo.partPrefab.mass;
         }
 
         public ModifierChangeWhen GetModuleMassChangeWhen()
@@ -3174,7 +3174,7 @@ namespace WingProcedural
 
         public Vector3 GetModuleSize(Vector3 defaultSize, ModifierStagingSituation sit)
         {
-            return Vector3.zero;
+            return new Vector3(sharedBaseLength, sharedBaseWidthRoot, sharedBaseThicknessRoot) - new Vector3(4, 4, 0.2f);
         }
 
         public ModifierChangeWhen GetModuleSizeChangeWhen()
