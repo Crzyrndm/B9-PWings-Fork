@@ -18,7 +18,6 @@ namespace WingProcedural
         [KSPField (isPersistant = true)]
         public bool isAttached = false;
 
-        [KSPField(isPersistant = true)]
         public bool isMirrored = false;
 
         [KSPField (isPersistant = true)]
