@@ -17,6 +17,10 @@ namespace WingProcedural
 
         [KSPField (isPersistant = true)]
         public bool isAttached = false;
+
+        [KSPField(isPersistant = true)]
+        public bool isMirrored = false;
+
         [KSPField (isPersistant = true)]
         public bool isSetToDefaultValues = false;
 
@@ -708,6 +712,8 @@ namespace WingProcedural
         // may resolve errors reported by Hodo
         public override void OnSave(ConfigNode node)
         {
+            node.RemoveValues("mirrorTexturing");
+            node.AddValue("mirrorTexturing", isMirrored);
             if (WPDebug.logEvents)
                 DebugLogWithID("OnSave", "Invoked");
             try
@@ -723,6 +729,7 @@ namespace WingProcedural
 
         public override void OnLoad(ConfigNode node)
         {
+            node.TryGetValue("mirrorTexturing", ref isMirrored);
             if (WPDebug.logEvents)
                 DebugLogWithID("OnLoad", "Invoked");
             //WingProceduralManager.LoadConfigs();
@@ -758,6 +765,8 @@ namespace WingProcedural
         {
             if (WPDebug.logEvents)
                 DebugLogWithID("UpdateOnEditorAttach", "Setup started");
+
+            isMirrored = Vector3.Dot(EditorLogic.SortedShipList[0].transform.forward, part.transform.forward) < 0;
 
             isAttached = true;
             UpdateGeometry(true);
@@ -933,7 +942,7 @@ namespace WingProcedural
 
 
                         // Top/bottom filtering
-                        if (vp[i].y > 0f)
+                        if (vp[i].y > 0f ^ isMirrored)
                         {
                             cl[i] = GetVertexColor (0);
                             uv2[i] = GetVertexUV2 (sharedMaterialST);
@@ -1321,7 +1330,7 @@ namespace WingProcedural
                         }
 
                         // Colors
-                        if (vp[i].x > 0f)
+                        if (vp[i].x > 0f ^ isMirrored)
                         {
                             cl[i] = GetVertexColor (0);
                             uv2[i] = GetVertexUV2 (sharedMaterialST);
@@ -2241,14 +2250,14 @@ namespace WingProcedural
         {
             if (!isStarted || !HighLogic.LoadedSceneIsEditor || !uiWindowActive)
                 return;
-
+            
             if (uiInstanceIDLocal == 0)
                 uiInstanceIDLocal = part.GetInstanceID ();
             if (uiInstanceIDTarget == uiInstanceIDLocal || uiInstanceIDTarget == 0)
             {
                 if (!WingProceduralManager.uiStyleConfigured)
                     WingProceduralManager.ConfigureStyles ();
-
+                
                 if (uiAdjustWindow)
                 {
                     uiAdjustWindow = false;
@@ -2261,7 +2270,6 @@ namespace WingProcedural
 
                 // Thanks to ferram4
                 // Following section lock the editor, preventing window clickthrough
-
                 if (WingProceduralManager.uiRectWindowEditor.Contains(UIUtility.GetMousePos()))
                 {
                     EditorLogic.fetch.Lock(false, false, false, "WingProceduralWindow");
