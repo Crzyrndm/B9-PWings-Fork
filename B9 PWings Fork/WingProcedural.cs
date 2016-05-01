@@ -1617,9 +1617,9 @@ namespace WingProcedural
         private void SetMaterialReferences ()
         {
             if (materialLayeredSurface == null)
-                materialLayeredSurface = WingProceduralManager.wingMat;
+                materialLayeredSurface = new Material(WingProceduralManager.wingShader);
             if (materialLayeredEdge == null)
-                materialLayeredEdge = WingProceduralManager.wingMat;
+                materialLayeredEdge = new Material(WingProceduralManager.wingShader);
 
             if (!isCtrlSrf) SetTextures (meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
             else SetTextures (meshFilterCtrlSurface, meshFilterCtrlFrame);
