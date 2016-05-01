@@ -927,7 +927,6 @@ namespace WingProcedural
                         }
                         else
                         {
-                            Debug.Log(part.transform.eulerAngles);
                             if (vp[i].z < 0f)
                             {
                                 vp[i] = new Vector3 (vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
@@ -1964,7 +1963,7 @@ namespace WingProcedural
                     if (WPDebug.logCAV)
                         DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
                     ((ModuleLiftingSurface)this.part.Modules["ModuleLiftingSurface"]).deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
-                    part.mass = stockLiftCoefficient * 0.1f;
+                    aeroUIMass = stockLiftCoefficient * 0.1f;
                 }
                 else
                 {
@@ -1973,12 +1972,10 @@ namespace WingProcedural
                     ModuleControlSurface mCtrlSrf = part.Modules.OfType<ModuleControlSurface> ().FirstOrDefault ();
                     mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
-                    part.mass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
+                    aeroUIMass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
                 }
                 aeroUICd = (float)Math.Round(aeroStatCd, 2);
                 aeroUICl = (float)Math.Round(aeroStatCl, 2);
-                aeroUIMass = part.mass;
-                Debug.Log(aeroUIMass);
 
                 if (WPDebug.logCAV)
                     DebugLogWithID("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
@@ -2258,22 +2255,16 @@ namespace WingProcedural
                 if (!WingProceduralManager.uiStyleConfigured)
                     WingProceduralManager.ConfigureStyles ();
                 
-                if (uiAdjustWindow)
-                {
-                    uiAdjustWindow = false;
-                    if (WPDebug.logPropertyWindow)
-                        DebugLogWithID ("OnGUI", "Window forced to adjust");
-                    WingProceduralManager.uiRectWindowEditor = GUILayout.Window (273, WingProceduralManager.uiRectWindowEditor, OnWindow, GetWindowTitle (), WingProceduralManager.uiStyleWindow, GUILayout.Height (0));
-                }
-                else
-                    WingProceduralManager.uiRectWindowEditor = GUILayout.Window (273, WingProceduralManager.uiRectWindowEditor, OnWindow, GetWindowTitle (), WingProceduralManager.uiStyleWindow);
-
+                WingProceduralManager.uiRectWindowEditor = GUILayout.Window(GetInstanceID(), WingProceduralManager.uiRectWindowEditor, OnWindow, GetWindowTitle(), WingProceduralManager.uiStyleWindow, GUILayout.Height(uiAdjustWindow ? 0 : WingProceduralManager.uiRectWindowEditor.height));
+                uiAdjustWindow = false;
+                
                 // Thanks to ferram4
                 // Following section lock the editor, preventing window clickthrough
                 if (WingProceduralManager.uiRectWindowEditor.Contains(UIUtility.GetMousePos()))
                 {
                     EditorLogic.fetch.Lock(false, false, false, "WingProceduralWindow");
-                    EditorTooltip.Instance.HideToolTip ();
+                    if (EditorTooltip.Instance != null)
+                        EditorTooltip.Instance.HideToolTip ();
                 }
                 else
                     EditorLogic.fetch.Unlock("WingProceduralWindow");
@@ -3131,10 +3122,9 @@ namespace WingProcedural
                     {
                         units += " " + (kvp.Value.unitsPerVolume * aeroStatVolume).ToString("G3") + " /";
                     }
-                    units = units.Substring(0, units.Length - 1) + ")";
+                    units = units.Substring(0, units.Length - 1);
                 }
-
-                return units;
+                return units + ")";
             }
         }
 
