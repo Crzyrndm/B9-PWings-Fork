@@ -1351,7 +1351,7 @@ namespace WingProcedural
             if (WPDebug.logUpdateGeometry)
                 DebugLogWithID ("UpdateGeometry", "Finished");
             if (HighLogic.LoadedSceneIsEditor)
-                FuelVolumeChanged ();
+                FuelVolumeChanged();
             if (updateAerodynamics)
                 CalculateAerodynamicValues();
         }
@@ -2995,11 +2995,10 @@ namespace WingProcedural
         /// </summary>
         public void FuelVolumeChanged()
         {
-            if (canBeFueled || isPanel)
+            if (!canBeFueled)
                 return;
 
             aeroStatVolume = 0.7f * sharedBaseLength * (sharedBaseWidthRoot + sharedBaseWidthTip) * (sharedBaseThicknessRoot + sharedBaseThicknessTip) / 4; // fudgeFactor * length * average thickness * average width
-
             // no need to worry about symmetry as all symmetric parts will experience the volume change
             if (useStockFuel)
             {
@@ -3011,6 +3010,7 @@ namespace WingProcedural
                     res.amount = res.maxAmount * fillPct;
                 }
                 part.Resources.UpdateList();
+                UpdateWindow();
             }
             else
                 FuelSetResources(); // for MFT/RF.
@@ -3131,7 +3131,7 @@ namespace WingProcedural
         {
             get
             {
-                return !isCtrlSrf && !isWingAsCtrlSrf;
+                return !isCtrlSrf && !isWingAsCtrlSrf && !isPanel;
             }
         }
 
