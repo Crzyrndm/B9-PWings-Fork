@@ -67,7 +67,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ResourceExtractor.cs" />
     <Compile Include="StaticWingGlobals.cs" />
     <Compile Include="UIUtility.cs" />
     <Compile Include="UtilityTexture.cs" />
@@ -75,9 +74,6 @@
     <Compile Include="WingProceduralManager.cs" />
     <Compile Include="WingTankConfiguration.cs" />
     <Compile Include="WingTankResource.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="SpecularLayered.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
