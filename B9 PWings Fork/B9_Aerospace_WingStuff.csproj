@@ -40,9 +40,14 @@
     <Reference Include="KSPAssets, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\KSPAssets.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="KSPUtil, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
-    <Reference Include="System" />
+    <Reference Include="KSPUtil, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -68,9 +73,6 @@
     <Compile Include="WingProceduralManager.cs" />
     <Compile Include="WingTankConfiguration.cs" />
     <Compile Include="WingTankResource.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="SpecularLayered.txt" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

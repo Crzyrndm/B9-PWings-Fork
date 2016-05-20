@@ -32,12 +32,12 @@ namespace WingProcedural
         public static GUIStyle uiStyleSliderThumb = new GUIStyle ();
         public static GUIStyle uiStyleToggle = new GUIStyle ();
         public static bool uiStyleConfigured = false;
-        internal static Material wingMat;
+        internal static Shader wingShader;
 
 
         public void Start()
         {
-            if (wingMat == null)
+            if (wingShader == null)
                 KSPAssets.Loaders.AssetLoader.LoadAssets(bundleLoaded, KSPAssets.Loaders.AssetLoader.GetAssetDefinitionWithName("B9_Aerospace_ProceduralWings/wingshader", "KSP/Specular Layered"));
         }
 
@@ -52,7 +52,7 @@ namespace WingProcedural
                 Debug.Log(s);
                 if (s != null)
                 {
-                    wingMat = new Material(s);
+                    wingShader = s;
                     return;
                 }
             }

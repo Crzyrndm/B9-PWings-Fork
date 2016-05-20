@@ -800,7 +800,7 @@ namespace WingProcedural
         public override void OnSave(ConfigNode node)
         {
             node.RemoveValues("mirrorTexturing");
-            node.AddValue("mirrorTexturing", isMirrored);
+            node.AddValue("mirrorTexturing", isMirrored); 
             if (WPDebug.logEvents)
                 DebugLogWithID("OnSave", "Invoked");
             try
@@ -1739,9 +1739,9 @@ namespace WingProcedural
         private void SetMaterialReferences ()
         {
             if (materialLayeredSurface == null)
-                materialLayeredSurface = WingProceduralManager.wingMat;
+                materialLayeredSurface = new Material(WingProceduralManager.wingShader);
             if (materialLayeredEdge == null)
-                materialLayeredEdge = WingProceduralManager.wingMat;
+                materialLayeredEdge = new Material(WingProceduralManager.wingShader); ;
 
             if (!isCtrlSrf) SetTextures (meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
             else SetTextures (meshFilterCtrlSurface, meshFilterCtrlFrame);
