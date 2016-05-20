@@ -1,6 +1,6 @@
 ﻿using System;
 using UnityEngine;
-
+using KSPAssets;
 using KSP;
 using KSP.UI.Screens;
 
@@ -32,7 +32,31 @@ namespace WingProcedural
         public static GUIStyle uiStyleSliderThumb = new GUIStyle ();
         public static GUIStyle uiStyleToggle = new GUIStyle ();
         public static bool uiStyleConfigured = false;
+        internal static Material wingMat;
 
+
+        public void Start()
+        {
+            if (wingMat == null)
+                KSPAssets.Loaders.AssetLoader.LoadAssets(bundleLoaded, KSPAssets.Loaders.AssetLoader.GetAssetDefinitionWithName("B9_Aerospace_ProceduralWings/wingshader", "KSP/Specular Layered"));
+        }
+
+        void bundleLoaded(KSPAssets.Loaders.AssetLoader.Loader loader)
+        {
+            for (int i = 0; i < loader.definitions.Length; ++i)
+            {
+                UnityEngine.Object obj = loader.objects[i];
+                if (obj == null)
+                    continue;
+                Shader s = obj as Shader;
+                Debug.Log(s);
+                if (s != null)
+                {
+                    wingMat = new Material(s);
+                    return;
+                }
+            }
+        }
         private enum MenuTab
         {
             DebugAndData

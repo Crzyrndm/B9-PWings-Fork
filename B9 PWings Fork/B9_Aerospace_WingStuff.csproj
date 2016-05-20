@@ -37,6 +37,10 @@
       <HintPath>..\..\..\Desktop\Kerbal Space Program Dev\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="KSPAssets, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\KSPAssets.dll</HintPath>
+    </Reference>
     <Reference Include="KSPUtil, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -57,7 +61,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ResourceExtractor.cs" />
     <Compile Include="StaticWingGlobals.cs" />
     <Compile Include="UIUtility.cs" />
     <Compile Include="UtilityTexture.cs" />
@@ -77,6 +80,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assembly-CSharp.dll" />
+    <Content Include="KSPAssets.dll" />
+    <Content Include="KSPCore.dll" />
     <Content Include="KSPUtil.dll" />
     <Content Include="UnityEngine.dll" />
   </ItemGroup>
