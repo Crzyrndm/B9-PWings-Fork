@@ -311,7 +311,7 @@ namespace WingProcedural
 
             //prefs
             WingProcedural.sharedPropAnglePref = Convert.ToBoolean(config.GetValue("AnglePref", "false"));
-            WingProcedural.sharedPropEdgePref = Convert.ToBoolean(config.GetValue("EdgePref", "false"));
+            //WingProcedural.sharedPropEdgePref = Convert.ToBoolean(config.GetValue("EdgePref", "false"));
             WingProcedural.sharedPropEThickPref = Convert.ToBoolean(config.GetValue("ThickPref", "false"));
         }
 
@@ -339,7 +339,7 @@ namespace WingProcedural
             //Prefs
             config.SetValue("AnglePref", WingProcedural.sharedPropAnglePref.ToString());
             //config.SetValue("EdgePref", WingProcedural.sharedPropEdgePref.ToString());
-            //config.SetValue("ThickPref", WingProcedural.sharedPropEThickPref.ToString());
+            config.SetValue("ThickPref", WingProcedural.sharedPropEThickPref.ToString());
 
             config.save ();
         }
