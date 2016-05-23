@@ -637,8 +637,8 @@ namespace WingProcedural
                 //Mathf.Clamp(offset, sharedBaseOffsetLimits.x, sharedBaseOffsetLimits.y);
             sharedBaseThicknessTip = min(sharedBaseThicknessRoot + (float)(sharedBaseLength / parent.sharedBaseLength) * (float)(parent.sharedBaseThicknessTip - parent.sharedBaseThicknessRoot), 0);
 
-            if (Input.GetMouseButtonUp(0))
-                inheritEdges(parent);
+            //if (Input.GetMouseButtonUp(0))
+                //inheritEdges(parent);
         }
 
         private float min(float v1, float v2)
@@ -805,7 +805,8 @@ namespace WingProcedural
                 DebugLogWithID("OnSave", "Invoked");
             try
             {
-                vesselList.FirstOrDefault(vs => vs.vessel == vessel).isUpdated = false;
+                if(HighLogic.LoadedSceneIsFlight)
+                    vesselList.FirstOrDefault(vs => vs.vessel == vessel).isUpdated = false;
                 WingProceduralManager.SaveConfigs();
             }
             catch
@@ -816,12 +817,12 @@ namespace WingProcedural
 
         public override void OnLoad(ConfigNode node)
         {
-            node.TryGetValue("mirrorTexturing", ref isMirrored);
-            if (WPDebug.logEvents)
-                DebugLogWithID("OnLoad", "Invoked");
-            isMirrored = Vector3.Dot(EditorLogic.SortedShipList[0].transform.forward, part.transform.forward) < 0;
+               node.TryGetValue("mirrorTexturing", ref isMirrored);
+                if (WPDebug.logEvents)
+                    DebugLogWithID("OnLoad", "Invoked");
             //WingProceduralManager.LoadConfigs();
         }
+
 
         public void OnDestroy()
         {
@@ -850,6 +851,7 @@ namespace WingProcedural
             if (!HighLogic.LoadedSceneIsEditor || !isStarted)
                 return;
             
+
             DebugTimerUpdate();
 
             UpdateUI();
@@ -871,6 +873,7 @@ namespace WingProcedural
             if (WPDebug.logEvents)
                 DebugLogWithID("UpdateOnEditorAttach", "Setup started");
 
+            isMirrored = Vector3.Dot(EditorLogic.SortedShipList[0].transform.forward, part.transform.forward) < 0;
             isAttached = true;
             UpdateGeometry(true);
             if (WPDebug.logEvents)
