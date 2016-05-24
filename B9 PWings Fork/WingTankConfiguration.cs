@@ -1,12 +1,5 @@
-
-
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using UnityEngine;
-
-
-
 
 namespace WingProcedural
 {
@@ -22,20 +15,21 @@ namespace WingProcedural
 
         public void Load(ConfigNode node)
         {
+            float ratioTotal = 0;
 
-            Debug.Log(node);
             GUIName = node.GetValue("name");
-            Debug.Log("name is: " + GUIName);
             ConfigNode[] nodes = node.GetNodes("Resource");
-            Debug.Log(nodes.Length);
             for (int i = 0; i < nodes.Length; ++i)
             {
                 WingTankResource res = new WingTankResource(nodes[i]);
-                resources.Add(res.resource.name, res);
+                if (res.resource != null)
+                {
+                    resources.Add(res.resource.name, res);
+                    ratioTotal += res.ratio;
+                }
             }
-            GUIName = node.GetValue("name");
-
-
+            foreach (KeyValuePair<string, WingTankResource> kvp in resources)
+                kvp.Value.SetUnitsPerVolume(ratioTotal);
         }
 
         public void Save(ConfigNode node) { }
