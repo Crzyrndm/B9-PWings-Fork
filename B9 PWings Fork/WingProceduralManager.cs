@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
+using System.Reflection;
 
 namespace WingProcedural
 {
@@ -52,24 +54,53 @@ namespace WingProcedural
         public void Start()
         {
             if (wingShader == null)
-                KSPAssets.Loaders.AssetLoader.LoadAssets(bundleLoaded, KSPAssets.Loaders.AssetLoader.GetAssetDefinitionWithName("B9_Aerospace_ProceduralWings/wingshader", "KSP/Specular Layered"));
+            {
+                StartCoroutine(LoadBundleAssets());
+            }
+            //if (wingShader == null)
+            //    KSPAssets.Loaders.AssetLoader.LoadAssets(bundleLoaded, KSPAssets.Loaders.AssetLoader.GetAssetDefinitionWithName("B9_Aerospace_ProceduralWings/wingshader", "KSP/Specular Layered"));
         }
 
-        void bundleLoaded(KSPAssets.Loaders.AssetLoader.Loader loader)
+        public IEnumerator LoadBundleAssets()
         {
-            for (int i = 0; i < loader.definitions.Length; ++i)
+            while (!Caching.ready)
+                yield return null;
+            using (WWW www = WWW.LoadFromCacheOrDownload("file://" + (Assembly.GetExecutingAssembly().Location).Replace("Plugins\\B9_Aerospace_WingStuff.dll", "wingshader.ksp"), 1))
             {
-                UnityEngine.Object obj = loader.objects[i];
-                if (obj == null)
-                    continue;
-                Shader s = obj as Shader;
-                if (s != null)
+                yield return www;
+
+                AssetBundle shaderBundle = www.assetBundle;
+                Shader[] objects = shaderBundle.LoadAllAssets<Shader>();
+                for (int i = 0; i < objects.Length; ++i)
                 {
-                    wingShader = s;
-                    return;
+                    Debug.Log(objects[i].name);
+                    if (objects[i].name == "KSP/Specular Layered")
+                    {
+                        wingShader = objects[i] as Shader;
+                        Debug.Log("wing shader loaded");
+                    }
                 }
+
+                yield return new WaitForSeconds(10.0f);
+                shaderBundle.Unload(false);
             }
         }
+
+        //void bundleLoaded(KSPAssets.Loaders.AssetLoader.Loader loader)
+        //{
+        //    for (int i = 0; i < loader.definitions.Length; ++i)
+        //    {
+        //        UnityEngine.Object obj = loader.objects[i];
+        //        if (obj == null)
+        //            continue;
+        //        Shader s = obj as Shader;
+        //        if (s != null)
+        //        {
+        //            wingShader = s;
+        //            return;
+        //        }
+        //    }
+        //}
 
         private void OnGUIAppLauncherReady ()
         {

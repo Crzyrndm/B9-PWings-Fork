@@ -83,8 +83,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>set SOURCE="D:\Users\Joshua\GitHub\B9-PWings-Fork\GameData"
-set DESTINATION="D:\Users\Joshua\Desktop\Kerbal Space Program Dev\GameData"
+    <PostBuildEvent>set SOURCE="D:\Libraries\GitHub\B9-PWings-Fork\GameData"
+set DESTINATION="D:\Libraries\Desktop\Kerbal Space Program Dev\GameData"
 xcopy %25SOURCE%25 %25DESTINATION%25 /E /C /R /I /K /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
