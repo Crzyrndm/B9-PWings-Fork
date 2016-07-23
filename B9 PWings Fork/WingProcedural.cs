@@ -1370,7 +1370,7 @@ namespace WingProcedural
 
         public void UpdateCounterparts()
         {
-            for (int i = part.symmetryCounterparts.Count; i >= 0; --i)
+            for (int i = part.symmetryCounterparts.Count - 1; i >= 0; --i)
             {
                 WingProcedural clone = FirstOfTypeOrDefault<WingProcedural>(part.symmetryCounterparts[i].Modules);
 
