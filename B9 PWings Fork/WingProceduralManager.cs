@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using UnityEngine;
-using System.Reflection;
 
 namespace WingProcedural
 {
@@ -30,8 +28,6 @@ namespace WingProcedural
         public static GUIStyle uiStyleToggle = new GUIStyle ();
         public static bool uiStyleConfigured = false;
 
-        internal static Shader wingShader;
-
         private enum MenuTab
         {
             DebugAndData
@@ -51,57 +47,6 @@ namespace WingProcedural
                 OnGUIAppLauncherReady();
         }
 
-        public void Start()
-        {
-            if (wingShader == null)
-            {
-                StartCoroutine(LoadBundleAssets());
-            }
-            //if (wingShader == null)
-            //    KSPAssets.Loaders.AssetLoader.LoadAssets(bundleLoaded, KSPAssets.Loaders.AssetLoader.GetAssetDefinitionWithName("B9_Aerospace_ProceduralWings/wingshader", "KSP/Specular Layered"));
-        }
-
-        public IEnumerator LoadBundleAssets()
-        {
-            while (!Caching.ready)
-                yield return null;
-            using (WWW www = WWW.LoadFromCacheOrDownload("file://" + (Assembly.GetExecutingAssembly().Location).Replace("Plugins\\B9_Aerospace_WingStuff.dll", "wingshader.ksp"), 1))
-            {
-                yield return www;
-
-                AssetBundle shaderBundle = www.assetBundle;
-                Shader[] objects = shaderBundle.LoadAllAssets<Shader>();
-                for (int i = 0; i < objects.Length; ++i)
-                {
-                    Debug.Log(objects[i].name);
-                    if (objects[i].name == "KSP/Specular Layered")
-                    {
-                        wingShader = objects[i] as Shader;
-                        Debug.Log("wing shader loaded");
-                    }
-                }
-
-                yield return new WaitForSeconds(10.0f);
-                shaderBundle.Unload(false);
-            }
-        }
-
-        //void bundleLoaded(KSPAssets.Loaders.AssetLoader.Loader loader)
-        //{
-        //    for (int i = 0; i < loader.definitions.Length; ++i)
-        //    {
-        //        UnityEngine.Object obj = loader.objects[i];
-        //        if (obj == null)
-        //            continue;
-        //        Shader s = obj as Shader;
-        //        if (s != null)
-        //        {
-        //            wingShader = s;
-        //            return;
-        //        }
-        //    }
-        //}
-
         private void OnGUIAppLauncherReady ()
         {
             if (ApplicationLauncher.Ready)
@@ -110,10 +55,7 @@ namespace WingProcedural
                 (
                     OnAppLaunchToggleOn,
                     OnAppLaunchToggleOff,
-                    DummyVoid,
-                    DummyVoid,
-                    DummyVoid,
-                    DummyVoid,
+                    null, null, null, null,
                     ApplicationLauncher.AppScenes.SPACECENTER,
                     (Texture) GameDatabase.Instance.GetTexture ("B9_Aerospace_ProceduralWings/Plugins/icon_stock", false)
                 );
@@ -131,9 +73,6 @@ namespace WingProcedural
             SaveConfigs ();
             windowOpen = false;
         }
-
-        private void DummyVoid () { }
-
 
         public static Font uiFont = null;
         private static float alphaNormal = 0.5f;

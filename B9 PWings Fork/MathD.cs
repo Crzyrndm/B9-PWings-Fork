@@ -9,71 +9,10 @@ namespace WingProcedural
 
     public struct MathD
     {
-        public const double PI = 3.14159265358979;
-        public const double Infinity = double.PositiveInfinity;
-        public const double NegativeInfinity = double.NegativeInfinity;
-        public const double Deg2Rad = PI / 180;
-        public const double Rad2Deg = 180 / PI;
-        public const double Epsilon = double.Epsilon;
+        public const double Deg2Rad = Math.PI / 180;
+        public const double Rad2Deg = 180 / Math.PI;
 
-        public static double Sin (double d)
-        {
-            return Math.Sin (d);
-        }
-
-        public static double Cos (double d)
-        {
-            return Math.Cos (d);
-        }
-
-        public static double Tan (double d)
-        {
-            return Math.Tan (d);
-        }
-
-        public static double Asin (double d)
-        {
-            return Math.Asin (d);
-        }
-
-        public static double Acos (double d)
-        {
-            return Math.Acos (d);
-        }
-
-        public static double Atan (double d)
-        {
-            return Math.Atan (d);
-        }
-
-        public static double Atan2 (double y, double x)
-        {
-            return Math.Atan2 (y, x);
-        }
-
-        public static double Sqrt (double d)
-        {
-            return Math.Sqrt (d);
-        }
-
-        public static double Abs (double d)
-        {
-            return Math.Abs (d);
-        }
-
-        public static int Abs (int value)
-        {
-            return Math.Abs (value);
-        }
-
-        public static double Min (double a, double b)
-        {
-            if (a < b)
-                return a;
-            else
-                return b;
-        }
-
+        
         public static double Min (params double[] values)
         {
             int length = values.Length;
@@ -86,14 +25,6 @@ namespace WingProcedural
                     num = values[index];
             }
             return num;
-        }
-
-        public static int Min (int a, int b)
-        {
-            if (a < b)
-                return a;
-            else
-                return b;
         }
 
         public static int Min (params int[] values)
@@ -110,14 +41,6 @@ namespace WingProcedural
             return num;
         }
 
-        public static double Max (double a, double b)
-        {
-            if (a > b)
-                return a;
-            else
-                return b;
-        }
-
         public static double Max (params double[] values)
         {
             int length = values.Length;
@@ -132,14 +55,6 @@ namespace WingProcedural
             return num;
         }
 
-        public static int Max (int a, int b)
-        {
-            if (a > b)
-                return a;
-            else
-                return b;
-        }
-
         public static int Max (params int[] values)
         {
             int length = values.Length;
@@ -152,46 +67,6 @@ namespace WingProcedural
                     num = values[index];
             }
             return num;
-        }
-
-        public static double Pow (double d, double p)
-        {
-            return Math.Pow (d, p);
-        }
-
-        public static double Exp (double power)
-        {
-            return Math.Exp (power);
-        }
-
-        public static double Log (double d, double p)
-        {
-            return Math.Log (d, p);
-        }
-
-        public static double Log (double d)
-        {
-            return Math.Log (d);
-        }
-
-        public static double Log10 (double d)
-        {
-            return Math.Log10 (d);
-        }
-
-        public static double Ceil (double d)
-        {
-            return Math.Ceiling (d);
-        }
-
-        public static double Floor (double d)
-        {
-            return Math.Floor (d);
-        }
-
-        public static double Round (double d)
-        {
-            return Math.Round (d);
         }
 
         public static int CeilToInt (double d)
@@ -209,25 +84,11 @@ namespace WingProcedural
             return (int) Math.Round (d);
         }
 
-        public static double Sign (double d)
+        public static T Clamp<T>(T value, T min, T max) where T : IComparable<T>
         {
-            return d >= 0.0 ? 1d : -1d;
-        }
-
-        public static double Clamp (double value, double min, double max)
-        {
-            if (value < min)
+            if (value.CompareTo(min) < 0)
                 value = min;
-            else if (value > max)
-                value = max;
-            return value;
-        }
-
-        public static int Clamp (int value, int min, int max)
-        {
-            if (value < min)
-                value = min;
-            else if (value > max)
+            else if (value.CompareTo(max) > 0)
                 value = max;
             return value;
         }
@@ -257,10 +118,10 @@ namespace WingProcedural
 
         public static double MoveTowards (double current, double target, double maxDelta)
         {
-            if (MathD.Abs (target - current) <= maxDelta)
+            if (Math.Abs (target - current) <= maxDelta)
                 return target;
             else
-                return current + MathD.Sign (target - current) * maxDelta;
+                return current + Math.Sign (target - current) * maxDelta;
         }
 
         public static double MoveTowardsAngle (double current, double target, double maxDelta)
@@ -281,7 +142,7 @@ namespace WingProcedural
             bool flag = false;
             if (value < 0.0)
                 flag = true;
-            double num1 = MathD.Abs (value);
+            double num1 = Math.Abs (value);
             if (num1 > absmax)
             {
                 if (flag)
@@ -291,7 +152,7 @@ namespace WingProcedural
             }
             else
             {
-                double num2 = MathD.Pow (num1 / absmax, gamma) * absmax;
+                double num2 = Math.Pow (num1 / absmax, gamma) * absmax;
                 if (flag)
                     return -num2;
                 else
@@ -301,7 +162,7 @@ namespace WingProcedural
 
         public static bool Approximately (double a, double b)
         {
-            return MathD.Abs (b - a) < MathD.Max (1E-06d * MathD.Max (MathD.Abs (a), MathD.Abs (b)), Epsilon);
+            return Math.Abs (b - a) < MathD.Max (1E-06d * MathD.Max (Math.Abs (a), Math.Abs (b)), double.Epsilon);
         }
 
         public static double SmoothDamp (double current, double target, ref double currentVelocity, double smoothTime, double maxSpeed)
@@ -353,13 +214,13 @@ namespace WingProcedural
 
         public static double Repeat (double t, double length)
         {
-            return t - MathD.Floor (t / length) * length;
+            return t - Math.Floor (t / length) * length;
         }
 
         public static double PingPong (double t, double length)
         {
             t = MathD.Repeat (t, length * 2d);
-            return length - MathD.Abs (t - length);
+            return length - Math.Abs (t - length);
         }
 
         public static double InverseLerp (double from, double to, double value)

@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace WingProcedural
+﻿namespace WingProcedural
 {
     public class WingTankResource : IConfigNode
     {
@@ -15,8 +13,8 @@ namespace WingProcedural
 
         public void Load(ConfigNode node)
         {
-            int resourceID = node.GetValue("name").GetHashCode();
-            if (PartResourceLibrary.Instance.resourceDefinitions.Any(rd => rd.id == resourceID))
+            string resourceID = node.GetValue("name");
+            if (PartResourceLibrary.Instance.resourceDefinitions.Contains(resourceID))
             {
                 resource = PartResourceLibrary.Instance.resourceDefinitions[resourceID];
                 float.TryParse(node.GetValue("ratio"), out ratio);

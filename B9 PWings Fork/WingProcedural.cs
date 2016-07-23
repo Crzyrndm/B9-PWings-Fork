@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -508,7 +507,7 @@ namespace WingProcedural
             if (!part.parent.Modules.Contains("WingProcedural"))
                 return;
 
-            WingProcedural parentModule = part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ();
+            WingProcedural parentModule = FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules);
             if (parentModule != null)
             {
                 if (!parentModule.isCtrlSrf)
@@ -528,7 +527,7 @@ namespace WingProcedural
             if (!part.parent.Modules.Contains("WingProcedural"))
                 return;
 
-            WingProcedural parentModule = part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ();
+            WingProcedural parentModule = FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules);
             if (parentModule == null)
                 return;
 
@@ -648,9 +647,16 @@ namespace WingProcedural
         {
             if (!assembliesChecked || forced)
             {
-                assemblyFARUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("FerramAerospaceResearch", StringComparison.InvariantCultureIgnoreCase));
-                assemblyRFUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("RealFuels", StringComparison.InvariantCultureIgnoreCase));
-                assemblyMFTUsed = AssemblyLoader.loadedAssemblies.Any (a => a.assembly.GetName ().Name.Equals ("modularFuelTanks", StringComparison.InvariantCultureIgnoreCase));
+                for (int i = AssemblyLoader.loadedAssemblies.Count - 1; i >= 0; --i)
+                {
+                    AssemblyLoader.LoadedAssembly test = AssemblyLoader.loadedAssemblies[i];
+                    if (test.assembly.GetName().Name.Equals("FerramAerospaceResearch", StringComparison.InvariantCultureIgnoreCase))
+                        assemblyFARUsed = true;
+                    else if (test.assembly.GetName().Name.Equals("RealFuels", StringComparison.InvariantCultureIgnoreCase))
+                        assemblyRFUsed = true;
+                    else if (test.assembly.GetName().Name.Equals("modularFuelTanks", StringComparison.InvariantCultureIgnoreCase))
+                        assemblyMFTUsed = true;
+                }
 
                 if (WPDebug.logEvents)
                     DebugLogWithID ("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
@@ -717,7 +723,13 @@ namespace WingProcedural
                 DebugLogWithID("OnSave", "Invoked");
             try
             {
-                vesselList.FirstOrDefault(vs => vs.vessel == vessel).isUpdated = false;
+                for (int i = vesselList.Count - 1; i >= 0; --i)
+                {
+                    if (vesselList[i].vessel == vessel)
+                    {
+                        vesselList[i].isUpdated = false;
+                    }
+                }
                 WingProceduralManager.SaveConfigs();
             }
             catch
@@ -777,7 +789,7 @@ namespace WingProcedural
         {
             if (this.part.parent != null && this.part.parent.Modules.Contains("WingProcedural"))
             {
-                WingProcedural parentModule = this.part.parent.Modules.OfType<WingProcedural>().FirstOrDefault();
+                WingProcedural parentModule = FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules);
                 if (parentModule != null)
                 {
                     parentModule.FuelVolumeChanged();
@@ -1358,9 +1370,9 @@ namespace WingProcedural
 
         public void UpdateCounterparts()
         {
-            for (int i = 0; i < this.part.symmetryCounterparts.Count; ++i)
+            for (int i = part.symmetryCounterparts.Count; i >= 0; --i)
             {
-                WingProcedural clone = this.part.symmetryCounterparts[i].Modules.OfType<WingProcedural>().FirstOrDefault();
+                WingProcedural clone = FirstOfTypeOrDefault<WingProcedural>(part.symmetryCounterparts[i].Modules);
 
                 clone.sharedBaseLength = clone.sharedBaseLengthCached = sharedBaseLength;
                 clone.sharedBaseWidthRoot = clone.sharedBaseWidthRootCached = sharedBaseWidthRoot;
@@ -1624,9 +1636,9 @@ namespace WingProcedural
         private void SetMaterialReferences ()
         {
             if (materialLayeredSurface == null)
-                materialLayeredSurface = new Material(WingProceduralManager.wingShader);
+                materialLayeredSurface = new Material(StaticWingGlobals.wingShader);
             if (materialLayeredEdge == null)
-                materialLayeredEdge = new Material(WingProceduralManager.wingShader);
+                materialLayeredEdge = new Material(StaticWingGlobals.wingShader);
 
             if (!isCtrlSrf) SetTextures (meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
             else SetTextures (meshFilterCtrlSurface, meshFilterCtrlFrame);
@@ -1902,14 +1914,14 @@ namespace WingProcedural
                 aeroStatSemispan = (double) sharedBaseLength;
                 aeroStatTaperRatio = (double) sharedWidthTipSum / (double) sharedWidthRootSum;
                 aeroStatMeanAerodynamicChord = (double) (sharedWidthTipSum + sharedWidthRootSum) / 2.0;
-                aeroStatMidChordSweep = MathD.Atan ((double) sharedBaseOffsetTip / (double) sharedBaseLength) * MathD.Rad2Deg;
+                aeroStatMidChordSweep = Math.Atan ((double) sharedBaseOffsetTip / (double) sharedBaseLength) * MathD.Rad2Deg;
             }
             else
             {
                 aeroStatSemispan = (double) sharedBaseLength;
                 aeroStatTaperRatio = (double) (sharedBaseLength + sharedWidthTipSum * ctrlOffsetTipClamped - sharedWidthRootSum * ctrlOffsetRootClamped) / (double) sharedBaseLength;
                 aeroStatMeanAerodynamicChord = (double) (sharedWidthTipSum + sharedWidthRootSum) / 2.0;
-                aeroStatMidChordSweep = MathD.Atan ((double) Mathf.Abs (sharedWidthRootSum - sharedWidthTipSum) / (double) sharedBaseLength) * MathD.Rad2Deg;
+                aeroStatMidChordSweep = Math.Atan ((double) Mathf.Abs (sharedWidthRootSum - sharedWidthTipSum) / (double) sharedBaseLength) * MathD.Rad2Deg;
             }
             if (WPDebug.logCAV)
                 DebugLogWithID ("CalculateAerodynamicValues", "Passed B2/TR/MAC/MCS");
@@ -1919,15 +1931,15 @@ namespace WingProcedural
             aeroStatSurfaceArea = aeroStatMeanAerodynamicChord * aeroStatSemispan;
             aeroStatAspectRatio = 2.0f * aeroStatSemispan / aeroStatMeanAerodynamicChord;
 
-            aeroStatAspectRatioSweepScale = MathD.Pow (aeroStatAspectRatio / MathD.Cos (MathD.Deg2Rad * aeroStatMidChordSweep), 2.0f) + 4.0f;
-            aeroStatAspectRatioSweepScale = 2.0f + MathD.Sqrt (aeroStatAspectRatioSweepScale);
-            aeroStatAspectRatioSweepScale = (2.0f * MathD.PI) / aeroStatAspectRatioSweepScale * aeroStatAspectRatio;
+            aeroStatAspectRatioSweepScale = Math.Pow (aeroStatAspectRatio / Math.Cos (MathD.Deg2Rad * aeroStatMidChordSweep), 2.0f) + 4.0f;
+            aeroStatAspectRatioSweepScale = 2.0f + Math.Sqrt (aeroStatAspectRatioSweepScale);
+            aeroStatAspectRatioSweepScale = (2.0f * Math.PI) / aeroStatAspectRatioSweepScale * aeroStatAspectRatio;
 
             aeroStatMass = MathD.Clamp (aeroConstMassFudgeNumber * aeroStatSurfaceArea * ((aeroStatAspectRatioSweepScale * 2.0) / (3.0 + aeroStatAspectRatioSweepScale)) * ((1.0 + aeroStatTaperRatio) / 2), 0.01, double.MaxValue);
             aeroStatCd = aeroConstDragBaseValue / aeroStatAspectRatioSweepScale * aeroConstDragMultiplier;
             aeroStatCl = aeroConstLiftFudgeNumber * aeroStatSurfaceArea * aeroStatAspectRatioSweepScale;
             GatherChildrenCl();
-            aeroStatConnectionForce = MathD.Round (MathD.Clamp (MathD.Sqrt (aeroStatCl + aeroStatClChildren) * (double) aeroConstConnectionFactor, (double) aeroConstConnectionMinimum, double.MaxValue));
+            aeroStatConnectionForce = Math.Round (MathD.Clamp (Math.Sqrt (aeroStatCl + aeroStatClChildren) * (double) aeroConstConnectionFactor, (double) aeroConstConnectionMinimum, double.MaxValue));
             if (WPDebug.logCAV)
                 DebugLogWithID ("CalculateAerodynamicValues", "Passed SR/AR/ARSS/mass/Cl/Cd/connection");
 
@@ -1968,7 +1980,7 @@ namespace WingProcedural
                 {
                     if (WPDebug.logCAV)
                         DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
-                    ModuleControlSurface mCtrlSrf = part.Modules.OfType<ModuleControlSurface> ().FirstOrDefault ();
+                    ModuleControlSurface mCtrlSrf = FirstOfTypeOrDefault<ModuleControlSurface>(part.Modules);
                     mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
                     aeroUIMass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
@@ -2120,7 +2132,7 @@ namespace WingProcedural
                     continue;
                 if (part.children[i].Modules.Contains ("WingProcedural"))
                 {
-                    WingProcedural child = part.children[i].Modules.OfType<WingProcedural> ().FirstOrDefault ();
+                    WingProcedural child = FirstOfTypeOrDefault<WingProcedural>(part.children[i].Modules);
                     if (child == null)
                         continue;
                     aeroStatClChildren += child.aeroStatCl;
@@ -2130,7 +2142,7 @@ namespace WingProcedural
 
             // If parent is a pWing, trickle the call to gather ChildrenCl up to them.
             if (this.part.parent != null && this.part.parent.Modules.Contains ("WingProcedural"))
-                this.part.parent.Modules.OfType<WingProcedural> ().FirstOrDefault ().GatherChildrenCl();
+                FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules).GatherChildrenCl();
         }
 
         public bool showWingData = false;
@@ -3029,7 +3041,7 @@ namespace WingProcedural
             {
                 if (part.symmetryCounterparts[s] == null) // fixes nullref caused by removing mirror sym while hovering over attach location
                     continue;
-                WingProcedural wing = part.symmetryCounterparts[s].Modules.OfType<WingProcedural>().FirstOrDefault();
+                WingProcedural wing = FirstOfTypeOrDefault<WingProcedural>(part.symmetryCounterparts[s].Modules);
                 if (wing != null)
                 {
                     wing.fuelSelectedTankSetup = fuelSelectedTankSetup;
@@ -3222,28 +3234,28 @@ namespace WingProcedural
 
         #region Dump state
 
-        public void DumpState ()
-        {
-            string report = "State report on part " + this.GetInstanceID () + ":\n\n";
-            Type type = this.GetType ();
-            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-            List<string> fieldNames = fields.Select(field => field.Name).ToList();
-            List<object> fieldValues = fields.Select(field => field.GetValue(this)).ToList();
-            if (fieldNames.Count == fieldValues.Count && fieldNames.Count == fields.Length)
-            {
-                for (int i = 0; i < fields.Length; ++i)
-                {
-                    if (!string.IsNullOrEmpty (fieldNames[i]))
-                    {
-                        if (fieldValues[i] != null) report += fieldNames[i] + ": " + fieldValues[i].ToString () + "\n";
-                        else report += fieldNames[i] + ": null\n";
-                    }
-                    else report += "Field " + i.ToString () + " name not available\n";
-                }
-            }
-            else report += "Field info size mismatch, list can't be printed";
-            Debug.Log (report);
-        }
+        //public void DumpState ()
+        //{
+        //    string report = "State report on part " + this.GetInstanceID () + ":\n\n";
+        //    Type type = this.GetType ();
+        //    FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+        //    List<string> fieldNames = fields.Select(field => field.Name).ToList();
+        //    List<object> fieldValues = fields.Select(field => field.GetValue(this)).ToList();
+        //    if (fieldNames.Count == fieldValues.Count && fieldNames.Count == fields.Length)
+        //    {
+        //        for (int i = 0; i < fields.Length; ++i)
+        //        {
+        //            if (!string.IsNullOrEmpty (fieldNames[i]))
+        //            {
+        //                if (fieldValues[i] != null) report += fieldNames[i] + ": " + fieldValues[i].ToString () + "\n";
+        //                else report += fieldNames[i] + ": null\n";
+        //            }
+        //            else report += "Field " + i.ToString () + " name not available\n";
+        //        }
+        //    }
+        //    else report += "Field info size mismatch, list can't be printed";
+        //    Debug.Log (report);
+        //}
 
         public void DumpExecutionTimes ()
         {
@@ -3257,5 +3269,15 @@ namespace WingProcedural
             Debug.Log (report);
         }
         #endregion
+
+        public T FirstOfTypeOrDefault<T>(PartModuleList moduleList) where T : PartModule
+        {
+            for (int i = moduleList.Count - 1; i >= 0; --i)
+            {
+                if (moduleList[i] is T)
+                    return (T)moduleList[i];
+            }
+            return default(T);
+        }
     }
 }
