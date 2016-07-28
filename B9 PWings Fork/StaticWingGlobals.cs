@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
+using System.IO;
 using UnityEngine;
 
 namespace WingProcedural
@@ -20,7 +20,7 @@ namespace WingProcedural
                 for (int i = 0; i < fuelNodes.Length; ++i)
                     wingTankConfigurations.Add(new WingTankConfiguration(fuelNodes[i]));
             }
-
+            Debug.Log("[B9PW] start bundle load process");
             StartCoroutine(LoadBundleAssets());
         }
 
@@ -28,7 +28,9 @@ namespace WingProcedural
         {
             while (!Caching.ready)
                 yield return null;
-            using (WWW www = WWW.LoadFromCacheOrDownload("file://" + (Assembly.GetExecutingAssembly().Location).Replace("Plugins\\B9_Aerospace_WingStuff.dll", "wingshader.ksp"), 1))
+            Debug.Log("[B9PW] Aquiring bundle data");
+            using (WWW www = WWW.LoadFromCacheOrDownload("file://" + KSPUtil.ApplicationRootPath + Path.DirectorySeparatorChar + "GameData"
+                                                                            + Path.DirectorySeparatorChar + "B9_Aerospace_ProceduralWings" + Path.DirectorySeparatorChar + "wingshader.ksp", 1))
             {
                 yield return www;
 
@@ -36,6 +38,7 @@ namespace WingProcedural
                 Shader[] objects = shaderBundle.LoadAllAssets<Shader>();
                 for (int i = 0; i < objects.Length; ++i)
                 {
+                    Debug.Log($"[B9PW]  {objects[i].name}");
                     if (objects[i].name == "KSP/Specular Layered")
                     {
                         wingShader = objects[i] as Shader;
@@ -43,7 +46,8 @@ namespace WingProcedural
                     }
                 }
 
-                yield return new WaitForSeconds(10.0f); // unknown how neccesary this is
+                yield return new WaitForSeconds(1.0f); // unknown how neccesary this is
+                Debug.Log("[B9PW] unloading bundle");
                 shaderBundle.Unload(false); // unload the raw asset bundle
             }
         }
