@@ -46,7 +46,9 @@ namespace WingProcedural
                     }
                 }
 
-                yield return new WaitForSeconds(1.0f); // unknown how neccesary this is
+                yield return null; // unknown how neccesary this is
+                yield return null; // unknown how neccesary this is
+
                 Debug.Log("[B9PW] unloading bundle");
                 shaderBundle.Unload(false); // unload the raw asset bundle
             }
