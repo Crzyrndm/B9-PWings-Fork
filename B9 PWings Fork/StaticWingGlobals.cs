@@ -38,11 +38,10 @@ namespace WingProcedural
                 Shader[] objects = shaderBundle.LoadAllAssets<Shader>();
                 for (int i = 0; i < objects.Length; ++i)
                 {
-                    Debug.Log($"[B9PW]  {objects[i].name}");
                     if (objects[i].name == "KSP/Specular Layered")
                     {
-                        wingShader = objects[i] as Shader;
-                        Debug.Log($"[B9 PWings] Wing shader \"{objects[i].name}\" loaded");
+                        wingShader = objects[i];
+                        Debug.Log($"[B9 PWings] Wing shader \"{wingShader.name}\" loaded. Shadeer supported? {wingShader.isSupported}");
                     }
                 }
 
