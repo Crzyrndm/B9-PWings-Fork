@@ -2274,8 +2274,8 @@ namespace WingProcedural
                 if (WingProceduralManager.uiRectWindowEditor.Contains(UIUtility.GetMousePos()))
                 {
                     EditorLogic.fetch.Lock(false, false, false, "WingProceduralWindow");
-                    if (EditorTooltip.Instance != null)
-                        EditorTooltip.Instance.HideToolTip ();
+                    //if (EditorTooltip.Instance != null)
+                    //    EditorTooltip.Instance.HideToolTip ();
                 }
                 else
                     EditorLogic.fetch.Unlock("WingProceduralWindow");
@@ -3021,7 +3021,6 @@ namespace WingProcedural
                     res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
                     res.amount = res.maxAmount * fillPct;
                 }
-                part.Resources.UpdateList();
                 UpdateWindow();
             }
             else
@@ -3082,10 +3081,10 @@ namespace WingProcedural
             }
             else
             {
-                part.Resources.list.Clear();
-                PartResource[] partResources = part.GetComponents<PartResource>();
-                for (int i = 0; i < partResources.Length; i++)
-                    DestroyImmediate(partResources[i]);
+                for (int i = part.Resources.Count - 1; i >= 0; --i)
+                {
+                    part.Resources.Remove(part.Resources[i]);
+                }
 
                 foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                 {
@@ -3095,7 +3094,6 @@ namespace WingProcedural
                     newResourceNode.AddValue("maxAmount", kvp.Value.unitsPerVolume * aeroStatVolume);
                     part.AddResource(newResourceNode);
                 }
-                part.Resources.UpdateList();
                 fuelAddedCost = FuelGetAddedCost();
             }
         }
