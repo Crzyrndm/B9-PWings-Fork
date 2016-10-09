@@ -26,22 +26,17 @@ namespace WingProcedural
 
         public IEnumerator LoadBundleAssets()
         {
-            while (!Caching.ready)
-                yield return null;
             Debug.Log("[B9PW] Aquiring bundle data");
-            using (WWW www = WWW.LoadFromCacheOrDownload("file://" + KSPUtil.ApplicationRootPath + Path.DirectorySeparatorChar + "GameData"
-                                                                            + Path.DirectorySeparatorChar + "B9_Aerospace_ProceduralWings" + Path.DirectorySeparatorChar + "wingshader.ksp", 1))
+            AssetBundle shaderBundle = AssetBundle.LoadFromFile(KSPUtil.ApplicationRootPath + "GameData" + Path.DirectorySeparatorChar + "B9_Aerospace_ProceduralWings" + Path.DirectorySeparatorChar + "wingshader");
+            if (shaderBundle != null)
             {
-                yield return www;
-
-                AssetBundle shaderBundle = www.assetBundle;
                 Shader[] objects = shaderBundle.LoadAllAssets<Shader>();
                 for (int i = 0; i < objects.Length; ++i)
                 {
                     if (objects[i].name == "KSP/Specular Layered")
                     {
                         wingShader = objects[i];
-                        Debug.Log($"[B9 PWings] Wing shader \"{wingShader.name}\" loaded. Shadeer supported? {wingShader.isSupported}");
+                        Debug.Log($"[B9 PWings] Wing shader \"{wingShader.name}\" loaded. Shader supported? {wingShader.isSupported}");
                     }
                 }
 
@@ -50,6 +45,10 @@ namespace WingProcedural
 
                 Debug.Log("[B9PW] unloading bundle");
                 shaderBundle.Unload(false); // unload the raw asset bundle
+            }
+            else
+            {
+                Debug.Log("[B9PW] Error: Found no asset bundle to load");
             }
         }
     }
