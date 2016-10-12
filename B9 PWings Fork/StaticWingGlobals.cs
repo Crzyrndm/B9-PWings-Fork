@@ -40,7 +40,7 @@ namespace WingProcedural
                     }
                 }
 
-                yield return null; // unknown how neccesary this is
+                yield return null;
                 yield return null; // unknown how neccesary this is
 
                 Debug.Log("[B9PW] unloading bundle");
