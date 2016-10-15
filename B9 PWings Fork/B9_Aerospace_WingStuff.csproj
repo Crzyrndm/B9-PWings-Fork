@@ -70,7 +70,7 @@
     <Compile Include="UIUtility.cs" />
     <Compile Include="UtilityTexture.cs" />
     <Compile Include="WingProcedural.cs" />
-    <Compile Include="WingProceduralManager.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="WingTankConfiguration.cs" />
     <Compile Include="WingTankResource.cs" />
   </ItemGroup>
