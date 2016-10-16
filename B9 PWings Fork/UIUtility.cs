@@ -242,8 +242,8 @@ namespace WingProcedural
         }
 
         readonly static string[][] stringIDs = new string[][] { new string[] { "Uniform", "Standard", "Reinforced", "LRSI", "HRSI", "Unknown Material" },
-                                                               new string[] { "No Edge", "Rounded", "Biconvex", "Triangular", "Unknown" },
-                                                               new string[] { "No Edge", "Rounded", "Biconvex", "Triangular", "Unknown" }}; // yup, I'm feeling lazy here...
+                                                               new string[] { "", "No Edge", "Rounded", "Biconvex", "Triangular", "Unknown" },
+                                                               new string[] { "", "No Edge", "Rounded", "Biconvex", "Triangular", "Unknown" }}; // yup, I'm feeling lazy here...
         public static string GetValueTranslation (float value, int type)
         {
             if (type < 1 || type > 3)
