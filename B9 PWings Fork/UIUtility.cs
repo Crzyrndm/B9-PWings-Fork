@@ -111,24 +111,24 @@ namespace WingProcedural
             uiStyleButton.border = new RectOffset(0, 0, 0, 0);
         }
 
-        public static float FieldSlider (float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
+        public static float FieldSlider(float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
         {
             if (!UIUtility.uiStyleConfigured)
-                UIUtility.ConfigureStyles ();
-            GUILayout.BeginHorizontal ();
+                UIUtility.ConfigureStyles();
+            GUILayout.BeginHorizontal();
             double range = limits.y - limits.x;
             double value01 = (value - limits.x) / range; // rescaling value to be <0-1> of range for convenience
             double increment01 = increment / range;
             double valueOld = value01;
             const float buttonWidth = 12, spaceWidth = 3;
 
-            GUILayout.Label (string.Empty, UIUtility.uiStyleLabelHint);
-            Rect rectLast = GUILayoutUtility.GetLastRect ();
+            GUILayout.Label(string.Empty, UIUtility.uiStyleLabelHint);
+            Rect rectLast = GUILayoutUtility.GetLastRect();
             Rect rectSlider = new Rect(rectLast.xMin + buttonWidth + spaceWidth, rectLast.yMin, rectLast.width - 2 * (buttonWidth + spaceWidth), rectLast.height);
-            Rect rectSliderValue = new Rect (rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
-            Rect rectButtonL = new Rect (rectLast.xMin, rectLast.yMin, buttonWidth, rectLast.height);
-            Rect rectButtonR = new Rect (rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
-            Rect rectLabelValue = new Rect (rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
+            Rect rectSliderValue = new Rect(rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
+            Rect rectButtonL = new Rect(rectLast.xMin, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectButtonR = new Rect(rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
+            Rect rectLabelValue = new Rect(rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
 
             if (GUI.Button(rectButtonL, string.Empty, UIUtility.uiStyleButton))
             {
@@ -170,23 +170,23 @@ namespace WingProcedural
             value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
             changed = valueOld != value;
 
-            GUI.DrawTexture (rectSliderValue, backgroundColor.GetTexture2D ());
-            GUI.Label (rectSlider, $"  {name}", UIUtility.uiStyleLabelHint);
-            GUI.Label (rectLabelValue, GetValueTranslation (value, valueType), UIUtility.uiStyleLabelHint);
+            GUI.DrawTexture(rectSliderValue, backgroundColor.GetTexture2D());
+            GUI.Label(rectSlider, $"  {name}", UIUtility.uiStyleLabelHint);
+            GUI.Label(rectLabelValue, GetValueTranslation(value, valueType), UIUtility.uiStyleLabelHint);
 
-            GUILayout.EndHorizontal ();
+            GUILayout.EndHorizontal();
             return value;
         }
 
-        public static Rect ClampToScreen (Rect window)
+        public static Rect ClampToScreen(Rect window)
         {
-            window.x = Mathf.Clamp (window.x, -window.width + 20, Screen.width - 20);
-            window.y = Mathf.Clamp (window.y, -window.height + 20, Screen.height - 20);
+            window.x = Mathf.Clamp(window.x, -window.width + 20, Screen.width - 20);
+            window.y = Mathf.Clamp(window.y, -window.height + 20, Screen.height - 20);
 
             return window;
         }
 
-        public static Rect SetToScreenCenter (this Rect r)
+        public static Rect SetToScreenCenter(this Rect r)
         {
             if (r.width > 0 && r.height > 0)
             {
@@ -203,11 +203,11 @@ namespace WingProcedural
             return r;
         }
 
-        public static double TextEntryForDouble (string label, int labelWidth, double prevValue)
+        public static double TextEntryForDouble(string label, int labelWidth, double prevValue)
         {
             double temp;
-            string valString = prevValue.ToString ();
-            UIUtility.TextEntryField (label, labelWidth, ref valString);
+            string valString = prevValue.ToString();
+            UIUtility.TextEntryField(label, labelWidth, ref valString);
 
             if (!double.TryParse(valString, out temp))
                 return prevValue;
@@ -215,18 +215,17 @@ namespace WingProcedural
             return temp;
         }
 
-        public static void TextEntryField (string label, int labelWidth, ref string inputOutput)
+        public static void TextEntryField(string label, int labelWidth, ref string inputOutput)
         {
-            GUILayout.BeginHorizontal ();
-            GUILayout.Label (label, GUILayout.Width (labelWidth));
-            inputOutput = GUILayout.TextField (inputOutput);
-            GUILayout.EndHorizontal ();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(label, GUILayout.Width(labelWidth));
+            inputOutput = GUILayout.TextField(inputOutput);
+            GUILayout.EndHorizontal();
         }
-
 
         private static Vector3 mousePos = Vector3.zero;
 
-        public static Vector3 GetMousePos ()
+        public static Vector3 GetMousePos()
         {
             Vector3 mousePos = Input.mousePosition;
             mousePos.y = Screen.height - mousePos.y;
@@ -241,10 +240,11 @@ namespace WingProcedural
             return mousepos;
         }
 
-        readonly static string[][] stringIDs = new string[][] { new string[] { "Uniform", "Standard", "Reinforced", "LRSI", "HRSI", "Unknown Material" },
-                                                               new string[] { "", "No Edge", "Rounded", "Biconvex", "Triangular", "Unknown" },
-                                                               new string[] { "", "No Edge", "Rounded", "Biconvex", "Triangular", "Unknown" }}; // yup, I'm feeling lazy here...
-        public static string GetValueTranslation (float value, int type)
+        private static readonly string[][] stringIDs = new string[][] { new string[] { "Uniform", "Standard", "Reinforced", "LRSI", "HRSI" },
+                                                               new string[] { "", "No Edge", "Rounded", "Biconvex", "Triangular" },
+                                                               new string[] { "", "No Edge", "Rounded", "Biconvex", "Triangular" }}; // yup, I'm feeling lazy here...
+
+        public static string GetValueTranslation(float value, int type)
         {
             if (type < 1 || type > 3)
             {

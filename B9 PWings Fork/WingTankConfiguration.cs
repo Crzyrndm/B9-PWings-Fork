@@ -31,6 +31,8 @@ namespace WingProcedural
                 kvp.Value.SetUnitsPerVolume(ratioTotal);
         }
 
-        public void Save(ConfigNode node) { }
+        public void Save(ConfigNode node)
+        {
+        }
     }
 }

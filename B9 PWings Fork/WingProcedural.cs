@@ -7,19 +7,25 @@ using UnityEngine;
 namespace WingProcedural
 {
     using KSP.UI.Screens;
+
     public class WingProcedural : PartModule, IPartCostModifier, IPartSizeModifier, IPartMassModifier
     {
         // Some handy bools
-        [KSPField] public bool isCtrlSrf = false;
-        [KSPField] public bool isWingAsCtrlSrf = false;
-        [KSPField] public bool isPanel = false;
+        [KSPField]
+        public bool isCtrlSrf = false;
 
-        [KSPField (isPersistant = true)]
+        [KSPField]
+        public bool isWingAsCtrlSrf = false;
+
+        [KSPField]
+        public bool isPanel = false;
+
+        [KSPField(isPersistant = true)]
         public bool isAttached = false;
 
         public bool isMirrored = false;
 
-        [KSPField (isPersistant = true)]
+        [KSPField(isPersistant = true)]
         public bool isSetToDefaultValues = false;
 
         #region Debug
@@ -29,7 +35,7 @@ namespace WingProcedural
             public string message;
             public string interval;
 
-            public DebugMessage (string m, string i)
+            public DebugMessage(string m, string i)
             {
                 message = m;
                 interval = i;
@@ -38,30 +44,30 @@ namespace WingProcedural
 
         private DateTime debugTime;
         private DateTime debugTimeLast;
-        private List<DebugMessage> debugMessageList = new List<DebugMessage> ();
+        private List<DebugMessage> debugMessageList = new List<DebugMessage>();
 
-        private void DebugTimerUpdate ()
+        private void DebugTimerUpdate()
         {
             debugTime = DateTime.UtcNow;
         }
 
-        private void DebugLogWithID (string method, string message)
+        private void DebugLogWithID(string method, string message)
         {
             debugTime = DateTime.UtcNow;
-            string m = "WP | ID: " + part.gameObject.GetInstanceID () + " | " + method + " | " + message;
+            string m = "WP | ID: " + part.gameObject.GetInstanceID() + " | " + method + " | " + message;
             string i = (debugTime - debugTimeLast).TotalMilliseconds + " ms.";
-            if (debugMessageList.Count <= 150) debugMessageList.Add (new DebugMessage (m, i));
+            if (debugMessageList.Count <= 150) debugMessageList.Add(new DebugMessage(m, i));
             debugTimeLast = DateTime.UtcNow;
-            Debug.Log (m);
+            Debug.Log(m);
         }
 
-        private string DebugVectorToString (Vector3 v)
+        private string DebugVectorToString(Vector3 v)
         {
-            return v.x.ToString ("F2") + ", " + v.y.ToString ("F2") + ", " + v.z.ToString ("F2");
+            return v.x.ToString("F2") + ", " + v.y.ToString("F2") + ", " + v.z.ToString("F2");
         }
 
-        ArrowPointer pointer;
-        void DrawArrow(Vector3 dir)
+        private ArrowPointer pointer;
+        private void DrawArrow(Vector3 dir)
         {
             if (pointer == null)
                 pointer = ArrowPointer.Create(part.partTransform, Vector3.zero, dir, 30, Color.red, true);
@@ -69,7 +75,7 @@ namespace WingProcedural
                 pointer.Direction = dir;
         }
 
-        void destroyArrow()
+        private void destroyArrow()
         {
             if (pointer != null)
             {
@@ -78,7 +84,7 @@ namespace WingProcedural
             }
         }
 
-        #endregion
+        #endregion Debug
 
         #region Mesh properties
 
@@ -92,37 +98,39 @@ namespace WingProcedural
 
         public MeshFilter meshFilterWingSection;
         public MeshFilter meshFilterWingSurface;
-        public List<MeshFilter> meshFiltersWingEdgeTrailing = new List<MeshFilter> ();
-        public List<MeshFilter> meshFiltersWingEdgeLeading = new List<MeshFilter> ();
+        public List<MeshFilter> meshFiltersWingEdgeTrailing = new List<MeshFilter>();
+        public List<MeshFilter> meshFiltersWingEdgeLeading = new List<MeshFilter>();
 
         public MeshFilter meshFilterCtrlFrame;
         public MeshFilter meshFilterCtrlSurface;
-        public List<MeshFilter> meshFiltersCtrlEdge = new List<MeshFilter> ();
+        public List<MeshFilter> meshFiltersCtrlEdge = new List<MeshFilter>();
 
         public static MeshReference meshReferenceWingSection;
         public static MeshReference meshReferenceWingSurface;
-        public static List<MeshReference> meshReferencesWingEdge = new List<MeshReference> ();
+        public static List<MeshReference> meshReferencesWingEdge = new List<MeshReference>();
 
         public static MeshReference meshReferenceCtrlFrame;
         public static MeshReference meshReferenceCtrlSurface;
-        public static List<MeshReference> meshReferencesCtrlEdge = new List<MeshReference> ();
+        public static List<MeshReference> meshReferencesCtrlEdge = new List<MeshReference>();
 
         private static int meshTypeCountEdgeWing = 4;
         private static int meshTypeCountEdgeCtrl = 3;
-        #endregion
+
+        #endregion Mesh properties
 
         #region Shared properties / Limits and increments
-        private Vector2 GetLimitsFromType (Vector4 set)
+
+        private Vector2 GetLimitsFromType(Vector4 set)
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logLimits)
-                DebugLogWithID ("GetLimitsFromType", "Using set: " + set);
+                DebugLogWithID("GetLimitsFromType", "Using set: " + set);
             if (!isCtrlSrf)
-                return new Vector2 (set.x, set.y);
+                return new Vector2(set.x, set.y);
             else
-                return new Vector2 (set.z, set.w);
+                return new Vector2(set.z, set.w);
         }
 
-        private float GetIncrementFromType (float incrementWing, float incrementCtrl)
+        private float GetIncrementFromType(float incrementWing, float incrementCtrl)
         {
             if (!isCtrlSrf)
                 return incrementWing;
@@ -130,376 +138,423 @@ namespace WingProcedural
                 return incrementCtrl;
         }
 
-        private static Vector4 sharedBaseLengthLimits = new Vector4 (0.125f, 16f, 0.04f, 8f);
-        private static Vector2 sharedBaseThicknessLimits = new Vector2 (0.04f, 1f);
-        private static Vector4 sharedBaseWidthRootLimits = new Vector4 (0.125f, 16f, 0.04f, 1.6f);
+        private static Vector4 sharedBaseLengthLimits = new Vector4(0.125f, 16f, 0.04f, 8f);
+        private static Vector2 sharedBaseThicknessLimits = new Vector2(0.04f, 1f);
+        private static Vector4 sharedBaseWidthRootLimits = new Vector4(0.125f, 16f, 0.04f, 1.6f);
         private static Vector4 sharedBaseWidthTipLimits = new Vector4(0.0001f, 16f, 0.04f, 1.6f);
-        private static Vector4 sharedBaseOffsetLimits = new Vector4 (-8f, 8f, -2f, 2f);
-        private static Vector4 sharedEdgeTypeLimits = new Vector4 (1f, 4f, 1f, 3f);
-        private static Vector4 sharedEdgeWidthLimits = new Vector4 (0f, 1f, 0f, 1f);
-        private static Vector2 sharedMaterialLimits = new Vector2 (0f, 4f);
-        private static Vector2 sharedColorLimits = new Vector2 (0f, 1f);
+        private static Vector4 sharedBaseOffsetLimits = new Vector4(-8f, 8f, -2f, 2f);
+        private static Vector4 sharedEdgeTypeLimits = new Vector4(1f, 4f, 1f, 3f);
+        private static Vector4 sharedEdgeWidthLimits = new Vector4(0f, 1f, 0f, 1f);
+        private static Vector2 sharedMaterialLimits = new Vector2(0f, 4f);
+        private static Vector2 sharedColorLimits = new Vector2(0f, 1f);
 
         private static float sharedIncrementColor = 0.01f;
         private static float sharedIncrementColorLarge = 0.10f;
         private static float sharedIncrementMain = 0.125f;
         private static float sharedIncrementSmall = 0.04f;
         private static float sharedIncrementInt = 1f;
-        #endregion
+
+        #endregion Shared properties / Limits and increments
 
         #region Shared properties / Base
 
-        [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Base")]
+        [KSPField(guiActiveEditor = false, guiActive = false, guiName = "| Base")]
         public static bool sharedFieldGroupBaseStatic = true;
+
         private static string[] sharedFieldGroupBaseArray = new string[] { "sharedBaseLength", "sharedBaseWidthRoot", "sharedBaseWidthTip", "sharedBaseThicknessRoot", "sharedBaseThicknessTip", "sharedBaseOffsetTip" };
         private static string[] sharedFieldGroupBaseArrayCtrl = new string[] { "sharedBaseOffsetRoot" };
 
-        [KSPField (isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Length", guiFormat = "S4")]
+        [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Length", guiFormat = "S4")]
         public float sharedBaseLength = 4f;
+
         public float sharedBaseLengthCached = 4f;
-        public static Vector4 sharedBaseLengthDefaults = new Vector4 (4f, 1f, 4f, 1f);
+        public static Vector4 sharedBaseLengthDefaults = new Vector4(4f, 1f, 4f, 1f);
 
-        [KSPField (isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Width (root)", guiFormat = "S4")]
+        [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Width (root)", guiFormat = "S4")]
         public float sharedBaseWidthRoot = 4f;
+
         public float sharedBaseWidthRootCached = 4f;
-        public static Vector4 sharedBaseWidthRootDefaults = new Vector4 (4f, 0.5f, 4f, 0.5f);
+        public static Vector4 sharedBaseWidthRootDefaults = new Vector4(4f, 0.5f, 4f, 0.5f);
 
-        [KSPField (isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Width (tip)", guiFormat = "S4")]
+        [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Width (tip)", guiFormat = "S4")]
         public float sharedBaseWidthTip = 4f;
+
         public float sharedBaseWidthTipCached = 4f;
-        public static Vector4 sharedBaseWidthTipDefaults = new Vector4 (4f, 0.5f, 4f, 0.5f);
+        public static Vector4 sharedBaseWidthTipDefaults = new Vector4(4f, 0.5f, 4f, 0.5f);
 
-        [KSPField (isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Offset (root)", guiFormat = "S4")]
+        [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Offset (root)", guiFormat = "S4")]
         public float sharedBaseOffsetRoot = 0f;
+
         public float sharedBaseOffsetRootCached = 0f;
-        public static Vector4 sharedBaseOffsetRootDefaults = new Vector4 (0f, 0f, 0f, 0f);
+        public static Vector4 sharedBaseOffsetRootDefaults = new Vector4(0f, 0f, 0f, 0f);
 
-        [KSPField (isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Offset (tip)", guiFormat = "S4")]
+        [KSPField(isPersistant = true, guiActiveEditor = false, guiActive = false, guiName = "Offset (tip)", guiFormat = "S4")]
         public float sharedBaseOffsetTip = 0f;
+
         public float sharedBaseOffsetTipCached = 0f;
-        public static Vector4 sharedBaseOffsetTipDefaults = new Vector4 (0f, 0f, 0f, 0f);
+        public static Vector4 sharedBaseOffsetTipDefaults = new Vector4(0f, 0f, 0f, 0f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Thickness (root)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Thickness (root)", guiFormat = "F3")]
         public float sharedBaseThicknessRoot = 0.24f;
+
         public float sharedBaseThicknessRootCached = 0.24f;
-        public static Vector4 sharedBaseThicknessRootDefaults = new Vector4 (0.24f, 0.24f, 0.24f, 0.24f);
+        public static Vector4 sharedBaseThicknessRootDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Thickness (tip)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Thickness (tip)", guiFormat = "F3")]
         public float sharedBaseThicknessTip = 0.24f;
-        public float sharedBaseThicknessTipCached = 0.24f;
-        public static Vector4 sharedBaseThicknessTipDefaults = new Vector4 (0.24f, 0.24f, 0.24f, 0.24f);
 
-        #endregion
+        public float sharedBaseThicknessTipCached = 0.24f;
+        public static Vector4 sharedBaseThicknessTipDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
+
+        #endregion Shared properties / Base
 
         #region Shared properties / Edge / Leading
 
-        [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Lead. edge")] 
+        [KSPField(guiActiveEditor = false, guiActive = false, guiName = "| Lead. edge")]
         public static bool sharedFieldGroupEdgeLeadingStatic = false;
+
         private static string[] sharedFieldGroupEdgeLeadingArray = new string[] { "sharedEdgeTypeLeading", "sharedEdgeWidthLeadingRoot", "sharedEdgeWidthLeadingTip" };
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Shape", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Shape", guiFormat = "F3")]
         public float sharedEdgeTypeLeading = 2f;
+
         public float sharedEdgeTypeLeadingCached = 2f;
-        public static Vector4 sharedEdgeTypeLeadingDefaults = new Vector4 (2f, 1f, 2f, 1f);
+        public static Vector4 sharedEdgeTypeLeadingDefaults = new Vector4(2f, 1f, 2f, 1f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (root)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (root)", guiFormat = "F3")]
         public float sharedEdgeWidthLeadingRoot = 0.24f;
+
         public float sharedEdgeWidthLeadingRootCached = 0.24f;
-        public static Vector4 sharedEdgeWidthLeadingRootDefaults = new Vector4 (0.24f, 0.24f, 0.24f, 0.24f);
+        public static Vector4 sharedEdgeWidthLeadingRootDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (tip)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (tip)", guiFormat = "F3")]
         public float sharedEdgeWidthLeadingTip = 0.24f;
-        public float sharedEdgeWidthLeadingTipCached = 0.24f;
-        public static Vector4 sharedEdgeWidthLeadingTipDefaults = new Vector4 (0.24f, 0.24f, 0.24f, 0.24f);
 
-        #endregion
+        public float sharedEdgeWidthLeadingTipCached = 0.24f;
+        public static Vector4 sharedEdgeWidthLeadingTipDefaults = new Vector4(0.24f, 0.24f, 0.24f, 0.24f);
+
+        #endregion Shared properties / Edge / Leading
 
         #region Shared properties / Edge / Trailing
 
-        [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Trail. edge")]
+        [KSPField(guiActiveEditor = false, guiActive = false, guiName = "| Trail. edge")]
         public static bool sharedFieldGroupEdgeTrailingStatic = false;
+
         private static string[] sharedFieldGroupEdgeTrailingArray = new string[] { "sharedEdgeTypeTrailing", "sharedEdgeWidthTrailingRoot", "sharedEdgeWidthTrailingTip" };
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Shape", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Shape", guiFormat = "F3")]
         public float sharedEdgeTypeTrailing = 3f;
+
         public float sharedEdgeTypeTrailingCached = 3f;
-        public static Vector4 sharedEdgeTypeTrailingDefaults = new Vector4 (3f, 2f, 3f, 2f);
+        public static Vector4 sharedEdgeTypeTrailingDefaults = new Vector4(3f, 2f, 3f, 2f);
 
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (root)", guiFormat = "F3")]
         public float sharedEdgeWidthTrailingRoot = 0.48f;
+
         public float sharedEdgeWidthTrailingRootCached = 0.48f;
         public static Vector4 sharedEdgeWidthTrailingRootDefaults = new Vector4(0.48f, 0.48f, 0.48f, 0.48f);
 
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Width (tip)", guiFormat = "F3")]
         public float sharedEdgeWidthTrailingTip = 0.48f;
+
         public float sharedEdgeWidthTrailingTipCached = 0.48f;
         public static Vector4 sharedEdgeWidthTrailingTipDefaults = new Vector4(0.48f, 0.48f, 0.48f, 0.48f);
 
-        #endregion
+        #endregion Shared properties / Edge / Trailing
 
         #region Shared properties / Surface / Top
 
-        [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Material A")]
+        [KSPField(guiActiveEditor = false, guiActive = false, guiName = "| Material A")]
         public static bool sharedFieldGroupColorSTStatic = false;
+
         private static string[] sharedFieldGroupColorSTArray = new string[] { "sharedMaterialST", "sharedColorSTOpacity", "sharedColorSTHue", "sharedColorSTSaturation", "sharedColorSTBrightness" };
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Material", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Material", guiFormat = "F3")]
         public float sharedMaterialST = 1f;
+
         public float sharedMaterialSTCached = 1f;
-        public static Vector4 sharedMaterialSTDefaults = new Vector4 (1f, 1f, 1f, 1f);
+        public static Vector4 sharedMaterialSTDefaults = new Vector4(1f, 1f, 1f, 1f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Opacity", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Opacity", guiFormat = "F3")]
         public float sharedColorSTOpacity = 0f;
+
         public float sharedColorSTOpacityCached = 0f;
-        public static Vector4 sharedColorSTOpacityDefaults = new Vector4 (0f, 0f, 0f, 0f);
+        public static Vector4 sharedColorSTOpacityDefaults = new Vector4(0f, 0f, 0f, 0f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (H)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (H)", guiFormat = "F3")]
         public float sharedColorSTHue = 0.10f;
+
         public float sharedColorSTHueCached = 0.10f;
-        public static Vector4 sharedColorSTHueDefaults = new Vector4 (0.1f, 0.1f, 0.1f, 0.1f);
+        public static Vector4 sharedColorSTHueDefaults = new Vector4(0.1f, 0.1f, 0.1f, 0.1f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (S)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (S)", guiFormat = "F3")]
         public float sharedColorSTSaturation = 0.75f;
+
         public float sharedColorSTSaturationCached = 0.75f;
-        public static Vector4 sharedColorSTSaturationDefaults = new Vector4 (0.75f, 0.75f, 0.75f, 0.75f);
+        public static Vector4 sharedColorSTSaturationDefaults = new Vector4(0.75f, 0.75f, 0.75f, 0.75f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (B)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (B)", guiFormat = "F3")]
         public float sharedColorSTBrightness = 0.6f;
-        public float sharedColorSTBrightnessCached = 0.6f;
-        public static Vector4 sharedColorSTBrightnessDefaults = new Vector4 (0.6f, 0.6f, 0.6f, 0.6f);
 
-        #endregion
+        public float sharedColorSTBrightnessCached = 0.6f;
+        public static Vector4 sharedColorSTBrightnessDefaults = new Vector4(0.6f, 0.6f, 0.6f, 0.6f);
+
+        #endregion Shared properties / Surface / Top
 
         #region Shared properties / Surface / bottom
 
-        [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Material B")]
+        [KSPField(guiActiveEditor = false, guiActive = false, guiName = "| Material B")]
         public static bool sharedFieldGroupColorSBStatic = false;
+
         private static string[] sharedFieldGroupColorSBArray = new string[] { "sharedMaterialSB", "sharedColorSBOpacity", "sharedColorSBHue", "sharedColorSBSaturation", "sharedColorSBBrightness" };
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Material", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Material", guiFormat = "F3")]
         public float sharedMaterialSB = 4f;
+
         public float sharedMaterialSBCached = 4f;
-        public static Vector4 sharedMaterialSBDefaults = new Vector4 (4f, 4f, 4f, 4f);
+        public static Vector4 sharedMaterialSBDefaults = new Vector4(4f, 4f, 4f, 4f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Opacity", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Opacity", guiFormat = "F3")]
         public float sharedColorSBOpacity = 0f;
+
         public float sharedColorSBOpacityCached = 0f;
-        public static Vector4 sharedColorSBOpacityDefaults = new Vector4 (0f, 0f, 0f, 0f);
+        public static Vector4 sharedColorSBOpacityDefaults = new Vector4(0f, 0f, 0f, 0f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (H)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (H)", guiFormat = "F3")]
         public float sharedColorSBHue = 0.10f;
+
         public float sharedColorSBHueCached = 0.10f;
-        public static Vector4 sharedColorSBHueDefaults = new Vector4 (0.1f, 0.1f, 0.1f, 0.1f);
+        public static Vector4 sharedColorSBHueDefaults = new Vector4(0.1f, 0.1f, 0.1f, 0.1f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (S)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (S)", guiFormat = "F3")]
         public float sharedColorSBSaturation = 0.75f;
-        public float sharedColorSBSaturationCached = 0.75f;
-        public static Vector4 sharedColorSBSaturationDefaults = new Vector4 (0.75f, 0.75f, 0.75f, 0.75f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (B)", guiFormat = "F3")]
+        public float sharedColorSBSaturationCached = 0.75f;
+        public static Vector4 sharedColorSBSaturationDefaults = new Vector4(0.75f, 0.75f, 0.75f, 0.75f);
+
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (B)", guiFormat = "F3")]
         public float sharedColorSBBrightness = 0.6f;
+
         public float sharedColorSBBrightnessCached = 0.6f;
-        public static Vector4 sharedColorSBBrightnessDefaults = new Vector4 (0.6f, 0.6f, 0.6f, 0.6f);
-        #endregion
+        public static Vector4 sharedColorSBBrightnessDefaults = new Vector4(0.6f, 0.6f, 0.6f, 0.6f);
+
+        #endregion Shared properties / Surface / bottom
 
         #region Shared properties / Surface / trailing edge
 
-        [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Material T")]
+        [KSPField(guiActiveEditor = false, guiActive = false, guiName = "| Material T")]
         public static bool sharedFieldGroupColorETStatic = false;
+
         private static string[] sharedFieldGroupColorETArray = new string[] { "sharedMaterialET", "sharedColorETOpacity", "sharedColorETHue", "sharedColorETSaturation", "sharedColorETBrightness" };
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Material", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Material", guiFormat = "F3")]
         public float sharedMaterialET = 4f;
+
         public float sharedMaterialETCached = 4f;
-        public static Vector4 sharedMaterialETDefaults = new Vector4 (4f, 4f, 4f, 4f);
+        public static Vector4 sharedMaterialETDefaults = new Vector4(4f, 4f, 4f, 4f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Opacity", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Opacity", guiFormat = "F3")]
         public float sharedColorETOpacity = 0f;
+
         public float sharedColorETOpacityCached = 0f;
-        public static Vector4 sharedColorETOpacityDefaults = new Vector4 (0f, 0f, 0f, 0f);
+        public static Vector4 sharedColorETOpacityDefaults = new Vector4(0f, 0f, 0f, 0f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (H)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (H)", guiFormat = "F3")]
         public float sharedColorETHue = 0.10f;
+
         public float sharedColorETHueCached = 0.10f;
-        public static Vector4 sharedColorETHueDefaults = new Vector4 (0.1f, 0.1f, 0.1f, 0.1f);
+        public static Vector4 sharedColorETHueDefaults = new Vector4(0.1f, 0.1f, 0.1f, 0.1f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (S)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (S)", guiFormat = "F3")]
         public float sharedColorETSaturation = 0.75f;
+
         public float sharedColorETSaturationCached = 0.75f;
-        public static Vector4 sharedColorETSaturationDefaults = new Vector4 (0.75f, 0.75f, 0.75f, 0.75f);
+        public static Vector4 sharedColorETSaturationDefaults = new Vector4(0.75f, 0.75f, 0.75f, 0.75f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (B)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (B)", guiFormat = "F3")]
         public float sharedColorETBrightness = 0.6f;
-        public float sharedColorETBrightnessCached = 0.6f;
-        public static Vector4 sharedColorETBrightnessDefaults = new Vector4 (0.6f, 0.6f, 0.6f, 0.6f);
 
-        #endregion
+        public float sharedColorETBrightnessCached = 0.6f;
+        public static Vector4 sharedColorETBrightnessDefaults = new Vector4(0.6f, 0.6f, 0.6f, 0.6f);
+
+        #endregion Shared properties / Surface / trailing edge
 
         #region Shared properties / Surface / leading edge
 
-        [KSPField (guiActiveEditor = false, guiActive = false, guiName = "| Material L")]
+        [KSPField(guiActiveEditor = false, guiActive = false, guiName = "| Material L")]
         public static bool sharedFieldGroupColorELStatic = false;
+
         private static string[] sharedFieldGroupColorELArray = new string[] { "sharedMaterialEL", "sharedColorELOpacity", "sharedColorELHue", "sharedColorELSaturation", "sharedColorELBrightness" };
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Material", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Material", guiFormat = "F3")]
         public float sharedMaterialEL = 4f;
+
         public float sharedMaterialELCached = 4f;
-        public static Vector4 sharedMaterialELDefaults = new Vector4 (4f, 4f, 4f, 4f);
+        public static Vector4 sharedMaterialELDefaults = new Vector4(4f, 4f, 4f, 4f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Opacity", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Opacity", guiFormat = "F3")]
         public float sharedColorELOpacity = 0f;
+
         public float sharedColorELOpacityCached = 0f;
-        public static Vector4 sharedColorELOpacityDefaults = new Vector4 (0f, 0f, 0f, 0f);
+        public static Vector4 sharedColorELOpacityDefaults = new Vector4(0f, 0f, 0f, 0f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (H)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (H)", guiFormat = "F3")]
         public float sharedColorELHue = 0.10f;
+
         public float sharedColorELHueCached = 0.10f;
-        public static Vector4 sharedColorELHueDefaults = new Vector4 (0.1f, 0.1f, 0.1f, 0.1f);
+        public static Vector4 sharedColorELHueDefaults = new Vector4(0.1f, 0.1f, 0.1f, 0.1f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (S)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (S)", guiFormat = "F3")]
         public float sharedColorELSaturation = 0.75f;
+
         public float sharedColorELSaturationCached = 0.75f;
-        public static Vector4 sharedColorELSaturationDefaults = new Vector4 (0.75f, 0.75f, 0.75f, 0.75f);
+        public static Vector4 sharedColorELSaturationDefaults = new Vector4(0.75f, 0.75f, 0.75f, 0.75f);
 
-        [KSPField (isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (B)", guiFormat = "F3")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Color (B)", guiFormat = "F3")]
         public float sharedColorELBrightness = 0.6f;
-        public float sharedColorELBrightnessCached = 0.6f;
-        public static Vector4 sharedColorELBrightnessDefaults = new Vector4 (0.6f, 0.6f, 0.6f, 0.6f);
 
-        #endregion
+        public float sharedColorELBrightnessCached = 0.6f;
+        public static Vector4 sharedColorELBrightnessDefaults = new Vector4(0.6f, 0.6f, 0.6f, 0.6f);
+
+        #endregion Shared properties / Surface / leading edge
 
         #region Default values
+
         // Vector4 (defaultWing, defaultCtrl, defaultWingBackup, defaultCtrlBackup)
 
-        private void ReplaceDefaults ()
+        private void ReplaceDefaults()
         {
-            ReplaceDefault (ref sharedBaseLengthDefaults, sharedBaseLength);
-            ReplaceDefault (ref sharedBaseWidthRootDefaults, sharedBaseWidthRoot);
-            ReplaceDefault (ref sharedBaseWidthTipDefaults, sharedBaseWidthTip);
-            ReplaceDefault (ref sharedBaseOffsetRootDefaults, sharedBaseOffsetRoot);
-            ReplaceDefault (ref sharedBaseOffsetTipDefaults, sharedBaseOffsetTip);
-            ReplaceDefault (ref sharedBaseThicknessRootDefaults, sharedBaseThicknessRoot);
-            ReplaceDefault (ref sharedBaseThicknessTipDefaults, sharedBaseThicknessTip);
+            ReplaceDefault(ref sharedBaseLengthDefaults, sharedBaseLength);
+            ReplaceDefault(ref sharedBaseWidthRootDefaults, sharedBaseWidthRoot);
+            ReplaceDefault(ref sharedBaseWidthTipDefaults, sharedBaseWidthTip);
+            ReplaceDefault(ref sharedBaseOffsetRootDefaults, sharedBaseOffsetRoot);
+            ReplaceDefault(ref sharedBaseOffsetTipDefaults, sharedBaseOffsetTip);
+            ReplaceDefault(ref sharedBaseThicknessRootDefaults, sharedBaseThicknessRoot);
+            ReplaceDefault(ref sharedBaseThicknessTipDefaults, sharedBaseThicknessTip);
 
-            ReplaceDefault (ref sharedEdgeTypeLeadingDefaults, sharedEdgeTypeLeading);
-            ReplaceDefault (ref sharedEdgeWidthLeadingRootDefaults, sharedEdgeWidthLeadingRoot);
-            ReplaceDefault (ref sharedEdgeWidthLeadingTipDefaults, sharedEdgeWidthLeadingTip);
+            ReplaceDefault(ref sharedEdgeTypeLeadingDefaults, sharedEdgeTypeLeading);
+            ReplaceDefault(ref sharedEdgeWidthLeadingRootDefaults, sharedEdgeWidthLeadingRoot);
+            ReplaceDefault(ref sharedEdgeWidthLeadingTipDefaults, sharedEdgeWidthLeadingTip);
 
-            ReplaceDefault (ref sharedEdgeTypeTrailingDefaults, sharedEdgeTypeTrailing);
-            ReplaceDefault (ref sharedEdgeWidthTrailingRootDefaults, sharedEdgeWidthTrailingRoot);
-            ReplaceDefault (ref sharedEdgeWidthTrailingTipDefaults, sharedEdgeWidthTrailingTip);
+            ReplaceDefault(ref sharedEdgeTypeTrailingDefaults, sharedEdgeTypeTrailing);
+            ReplaceDefault(ref sharedEdgeWidthTrailingRootDefaults, sharedEdgeWidthTrailingRoot);
+            ReplaceDefault(ref sharedEdgeWidthTrailingTipDefaults, sharedEdgeWidthTrailingTip);
 
-            ReplaceDefault (ref sharedMaterialSTDefaults, sharedMaterialST);
-            ReplaceDefault (ref sharedColorSTOpacityDefaults, sharedColorSTOpacity);
-            ReplaceDefault (ref sharedColorSTHueDefaults, sharedColorSTHue);
-            ReplaceDefault (ref sharedColorSTSaturationDefaults, sharedColorSTSaturation);
-            ReplaceDefault (ref sharedColorSTBrightnessDefaults, sharedColorSTBrightness);
+            ReplaceDefault(ref sharedMaterialSTDefaults, sharedMaterialST);
+            ReplaceDefault(ref sharedColorSTOpacityDefaults, sharedColorSTOpacity);
+            ReplaceDefault(ref sharedColorSTHueDefaults, sharedColorSTHue);
+            ReplaceDefault(ref sharedColorSTSaturationDefaults, sharedColorSTSaturation);
+            ReplaceDefault(ref sharedColorSTBrightnessDefaults, sharedColorSTBrightness);
 
-            ReplaceDefault (ref sharedMaterialSBDefaults, sharedMaterialSB);
-            ReplaceDefault (ref sharedColorSBOpacityDefaults, sharedColorSBOpacity);
-            ReplaceDefault (ref sharedColorSBHueDefaults, sharedColorSBHue);
-            ReplaceDefault (ref sharedColorSBSaturationDefaults, sharedColorSBSaturation);
-            ReplaceDefault (ref sharedColorSBBrightnessDefaults, sharedColorSBBrightness);
+            ReplaceDefault(ref sharedMaterialSBDefaults, sharedMaterialSB);
+            ReplaceDefault(ref sharedColorSBOpacityDefaults, sharedColorSBOpacity);
+            ReplaceDefault(ref sharedColorSBHueDefaults, sharedColorSBHue);
+            ReplaceDefault(ref sharedColorSBSaturationDefaults, sharedColorSBSaturation);
+            ReplaceDefault(ref sharedColorSBBrightnessDefaults, sharedColorSBBrightness);
 
-            ReplaceDefault (ref sharedMaterialETDefaults, sharedMaterialET);
-            ReplaceDefault (ref sharedColorETOpacityDefaults, sharedColorETOpacity);
-            ReplaceDefault (ref sharedColorETHueDefaults, sharedColorETHue);
-            ReplaceDefault (ref sharedColorETSaturationDefaults, sharedColorETSaturation);
-            ReplaceDefault (ref sharedColorETBrightnessDefaults, sharedColorETBrightness);
+            ReplaceDefault(ref sharedMaterialETDefaults, sharedMaterialET);
+            ReplaceDefault(ref sharedColorETOpacityDefaults, sharedColorETOpacity);
+            ReplaceDefault(ref sharedColorETHueDefaults, sharedColorETHue);
+            ReplaceDefault(ref sharedColorETSaturationDefaults, sharedColorETSaturation);
+            ReplaceDefault(ref sharedColorETBrightnessDefaults, sharedColorETBrightness);
 
-            ReplaceDefault (ref sharedMaterialELDefaults, sharedMaterialEL);
-            ReplaceDefault (ref sharedColorELOpacityDefaults, sharedColorELOpacity);
-            ReplaceDefault (ref sharedColorELHueDefaults, sharedColorELHue);
-            ReplaceDefault (ref sharedColorELSaturationDefaults, sharedColorELSaturation);
-            ReplaceDefault (ref sharedColorELBrightnessDefaults, sharedColorELBrightness);
+            ReplaceDefault(ref sharedMaterialELDefaults, sharedMaterialEL);
+            ReplaceDefault(ref sharedColorELOpacityDefaults, sharedColorELOpacity);
+            ReplaceDefault(ref sharedColorELHueDefaults, sharedColorELHue);
+            ReplaceDefault(ref sharedColorELSaturationDefaults, sharedColorELSaturation);
+            ReplaceDefault(ref sharedColorELBrightnessDefaults, sharedColorELBrightness);
         }
 
-        private void ReplaceDefault (ref Vector4 set, float value)
+        private void ReplaceDefault(ref Vector4 set, float value)
         {
             if (!isCtrlSrf)
-                set = new Vector4 (value, set.w, set.z, set.w);
+                set = new Vector4(value, set.w, set.z, set.w);
             else
-                set = new Vector4 (set.z, value, set.z, set.w);
+                set = new Vector4(set.z, value, set.z, set.w);
         }
 
-        private void RestoreDefaults ()
+        private void RestoreDefaults()
         {
-            RestoreDefault (ref sharedBaseLengthDefaults);
-            RestoreDefault (ref sharedBaseWidthRootDefaults);
-            RestoreDefault (ref sharedBaseWidthTipDefaults);
-            RestoreDefault (ref sharedBaseOffsetRootDefaults);
-            RestoreDefault (ref sharedBaseOffsetTipDefaults);
-            RestoreDefault (ref sharedBaseThicknessRootDefaults);
-            RestoreDefault (ref sharedBaseThicknessTipDefaults);
+            RestoreDefault(ref sharedBaseLengthDefaults);
+            RestoreDefault(ref sharedBaseWidthRootDefaults);
+            RestoreDefault(ref sharedBaseWidthTipDefaults);
+            RestoreDefault(ref sharedBaseOffsetRootDefaults);
+            RestoreDefault(ref sharedBaseOffsetTipDefaults);
+            RestoreDefault(ref sharedBaseThicknessRootDefaults);
+            RestoreDefault(ref sharedBaseThicknessTipDefaults);
 
-            RestoreDefault (ref sharedEdgeTypeLeadingDefaults);
-            RestoreDefault (ref sharedEdgeWidthLeadingRootDefaults);
-            RestoreDefault (ref sharedEdgeWidthLeadingTipDefaults);
+            RestoreDefault(ref sharedEdgeTypeLeadingDefaults);
+            RestoreDefault(ref sharedEdgeWidthLeadingRootDefaults);
+            RestoreDefault(ref sharedEdgeWidthLeadingTipDefaults);
 
-            RestoreDefault (ref sharedEdgeTypeTrailingDefaults);
-            RestoreDefault (ref sharedEdgeWidthTrailingRootDefaults);
-            RestoreDefault (ref sharedEdgeWidthTrailingTipDefaults);
+            RestoreDefault(ref sharedEdgeTypeTrailingDefaults);
+            RestoreDefault(ref sharedEdgeWidthTrailingRootDefaults);
+            RestoreDefault(ref sharedEdgeWidthTrailingTipDefaults);
 
-            RestoreDefault (ref sharedMaterialSTDefaults);
-            RestoreDefault (ref sharedColorSTOpacityDefaults);
-            RestoreDefault (ref sharedColorSTHueDefaults);
-            RestoreDefault (ref sharedColorSTSaturationDefaults);
-            RestoreDefault (ref sharedColorSTBrightnessDefaults);
+            RestoreDefault(ref sharedMaterialSTDefaults);
+            RestoreDefault(ref sharedColorSTOpacityDefaults);
+            RestoreDefault(ref sharedColorSTHueDefaults);
+            RestoreDefault(ref sharedColorSTSaturationDefaults);
+            RestoreDefault(ref sharedColorSTBrightnessDefaults);
 
-            RestoreDefault (ref sharedMaterialSBDefaults);
-            RestoreDefault (ref sharedColorSBOpacityDefaults);
-            RestoreDefault (ref sharedColorSBHueDefaults);
-            RestoreDefault (ref sharedColorSBSaturationDefaults);
-            RestoreDefault (ref sharedColorSBBrightnessDefaults);
+            RestoreDefault(ref sharedMaterialSBDefaults);
+            RestoreDefault(ref sharedColorSBOpacityDefaults);
+            RestoreDefault(ref sharedColorSBHueDefaults);
+            RestoreDefault(ref sharedColorSBSaturationDefaults);
+            RestoreDefault(ref sharedColorSBBrightnessDefaults);
 
-            RestoreDefault (ref sharedMaterialETDefaults);
-            RestoreDefault (ref sharedColorETOpacityDefaults);
-            RestoreDefault (ref sharedColorETHueDefaults);
-            RestoreDefault (ref sharedColorETSaturationDefaults);
-            RestoreDefault (ref sharedColorETBrightnessDefaults);
+            RestoreDefault(ref sharedMaterialETDefaults);
+            RestoreDefault(ref sharedColorETOpacityDefaults);
+            RestoreDefault(ref sharedColorETHueDefaults);
+            RestoreDefault(ref sharedColorETSaturationDefaults);
+            RestoreDefault(ref sharedColorETBrightnessDefaults);
 
-            RestoreDefault (ref sharedMaterialELDefaults);
-            RestoreDefault (ref sharedColorELOpacityDefaults);
-            RestoreDefault (ref sharedColorELHueDefaults);
-            RestoreDefault (ref sharedColorELSaturationDefaults);
-            RestoreDefault (ref sharedColorELBrightnessDefaults);
+            RestoreDefault(ref sharedMaterialELDefaults);
+            RestoreDefault(ref sharedColorELOpacityDefaults);
+            RestoreDefault(ref sharedColorELHueDefaults);
+            RestoreDefault(ref sharedColorELSaturationDefaults);
+            RestoreDefault(ref sharedColorELBrightnessDefaults);
         }
 
-        private void RestoreDefault (ref Vector4 set)
+        private void RestoreDefault(ref Vector4 set)
         {
-            set = new Vector4 (set.z, set.w, set.z, set.w);
+            set = new Vector4(set.z, set.w, set.z, set.w);
         }
 
-        private float GetDefault (Vector4 set)
+        private float GetDefault(Vector4 set)
         {
             if (!isCtrlSrf) return set.x;
             else return set.y;
         }
-        #endregion
+
+        #endregion Default values
 
         #region Fuel configuration switching
+
         // Has to be situated here as this KSPEvent is not correctly added Part.Events otherwise
-        [KSPEvent (guiActive = false, guiActiveEditor = true, guiName = "Next configuration", active = true)]
-        public void NextConfiguration ()
+        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "Next configuration", active = true)]
+        public void NextConfiguration()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFuel)
-                DebugLogWithID ("NextConfiguration", "Started");
-            
+                DebugLogWithID("NextConfiguration", "Started");
+
             if (!(canBeFueled && useStockFuel))
                 return;
-            
+
             fuelSelectedTankSetup++;
 
             if (fuelSelectedTankSetup >= StaticWingGlobals.wingTankConfigurations.Count)
                 fuelSelectedTankSetup = 0;
             FuelTankTypeChanged();
         }
-        #endregion
+
+        #endregion Fuel configuration switching
 
         #region Inheritance
+
         private bool inheritancePossibleOnShape = false;
         private bool inheritancePossibleOnMaterials = false;
-        private void InheritanceStatusUpdate ()
+        private void InheritanceStatusUpdate()
         {
             if (this.part.parent == null)
                 return;
@@ -519,7 +574,7 @@ namespace WingProcedural
             }
         }
 
-        private void InheritParentValues (int mode)
+        private void InheritParentValues(int mode)
         {
             if (this.part.parent == null)
                 return;
@@ -536,12 +591,15 @@ namespace WingProcedural
                 case 0:
                     inheritShape(parentModule);
                     break;
+
                 case 1:
                     inheritBase(parentModule);
                     break;
+
                 case 2:
                     inheritEdges(parentModule);
                     break;
+
                 case 3:
                     inheritColours(parentModule);
                     break;
@@ -634,7 +692,7 @@ namespace WingProcedural
             sharedColorELBrightness = parent.sharedColorELBrightness;
         }
 
-        #endregion
+        #endregion Inheritance
 
         #region Mod detection
 
@@ -643,7 +701,7 @@ namespace WingProcedural
         public static bool assemblyRFUsed = false;
         public static bool assemblyMFTUsed = false;
 
-        public void CheckAssemblies (bool forced)
+        public void CheckAssemblies(bool forced)
         {
             if (!assembliesChecked || forced)
             {
@@ -659,15 +717,16 @@ namespace WingProcedural
                 }
 
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
-                    DebugLogWithID ("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
+                    DebugLogWithID("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
                 if (isCtrlSrf && isWingAsCtrlSrf && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
-                    DebugLogWithID ("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
-                if (assemblyRFUsed && assemblyMFTUsed && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents) 
-                    DebugLogWithID ("CheckAssemblies", "WARNING | Both RF and MFT mods detected, this should not be the case");
+                    DebugLogWithID("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
+                if (assemblyRFUsed && assemblyMFTUsed && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+                    DebugLogWithID("CheckAssemblies", "WARNING | Both RF and MFT mods detected, this should not be the case");
                 assembliesChecked = true;
             }
         }
-        #endregion
+
+        #endregion Mod detection
 
         #region Unity stuff and Callbacks/events
 
@@ -675,18 +734,18 @@ namespace WingProcedural
         /// <summary>
         /// run when part is created in editor, and when part is created in flight. Why is OnStart and Start both being used other than to sparate flight and editor startup?
         /// </summary>
-        public override void OnStart (PartModule.StartState state)
+        public override void OnStart(PartModule.StartState state)
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
-                DebugLogWithID ("OnStart", "Invoked");
-            base.OnStart (state);
-            CheckAssemblies (false);
-            
+                DebugLogWithID("OnStart", "Invoked");
+            base.OnStart(state);
+            CheckAssemblies(false);
+
             if (!HighLogic.LoadedSceneIsFlight)
                 return;
-            
-            DebugLogWithID ("OnStart", "Setup started");
-            StartCoroutine (SetupReorderedForFlight ()); // does all setup neccesary for flight
+
+            DebugLogWithID("OnStart", "Setup started");
+            StartCoroutine(SetupReorderedForFlight()); // does all setup neccesary for flight
             isStarted = true;
             GameEvents.onGameSceneLoadRequested.Add(OnSceneSwitch);
         }
@@ -694,10 +753,10 @@ namespace WingProcedural
         /// <summary>
         /// run whenever part is created (used in editor), which in the editor is as soon as part list is clicked or symmetry count increases
         /// </summary>
-        public void Start ()
+        public void Start()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
-                DebugLogWithID ("Start", "Invoked");
+                DebugLogWithID("Start", "Invoked");
 
             if (!HighLogic.LoadedSceneIsEditor)
                 return;
@@ -709,7 +768,7 @@ namespace WingProcedural
             this.part.OnEditorDetach += new Callback(UpdateOnEditorDetach);
 
             if (!UIUtility.uiStyleConfigured)
-                UIUtility.ConfigureStyles ();
+                UIUtility.ConfigureStyles();
             isStarted = true;
         }
 
@@ -771,20 +830,27 @@ namespace WingProcedural
         }
 
         // Attachment handling
-        public void UpdateOnEditorAttach ()
+        public void UpdateOnEditorAttach()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
                 DebugLogWithID("UpdateOnEditorAttach", "Setup started");
 
-            isMirrored = Vector3.Dot(EditorLogic.SortedShipList[0].transform.forward, part.transform.forward) < 0;
+            if (part.symMethod == SymmetryMethod.Mirror)
+            {
+                isMirrored = Vector3.Dot(EditorLogic.SortedShipList[0].transform.right, part.transform.position - EditorLogic.SortedShipList[0].transform.position) < 0;
+            }
+            else
+            {
+                isMirrored = false;
+            }
 
             isAttached = true;
             UpdateGeometry(true);
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
-                DebugLogWithID ("UpdateOnEditorAttach", "Setup ended");
+                DebugLogWithID("UpdateOnEditorAttach", "Setup ended");
         }
 
-        public void UpdateOnEditorDetach ()
+        public void UpdateOnEditorDetach()
         {
             if (this.part.parent != null && this.part.parent.Modules.Contains("WingProcedural"))
             {
@@ -827,13 +893,15 @@ namespace WingProcedural
             UpdateGeometry(true);
             UpdateWindow();
         }
-        #endregion
+
+        #endregion Unity stuff and Callbacks/events
 
         #region Geometry
-        public void UpdateGeometry (bool updateAerodynamics)
+
+        public void UpdateGeometry(bool updateAerodynamics)
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                DebugLogWithID ("UpdateGeometry", "Started | isCtrlSrf: " + isCtrlSrf);
+                DebugLogWithID("UpdateGeometry", "Started | isCtrlSrf: " + isCtrlSrf);
             if (!isCtrlSrf)
             {
                 float wingThicknessDeviationRoot = sharedBaseThicknessRoot / 0.24f;
@@ -849,11 +917,11 @@ namespace WingProcedural
                 {
                     int length = meshReferenceWingSection.vp.Length;
                     Vector3[] vp = new Vector3[length];
-                    Array.Copy (meshReferenceWingSection.vp, vp, length);
+                    Array.Copy(meshReferenceWingSection.vp, vp, length);
                     Vector2[] uv = new Vector2[length];
-                    Array.Copy (meshReferenceWingSection.uv, uv, length);
+                    Array.Copy(meshReferenceWingSection.uv, uv, length);
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Wing section | Passed array setup");
+                        DebugLogWithID("UpdateGeometry", "Wing section | Passed array setup");
 
                     for (int i = 0; i < length; ++i)
                     {
@@ -862,33 +930,33 @@ namespace WingProcedural
                         {
                             if (vp[i].z < 0f)
                             {
-                                vp[i] = new Vector3 (-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetLeading);
-                                uv[i] = new Vector2 (sharedBaseWidthTip, uv[i].y);
+                                vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetLeading);
+                                uv[i] = new Vector2(sharedBaseWidthTip, uv[i].y);
                             }
                             else
                             {
-                                vp[i] = new Vector3 (-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetTrailing);
-                                uv[i] = new Vector2 (0f, uv[i].y);
+                                vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetTrailing);
+                                uv[i] = new Vector2(0f, uv[i].y);
                             }
                         }
                         else
                         {
                             if (vp[i].z < 0f)
                             {
-                                vp[i] = new Vector3 (vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
-                                uv[i] = new Vector2 (sharedBaseWidthRoot, uv[i].y);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
+                                uv[i] = new Vector2(sharedBaseWidthRoot, uv[i].y);
                             }
                             else
                             {
-                                vp[i] = new Vector3 (vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset);
-                                uv[i] = new Vector2 (0f, uv[i].y);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset);
+                                uv[i] = new Vector2(0f, uv[i].y);
                             }
                         }
                     }
 
                     meshFilterWingSection.mesh.vertices = vp;
                     meshFilterWingSection.mesh.uv = uv;
-                    meshFilterWingSection.mesh.RecalculateBounds ();
+                    meshFilterWingSection.mesh.RecalculateBounds();
 
                     MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider>();
                     if (meshCollider == null)
@@ -896,9 +964,9 @@ namespace WingProcedural
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterWingSection.mesh;
                     meshCollider.convex = true;
-                    
+
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Wing section | Finished");
+                        DebugLogWithID("UpdateGeometry", "Wing section | Finished");
                 }
 
                 // Second, wing surfaces
@@ -911,14 +979,14 @@ namespace WingProcedural
 
                     int length = meshReferenceWingSurface.vp.Length;
                     Vector3[] vp = new Vector3[length];
-                    Array.Copy (meshReferenceWingSurface.vp, vp, length);
+                    Array.Copy(meshReferenceWingSurface.vp, vp, length);
                     Vector2[] uv = new Vector2[length];
-                    Array.Copy (meshReferenceWingSurface.uv, uv, length);
+                    Array.Copy(meshReferenceWingSurface.uv, uv, length);
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Wing surface top | Passed array setup");
+                        DebugLogWithID("UpdateGeometry", "Wing surface top | Passed array setup");
                     for (int i = 0; i < length; ++i)
                     {
                         // Root/tip filtering followed by leading/trailing filtering
@@ -926,72 +994,70 @@ namespace WingProcedural
                         {
                             if (vp[i].z < 0f)
                             {
-                                vp[i] = new Vector3 (-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetLeading);
-                                uv[i] = new Vector2 (sharedBaseLength / 4f, 1f - 0.5f + sharedBaseWidthTip / 8f - sharedBaseOffsetTip / 4f);
+                                vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetLeading);
+                                uv[i] = new Vector2(sharedBaseLength / 4f, 1f - 0.5f + sharedBaseWidthTip / 8f - sharedBaseOffsetTip / 4f);
                             }
                             else
                             {
-                                vp[i] = new Vector3 (-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetTrailing);
-                                uv[i] = new Vector2 (sharedBaseLength / 4f, 0f + 0.5f - sharedBaseWidthTip / 8f - sharedBaseOffsetTip / 4f);
+                                vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetTrailing);
+                                uv[i] = new Vector2(sharedBaseLength / 4f, 0f + 0.5f - sharedBaseWidthTip / 8f - sharedBaseOffsetTip / 4f);
                             }
                         }
                         else
                         {
                             if (vp[i].z < 0f)
                             {
-                                vp[i] = new Vector3 (vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
-                                uv[i] = new Vector2 (0.0f, 1f - 0.5f + sharedBaseWidthRoot / 8f);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
+                                uv[i] = new Vector2(0.0f, 1f - 0.5f + sharedBaseWidthRoot / 8f);
                             }
                             else
                             {
-                                vp[i] = new Vector3 (vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset);
-                                uv[i] = new Vector2 (0f, 0f + 0.5f - sharedBaseWidthRoot / 8f);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset);
+                                uv[i] = new Vector2(0f, 0f + 0.5f - sharedBaseWidthRoot / 8f);
                             }
                         }
-
 
                         // Top/bottom filtering
                         if (vp[i].y > 0f ^ isMirrored)
                         {
-                            cl[i] = GetVertexColor (0);
-                            uv2[i] = GetVertexUV2 (sharedMaterialST);
+                            cl[i] = GetVertexColor(0);
+                            uv2[i] = GetVertexUV2(sharedMaterialST);
                         }
                         else
                         {
-                            cl[i] = GetVertexColor (1);
-                            uv2[i] = GetVertexUV2 (sharedMaterialSB);
+                            cl[i] = GetVertexColor(1);
+                            uv2[i] = GetVertexUV2(sharedMaterialSB);
                         }
-                    }                    
+                    }
 
                     meshFilterWingSurface.mesh.vertices = vp;
                     meshFilterWingSurface.mesh.uv = uv;
                     meshFilterWingSurface.mesh.uv2 = uv2;
                     meshFilterWingSurface.mesh.colors = cl;
-                    meshFilterWingSurface.mesh.RecalculateBounds ();
+                    meshFilterWingSurface.mesh.RecalculateBounds();
 
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Wing surface | Finished");
-
+                        DebugLogWithID("UpdateGeometry", "Wing surface | Finished");
                 }
 
                 // Next, time for leading and trailing edges
                 // Before modifying geometry, we have to show the correct objects for the current selection
                 // As UI only works with floats, we have to cast selections into ints too
 
-                int wingEdgeTypeTrailingInt = Mathf.RoundToInt (sharedEdgeTypeTrailing - 1);
-                int wingEdgeTypeLeadingInt = Mathf.RoundToInt (sharedEdgeTypeLeading - 1);
+                int wingEdgeTypeTrailingInt = Mathf.RoundToInt(sharedEdgeTypeTrailing - 1);
+                int wingEdgeTypeLeadingInt = Mathf.RoundToInt(sharedEdgeTypeLeading - 1);
 
                 for (int i = 0; i < meshTypeCountEdgeWing; ++i)
                 {
                     if (i != wingEdgeTypeTrailingInt)
-                        meshFiltersWingEdgeTrailing[i].gameObject.SetActive (false);
+                        meshFiltersWingEdgeTrailing[i].gameObject.SetActive(false);
                     else
-                        meshFiltersWingEdgeTrailing[i].gameObject.SetActive (true);
+                        meshFiltersWingEdgeTrailing[i].gameObject.SetActive(true);
 
                     if (i != wingEdgeTypeLeadingInt)
-                        meshFiltersWingEdgeLeading[i].gameObject.SetActive (false);
+                        meshFiltersWingEdgeLeading[i].gameObject.SetActive(false);
                     else
-                        meshFiltersWingEdgeLeading[i].gameObject.SetActive (true);
+                        meshFiltersWingEdgeLeading[i].gameObject.SetActive(true);
                 }
 
                 // Next we calculate some values reused for all edge geometry
@@ -1003,36 +1069,36 @@ namespace WingProcedural
                 float wingEdgeWidthTrailingTipDeviation = sharedEdgeWidthTrailingTip / 0.24f;
 
                 // Next, we fetch appropriate mesh reference and mesh filter for the edges and modify the meshes
-                // Geometry is split into groups through simple vertex normal filtering 
+                // Geometry is split into groups through simple vertex normal filtering
 
                 if (meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt] != null)
                 {
                     MeshReference meshReference = meshReferencesWingEdge[wingEdgeTypeTrailingInt];
                     int length = meshReference.vp.Length;
                     Vector3[] vp = new Vector3[length];
-                    Array.Copy (meshReference.vp, vp, length);
+                    Array.Copy(meshReference.vp, vp, length);
                     Vector3[] nm = new Vector3[length];
-                    Array.Copy (meshReference.nm, nm, length);
+                    Array.Copy(meshReference.nm, nm, length);
                     Vector2[] uv = new Vector2[length];
-                    Array.Copy (meshReference.uv, uv, length);
+                    Array.Copy(meshReference.uv, uv, length);
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Wing edge trailing | Passed array setup");
+                        DebugLogWithID("UpdateGeometry", "Wing edge trailing | Passed array setup");
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         if (vp[i].x < -0.1f)
                         {
-                            vp[i] = new Vector3 (-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthTrailingTipDeviation + sharedBaseWidthTip / 2f + sharedBaseOffsetTip); // Tip edge
-                            if (nm[i].x == 0f) uv[i] = new Vector2 (sharedBaseLength, uv[i].y);
+                            vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthTrailingTipDeviation + sharedBaseWidthTip / 2f + sharedBaseOffsetTip); // Tip edge
+                            if (nm[i].x == 0f) uv[i] = new Vector2(sharedBaseLength, uv[i].y);
                         }
                         else
-                            vp[i] = new Vector3 (0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
+                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
                         if (nm[i].x == 0f && sharedEdgeTypeTrailing != 1)
                         {
-                            cl[i] = GetVertexColor (2);
-                            uv2[i] = GetVertexUV2 (sharedMaterialET);
+                            cl[i] = GetVertexColor(2);
+                            uv2[i] = GetVertexUV2(sharedMaterialET);
                         }
                     }
 
@@ -1042,37 +1108,37 @@ namespace WingProcedural
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.colors = cl;
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.RecalculateBounds();
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Wing edge trailing | Finished");
+                        DebugLogWithID("UpdateGeometry", "Wing edge trailing | Finished");
                 }
                 if (meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt] != null)
                 {
-                    MeshReference meshReference = meshReferencesWingEdge [wingEdgeTypeLeadingInt];
+                    MeshReference meshReference = meshReferencesWingEdge[wingEdgeTypeLeadingInt];
                     int length = meshReference.vp.Length;
                     Vector3[] vp = new Vector3[length];
-                    Array.Copy (meshReference.vp, vp, length);
+                    Array.Copy(meshReference.vp, vp, length);
                     Vector3[] nm = new Vector3[length];
-                    Array.Copy (meshReference.nm, nm, length);
+                    Array.Copy(meshReference.nm, nm, length);
                     Vector2[] uv = new Vector2[length];
-                    Array.Copy (meshReference.uv, uv, length);
+                    Array.Copy(meshReference.uv, uv, length);
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Wing edge leading | Passed array setup");
+                        DebugLogWithID("UpdateGeometry", "Wing edge leading | Passed array setup");
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         if (vp[i].x < -0.1f)
                         {
-                            vp[i] = new Vector3 (-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthLeadingTipDeviation + sharedBaseWidthTip / 2f - sharedBaseOffsetTip); // Tip edge
+                            vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthLeadingTipDeviation + sharedBaseWidthTip / 2f - sharedBaseOffsetTip); // Tip edge
                             if (nm[i].x == 0f)
-                                uv[i] = new Vector2 (sharedBaseLength, uv[i].y);
+                                uv[i] = new Vector2(sharedBaseLength, uv[i].y);
                         }
                         else
-                            vp[i] = new Vector3 (0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
+                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
                         if (nm[i].x == 0f && sharedEdgeTypeLeading != 1)
                         {
-                            cl[i] = GetVertexColor (3);
-                            uv2[i] = GetVertexUV2 (sharedMaterialEL);
+                            cl[i] = GetVertexColor(3);
+                            uv2[i] = GetVertexUV2(sharedMaterialEL);
                         }
                     }
 
@@ -1080,9 +1146,9 @@ namespace WingProcedural
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.uv = uv;
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.uv2 = uv2;
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.colors = cl;
-                    meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.RecalculateBounds ();
+                    meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.RecalculateBounds();
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Wing edge leading | Finished");
+                        DebugLogWithID("UpdateGeometry", "Wing edge leading | Finished");
                 }
             }
             else
@@ -1092,15 +1158,17 @@ namespace WingProcedural
                 // float ctrlOffsetRootLimit = (sharedBaseLength / 2f) / (sharedBaseWidthRoot + sharedEdgeWidthTrailingRoot);
                 // float ctrlOffsetTipLimit = (sharedBaseLength / 2f) / (sharedBaseWidthTip + sharedEdgeWidthTrailingTip);
 
-                float ctrlOffsetRootClamped = Mathf.Clamp (sharedBaseOffsetRoot, sharedBaseOffsetLimits.z, sharedBaseOffsetLimits.w + 0.15f); // Mathf.Clamp (sharedBaseOffsetRoot, sharedBaseOffsetLimits.z, ctrlOffsetRootLimit - 0.075f);
-                float ctrlOffsetTipClamped = Mathf.Clamp (sharedBaseOffsetTip, Mathf.Max (sharedBaseOffsetLimits.z - 0.15f, ctrlOffsetRootClamped - sharedBaseLength), sharedBaseOffsetLimits.w); // Mathf.Clamp (sharedBaseOffsetTip, -ctrlOffsetTipLimit + 0.075f, sharedBaseOffsetLimits.w);
+                float ctrlOffsetRootClamped = Mathf.Clamp(isMirrored ? sharedBaseOffsetRoot : -sharedBaseOffsetTip, sharedBaseOffsetLimits.z, sharedBaseOffsetLimits.w + 0.15f); // Mathf.Clamp (sharedBaseOffsetRoot, sharedBaseOffsetLimits.z, ctrlOffsetRootLimit - 0.075f);
+                float ctrlOffsetTipClamped = Mathf.Clamp(isMirrored ? sharedBaseOffsetTip : -sharedBaseOffsetRoot, Mathf.Max(sharedBaseOffsetLimits.z - 0.15f, ctrlOffsetRootClamped - sharedBaseLength), sharedBaseOffsetLimits.w); // Mathf.Clamp (sharedBaseOffsetTip, -ctrlOffsetTipLimit + 0.075f, sharedBaseOffsetLimits.w);
 
-                float ctrlThicknessDeviationRoot = sharedBaseThicknessRoot / 0.24f;
-                float ctrlThicknessDeviationTip = sharedBaseThicknessTip / 0.24f;
+                float ctrlThicknessDeviationRoot = (isMirrored ? sharedBaseThicknessRoot : sharedBaseThicknessTip) / 0.24f;
+                float ctrlThicknessDeviationTip = (isMirrored ? sharedBaseThicknessTip : sharedBaseThicknessRoot) / 0.24f;
 
-                float ctrlEdgeWidthDeviationRoot = sharedEdgeWidthTrailingRoot / 0.24f;
-                float ctrlEdgeWidthDeviationTip = sharedEdgeWidthTrailingTip / 0.24f;
+                float ctrlEdgeWidthDeviationRoot = (isMirrored ? sharedEdgeWidthTrailingRoot : sharedEdgeWidthTrailingTip) / 0.24f;
+                float ctrlEdgeWidthDeviationTip = (isMirrored ? sharedEdgeWidthTrailingTip : sharedEdgeWidthTrailingRoot) / 0.24f;
 
+                float ctrlTipWidth = (isMirrored ? sharedBaseWidthTip : sharedBaseWidthRoot);
+                float ctrlRootWidth = (isMirrored ? sharedBaseWidthRoot : sharedBaseWidthTip);
                 // float widthDifference = sharedBaseWidthRoot - sharedBaseWidthTip;
                 // float edgeLengthTrailing = Mathf.Sqrt (Mathf.Pow (sharedBaseLength, 2) + Mathf.Pow (widthDifference, 2));
                 // float sweepTrailing = 90f - Mathf.Atan (sharedBaseLength / widthDifference) * Mathf.Rad2Deg;
@@ -1109,23 +1177,23 @@ namespace WingProcedural
                 {
                     int length = meshReferenceCtrlFrame.vp.Length;
                     Vector3[] vp = new Vector3[length];
-                    Array.Copy (meshReferenceCtrlFrame.vp, vp, length);
+                    Array.Copy(meshReferenceCtrlFrame.vp, vp, length);
                     Vector3[] nm = new Vector3[length];
-                    Array.Copy (meshReferenceCtrlFrame.nm, nm, length);
+                    Array.Copy(meshReferenceCtrlFrame.nm, nm, length);
                     Vector2[] uv = new Vector2[length];
-                    Array.Copy (meshReferenceCtrlFrame.uv, uv, length);
+                    Array.Copy(meshReferenceCtrlFrame.uv, uv, length);
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Control surface frame | Passed array setup");
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry) DebugLogWithID("UpdateGeometry", "Control surface frame | Passed array setup");
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         // Thickness correction (X), edge width correction (Y) and span-based offset (Z)
-                        if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationTip, vp[i].y, vp[i].z + 0.5f - sharedBaseLength / 2f); // if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip), vp[i].z + 0.5f - sharedBaseLength / 2f);
-                        else vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationRoot, vp[i].y, vp[i].z - 0.5f + sharedBaseLength / 2f); // else vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot), vp[i].z - 0.5f + sharedBaseLength / 2f);
+                        if (vp[i].z < 0f) vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, vp[i].y, vp[i].z + 0.5f - sharedBaseLength / 2f); // if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip), vp[i].z + 0.5f - sharedBaseLength / 2f);
+                        else vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, vp[i].y, vp[i].z - 0.5f + sharedBaseLength / 2f); // else vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot), vp[i].z - 0.5f + sharedBaseLength / 2f);
 
                         // Left/right sides
-                        if (nm[i] == new Vector3 (0f, 0f, 1f) || nm[i] == new Vector3 (0f, 0f, -1f))
+                        if (nm[i] == new Vector3(0f, 0f, 1f) || nm[i] == new Vector3(0f, 0f, -1f))
                         {
                             // Filtering out trailing edge cross sections
                             if (uv[i].y > 0.185f)
@@ -1135,22 +1203,22 @@ namespace WingProcedural
                                 {
                                     if (vp[i].z < 0f)
                                     {
-                                        vp[i] = new Vector3 (vp[i].x, -sharedBaseWidthTip, vp[i].z);
-                                        uv[i] = new Vector2 (sharedBaseWidthTip, uv[i].y);
+                                        vp[i] = new Vector3(vp[i].x, -ctrlTipWidth, vp[i].z);
+                                        uv[i] = new Vector2(ctrlTipWidth, uv[i].y);
                                     }
                                     else
                                     {
-                                        vp[i] = new Vector3 (vp[i].x, -sharedBaseWidthRoot, vp[i].z);
-                                        uv[i] = new Vector2 (sharedBaseWidthRoot, uv[i].y);
+                                        vp[i] = new Vector3(vp[i].x, -ctrlRootWidth, vp[i].z);
+                                        uv[i] = new Vector2(ctrlRootWidth, uv[i].y);
                                     }
                                 }
                             }
                         }
 
                         // Root (only needs UV adjustment)
-                        else if (nm[i] == new Vector3 (0f, 1f, 0f))
+                        else if (nm[i] == new Vector3(0f, 1f, 0f))
                         {
-                            if (vp[i].z < 0f) uv[i] = new Vector2 (sharedBaseLength, uv[i].y);
+                            if (vp[i].z < 0f) uv[i] = new Vector2(sharedBaseLength, uv[i].y);
                         }
 
                         // Trailing edge
@@ -1159,25 +1227,25 @@ namespace WingProcedural
                             // Filtering out root neighbours
                             if (vp[i].y < -0.1f)
                             {
-                                if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x, vp[i].y + 0.5f - sharedBaseWidthTip, vp[i].z);
-                                else vp[i] = new Vector3 (vp[i].x, vp[i].y + 0.5f - sharedBaseWidthRoot, vp[i].z);
+                                if (vp[i].z < 0f) vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z);
+                                else vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
                             }
                         }
 
                         // Offset-based distortion
                         if (vp[i].z < 0f)
                         {
-                            vp[i] = new Vector3 (vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
-                            if (nm[i] != new Vector3 (0f, 0f, 1f) && nm[i] != new Vector3 (0f, 0f, -1f)) uv[i] = new Vector2 (uv[i].x - (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
+                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
+                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f)) uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
                         }
                         else
                         {
-                            vp[i] = new Vector3 (vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetRootClamped);
-                            if (nm[i] != new Vector3 (0f, 0f, 1f) && nm[i] != new Vector3 (0f, 0f, -1f)) uv[i] = new Vector2 (uv[i].x - (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
+                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetRootClamped);
+                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f)) uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
                         }
 
                         // Just blanks
-                        cl[i] = new Color (0f, 0f, 0f, 0f);
+                        cl[i] = new Color(0f, 0f, 0f, 0f);
                         uv2[i] = Vector2.zero;
                     }
 
@@ -1185,7 +1253,7 @@ namespace WingProcedural
                     meshFilterCtrlFrame.mesh.uv = uv;
                     meshFilterCtrlFrame.mesh.uv2 = uv2;
                     meshFilterCtrlFrame.mesh.colors = cl;
-                    meshFilterCtrlFrame.mesh.RecalculateBounds ();
+                    meshFilterCtrlFrame.mesh.RecalculateBounds();
 
                     MeshCollider meshCollider = meshFilterCtrlFrame.gameObject.GetComponent<MeshCollider>();
                     if (meshCollider == null)
@@ -1194,19 +1262,19 @@ namespace WingProcedural
                     meshCollider.sharedMesh = meshFilterCtrlFrame.mesh;
                     meshCollider.convex = true;
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Control surface frame | Finished");
+                        DebugLogWithID("UpdateGeometry", "Control surface frame | Finished");
                 }
 
                 // Next, time for edge types
                 // Before modifying geometry, we have to show the correct objects for the current selection
                 // As UI only works with floats, we have to cast selections into ints too
 
-                int ctrlEdgeTypeInt = Mathf.RoundToInt (sharedEdgeTypeTrailing - 1);
+                int ctrlEdgeTypeInt = Mathf.RoundToInt(sharedEdgeTypeTrailing - 1);
                 for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
                 {
                     if (i != ctrlEdgeTypeInt)
-                        meshFiltersCtrlEdge[i].gameObject.SetActive (false);
-                    else meshFiltersCtrlEdge[i].gameObject.SetActive (true);
+                        meshFiltersCtrlEdge[i].gameObject.SetActive(false);
+                    else meshFiltersCtrlEdge[i].gameObject.SetActive(true);
                 }
 
                 // Now we can modify geometry
@@ -1217,26 +1285,26 @@ namespace WingProcedural
                     MeshReference meshReference = meshReferencesCtrlEdge[ctrlEdgeTypeInt];
                     int length = meshReference.vp.Length;
                     Vector3[] vp = new Vector3[length];
-                    Array.Copy (meshReference.vp, vp, length);
+                    Array.Copy(meshReference.vp, vp, length);
                     Vector3[] nm = new Vector3[length];
-                    Array.Copy (meshReference.nm, nm, length);
+                    Array.Copy(meshReference.nm, nm, length);
                     Vector2[] uv = new Vector2[length];
-                    Array.Copy (meshReference.uv, uv, length);
+                    Array.Copy(meshReference.uv, uv, length);
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Control surface edge | Passed array setup");
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry) DebugLogWithID("UpdateGeometry", "Control surface edge | Passed array setup");
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         // Thickness correction (X), edge width correction (Y) and span-based offset (Z)
-                        if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip) - 0.5f, vp[i].z + 0.5f - sharedBaseLength / 2f);
-                        else vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot) - 0.5f, vp[i].z - 0.5f + sharedBaseLength / 2f);
+                        if (vp[i].z < 0f) vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip) - 0.5f, vp[i].z + 0.5f - sharedBaseLength / 2f);
+                        else vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot) - 0.5f, vp[i].z - 0.5f + sharedBaseLength / 2f);
 
                         // Left/right sides
-                        if (nm[i] == new Vector3 (0f, 0f, 1f) || nm[i] == new Vector3 (0f, 0f, -1f))
+                        if (nm[i] == new Vector3(0f, 0f, 1f) || nm[i] == new Vector3(0f, 0f, -1f))
                         {
-                            if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x, vp[i].y + 0.5f - sharedBaseWidthTip, vp[i].z);
-                            else vp[i] = new Vector3 (vp[i].x, vp[i].y + 0.5f - sharedBaseWidthRoot, vp[i].z);
+                            if (vp[i].z < 0f) vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z);
+                            else vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
                         }
 
                         // Trailing edge
@@ -1245,32 +1313,32 @@ namespace WingProcedural
                             // Filtering out root neighbours
                             if (vp[i].y < -0.1f)
                             {
-                                if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x, vp[i].y + 0.5f - sharedBaseWidthTip, vp[i].z);
-                                else vp[i] = new Vector3 (vp[i].x, vp[i].y + 0.5f - sharedBaseWidthRoot, vp[i].z);
+                                if (vp[i].z < 0f) vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z);
+                                else vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
                             }
                         }
 
                         // Offset-based distortion
                         if (vp[i].z < 0f)
                         {
-                            vp[i] = new Vector3 (vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
-                            if (nm[i] != new Vector3 (0f, 0f, 1f) && nm[i] != new Vector3 (0f, 0f, -1f)) uv[i] = new Vector2 (uv[i].x - (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
+                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
+                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f)) uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
                         }
                         else
                         {
-                            vp[i] = new Vector3 (vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetRootClamped);
-                            if (nm[i] != new Vector3 (0f, 0f, 1f) && nm[i] != new Vector3 (0f, 0f, -1f)) uv[i] = new Vector2 (uv[i].x - (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
+                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetRootClamped);
+                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f)) uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
                         }
 
                         // Trailing edge (UV adjustment, has to be the last as it's based on cumulative vertex positions)
-                        if (nm[i] != new Vector3 (0f, 1f, 0f) && nm[i] != new Vector3 (0f, 0f, 1f) && nm[i] != new Vector3 (0f, 0f, -1f) && uv[i].y < 0.3f)
+                        if (nm[i] != new Vector3(0f, 1f, 0f) && nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f) && uv[i].y < 0.3f)
                         {
-                            if (vp[i].z < 0f) uv[i] = new Vector2 (vp[i].z, uv[i].y);
-                            else uv[i] = new Vector2 (vp[i].z, uv[i].y);
+                            if (vp[i].z < 0f) uv[i] = new Vector2(vp[i].z, uv[i].y);
+                            else uv[i] = new Vector2(vp[i].z, uv[i].y);
 
                             // Color has to be applied there to avoid blanking out cross sections
-                            cl[i] = GetVertexColor (2);
-                            uv2[i] = GetVertexUV2 (sharedMaterialET);
+                            cl[i] = GetVertexColor(2);
+                            uv2[i] = GetVertexUV2(sharedMaterialET);
                         }
                     }
 
@@ -1278,9 +1346,9 @@ namespace WingProcedural
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.uv = uv;
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.uv2 = uv2;
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.colors = cl;
-                    meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.RecalculateBounds ();
+                    meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.RecalculateBounds();
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Control surface edge | Finished");
+                        DebugLogWithID("UpdateGeometry", "Control surface edge | Finished");
                 }
 
                 // Finally, simple top/bottom surface changes
@@ -1289,25 +1357,25 @@ namespace WingProcedural
                 {
                     int length = meshReferenceCtrlSurface.vp.Length;
                     Vector3[] vp = new Vector3[length];
-                    Array.Copy (meshReferenceCtrlSurface.vp, vp, length);
+                    Array.Copy(meshReferenceCtrlSurface.vp, vp, length);
                     Vector2[] uv = new Vector2[length];
-                    Array.Copy (meshReferenceCtrlSurface.uv, uv, length);
+                    Array.Copy(meshReferenceCtrlSurface.uv, uv, length);
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry) DebugLogWithID ("UpdateGeometry", "Control surface top | Passed array setup");
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry) DebugLogWithID("UpdateGeometry", "Control surface top | Passed array setup");
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         // Span-based shift
                         if (vp[i].z < 0f)
                         {
-                            vp[i] = new Vector3 (vp[i].x, vp[i].y, vp[i].z + 0.5f - sharedBaseLength / 2f);
-                            uv[i] = new Vector2 (0f, uv[i].y);
+                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + 0.5f - sharedBaseLength / 2f);
+                            uv[i] = new Vector2(0f, uv[i].y);
                         }
                         else
                         {
-                            vp[i] = new Vector3 (vp[i].x, vp[i].y, vp[i].z - 0.5f + sharedBaseLength / 2f);
-                            uv[i] = new Vector2 (sharedBaseLength / 4f, uv[i].y);
+                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z - 0.5f + sharedBaseLength / 2f);
+                            uv[i] = new Vector2(sharedBaseLength / 4f, uv[i].y);
                         }
 
                         // Width-based shift
@@ -1315,52 +1383,52 @@ namespace WingProcedural
                         {
                             if (vp[i].z < 0f)
                             {
-                                vp[i] = new Vector3 (vp[i].x, vp[i].y + 0.5f - sharedBaseWidthTip, vp[i].z);
-                                uv[i] = new Vector2 (uv[i].x, sharedBaseWidthTip / 4f);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z);
+                                uv[i] = new Vector2(uv[i].x, ctrlTipWidth / 4f);
                             }
                             else
                             {
-                                vp[i] = new Vector3 (vp[i].x, vp[i].y + 0.5f - sharedBaseWidthRoot, vp[i].z);
-                                uv[i] = new Vector2 (uv[i].x, sharedBaseWidthRoot / 4f);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                                uv[i] = new Vector2(uv[i].x, ctrlRootWidth / 4f);
                             }
                         }
-                        else uv[i] = new Vector2 (uv[i].x, 0f);
+                        else uv[i] = new Vector2(uv[i].x, 0f);
 
                         // Offsets & thickness
                         if (vp[i].z < 0f)
                         {
-                            vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationTip, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
-                            uv[i] = new Vector2 (uv[i].x + (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
+                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
+                            uv[i] = new Vector2(uv[i].x + (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
                         }
                         else
                         {
-                            vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationRoot, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetRootClamped);
-                            uv[i] = new Vector2 (uv[i].x + (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
+                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetRootClamped);
+                            uv[i] = new Vector2(uv[i].x + (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
                         }
 
                         // Colors
-                        if (vp[i].x > 0f ^ isMirrored)
+                        if (vp[i].x > 0f)
                         {
-                            cl[i] = GetVertexColor (0);
-                            uv2[i] = GetVertexUV2 (sharedMaterialST);
+                            cl[i] = GetVertexColor(0);
+                            uv2[i] = GetVertexUV2(sharedMaterialST);
                         }
                         else
                         {
-                            cl[i] = GetVertexColor (1);
-                            uv2[i] = GetVertexUV2 (sharedMaterialSB);
+                            cl[i] = GetVertexColor(1);
+                            uv2[i] = GetVertexUV2(sharedMaterialSB);
                         }
                     }
                     meshFilterCtrlSurface.mesh.vertices = vp;
                     meshFilterCtrlSurface.mesh.uv = uv;
                     meshFilterCtrlSurface.mesh.uv2 = uv2;
                     meshFilterCtrlSurface.mesh.colors = cl;
-                    meshFilterCtrlSurface.mesh.RecalculateBounds ();
+                    meshFilterCtrlSurface.mesh.RecalculateBounds();
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                        DebugLogWithID ("UpdateGeometry", "Control surface top | Finished");
+                        DebugLogWithID("UpdateGeometry", "Control surface top | Finished");
                 }
             }
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
-                DebugLogWithID ("UpdateGeometry", "Finished");
+                DebugLogWithID("UpdateGeometry", "Finished");
             if (HighLogic.LoadedSceneIsEditor)
                 FuelVolumeChanged();
             if (updateAerodynamics)
@@ -1419,7 +1487,7 @@ namespace WingProcedural
         }
 
         // Edge geometry
-        public Vector3[] GetReferenceVertices (MeshFilter source)
+        public Vector3[] GetReferenceVertices(MeshFilter source)
         {
             Vector3[] positions = new Vector3[0];
             if (source != null)
@@ -1433,9 +1501,10 @@ namespace WingProcedural
             return positions;
         }
 
-        #endregion
+        #endregion Geometry
 
         #region Mesh Setup and Checking
+
         private void SetupMeshFilters()
         {
             if (!isCtrlSrf)
@@ -1542,8 +1611,16 @@ namespace WingProcedural
 
         // Reference fetching
 
-        private MeshFilter CheckMeshFilter(string name) { return CheckMeshFilter(null, name, false); }
-        private MeshFilter CheckMeshFilter(MeshFilter reference, string name) { return CheckMeshFilter(reference, name, false); }
+        private MeshFilter CheckMeshFilter(string name)
+        {
+            return CheckMeshFilter(null, name, false);
+        }
+
+        private MeshFilter CheckMeshFilter(MeshFilter reference, string name)
+        {
+            return CheckMeshFilter(reference, name, false);
+        }
+
         private MeshFilter CheckMeshFilter(MeshFilter reference, string name, bool disable)
         {
             if (reference == null)
@@ -1589,9 +1666,11 @@ namespace WingProcedural
                 DebugLogWithID("FillMeshReference", "Mesh filter reference is null, unable to set up reference arrays");
             return reference;
         }
-        #endregion
+
+        #endregion Mesh Setup and Checking
 
         #region Materials
+
         public static Material materialLayeredSurface;
         public static Texture materialLayeredSurfaceTextureMain;
         public static Texture materialLayeredSurfaceTextureMask;
@@ -1603,25 +1682,25 @@ namespace WingProcedural
         private float materialPropertyShininess = 0.4f;
         private Color materialPropertySpecular = new Color(0.62109375f, 0.62109375f, 0.62109375f, 1.0f);
 
-        public void UpdateMaterials ()
+        public void UpdateMaterials()
         {
             if (materialLayeredSurface == null || materialLayeredEdge == null)
-                SetMaterialReferences ();
+                SetMaterialReferences();
             if (materialLayeredSurface != null)
             {
                 if (!isCtrlSrf)
                 {
-                    SetMaterial (meshFilterWingSurface, materialLayeredSurface);
+                    SetMaterial(meshFilterWingSurface, materialLayeredSurface);
                     for (int i = 0; i < meshTypeCountEdgeWing; ++i)
                     {
-                        SetMaterial (meshFiltersWingEdgeTrailing[i], materialLayeredEdge);
-                        SetMaterial (meshFiltersWingEdgeLeading[i], materialLayeredEdge);
+                        SetMaterial(meshFiltersWingEdgeTrailing[i], materialLayeredEdge);
+                        SetMaterial(meshFiltersWingEdgeLeading[i], materialLayeredEdge);
                     }
                 }
                 else
                 {
-                    SetMaterial (meshFilterCtrlSurface, materialLayeredSurface);
-                    SetMaterial (meshFilterCtrlFrame, materialLayeredEdge);
+                    SetMaterial(meshFilterCtrlSurface, materialLayeredSurface);
+                    SetMaterial(meshFilterCtrlFrame, materialLayeredEdge);
                     for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
                     {
                         SetMaterial(meshFiltersCtrlEdge[i], materialLayeredEdge);
@@ -1629,75 +1708,75 @@ namespace WingProcedural
                 }
             }
             else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials)
-                DebugLogWithID ("UpdateMaterials", "Material creation failed");
+                DebugLogWithID("UpdateMaterials", "Material creation failed");
         }
 
-        private void SetMaterialReferences ()
+        private void SetMaterialReferences()
         {
             if (materialLayeredSurface == null)
                 materialLayeredSurface = new Material(StaticWingGlobals.wingShader);
             if (materialLayeredEdge == null)
                 materialLayeredEdge = new Material(StaticWingGlobals.wingShader);
 
-            if (!isCtrlSrf) SetTextures (meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
-            else SetTextures (meshFilterCtrlSurface, meshFilterCtrlFrame);
+            if (!isCtrlSrf) SetTextures(meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
+            else SetTextures(meshFilterCtrlSurface, meshFilterCtrlFrame);
 
             if (materialLayeredSurfaceTextureMain != null && materialLayeredSurfaceTextureMask != null)
             {
-                materialLayeredSurface.SetTexture ("_MainTex", materialLayeredSurfaceTextureMain);
-                materialLayeredSurface.SetTexture ("_Emissive", materialLayeredSurfaceTextureMask);
-                materialLayeredSurface.SetFloat ("_Shininess", materialPropertyShininess);
-                materialLayeredSurface.SetColor ("_SpecColor", materialPropertySpecular);
+                materialLayeredSurface.SetTexture("_MainTex", materialLayeredSurfaceTextureMain);
+                materialLayeredSurface.SetTexture("_Emissive", materialLayeredSurfaceTextureMask);
+                materialLayeredSurface.SetFloat("_Shininess", materialPropertyShininess);
+                materialLayeredSurface.SetColor("_SpecColor", materialPropertySpecular);
             }
-            else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials) DebugLogWithID ("SetMaterialReferences", "Surface textures not found");
+            else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials) DebugLogWithID("SetMaterialReferences", "Surface textures not found");
 
             if (materialLayeredEdgeTextureMain != null && materialLayeredEdgeTextureMask != null)
             {
-                materialLayeredEdge.SetTexture ("_MainTex", materialLayeredEdgeTextureMain);
-                materialLayeredEdge.SetTexture ("_Emissive", materialLayeredEdgeTextureMask);
-                materialLayeredEdge.SetFloat ("_Shininess", materialPropertyShininess);
-                materialLayeredEdge.SetColor ("_SpecColor", materialPropertySpecular);
+                materialLayeredEdge.SetTexture("_MainTex", materialLayeredEdgeTextureMain);
+                materialLayeredEdge.SetTexture("_Emissive", materialLayeredEdgeTextureMask);
+                materialLayeredEdge.SetFloat("_Shininess", materialPropertyShininess);
+                materialLayeredEdge.SetColor("_SpecColor", materialPropertySpecular);
             }
-            else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials) DebugLogWithID ("SetMaterialReferences", "Edge textures not found");
+            else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials) DebugLogWithID("SetMaterialReferences", "Edge textures not found");
         }
 
-        private void SetMaterial (MeshFilter target, Material material)
+        private void SetMaterial(MeshFilter target, Material material)
         {
             if (target != null)
             {
-                Renderer r = target.gameObject.GetComponent<Renderer> ();
+                Renderer r = target.gameObject.GetComponent<Renderer>();
                 if (r != null)
                     r.sharedMaterial = material;
             }
         }
 
-        private void SetTextures (MeshFilter sourceSurface, MeshFilter sourceEdge)
+        private void SetTextures(MeshFilter sourceSurface, MeshFilter sourceEdge)
         {
             if (sourceSurface != null)
             {
-                Renderer r = sourceSurface.gameObject.GetComponent<Renderer> ();
+                Renderer r = sourceSurface.gameObject.GetComponent<Renderer>();
                 if (r != null)
                 {
-                    materialLayeredSurfaceTextureMain = r.sharedMaterial.GetTexture ("_MainTex");
-                    materialLayeredSurfaceTextureMask = r.sharedMaterial.GetTexture ("_Emissive");
+                    materialLayeredSurfaceTextureMain = r.sharedMaterial.GetTexture("_MainTex");
+                    materialLayeredSurfaceTextureMask = r.sharedMaterial.GetTexture("_Emissive");
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials)
-                        DebugLogWithID ("SetTextures", "Main: " + materialLayeredSurfaceTextureMain.ToString () + " | Mask: " + materialLayeredSurfaceTextureMask);
+                        DebugLogWithID("SetTextures", "Main: " + materialLayeredSurfaceTextureMain.ToString() + " | Mask: " + materialLayeredSurfaceTextureMask);
                 }
             }
             if (sourceEdge != null)
             {
-                Renderer r = sourceEdge.gameObject.GetComponent<Renderer> ();
+                Renderer r = sourceEdge.gameObject.GetComponent<Renderer>();
                 if (r != null)
                 {
-                    materialLayeredEdgeTextureMain = r.sharedMaterial.GetTexture ("_MainTex");
-                    materialLayeredEdgeTextureMask = r.sharedMaterial.GetTexture ("_Emissive");
+                    materialLayeredEdgeTextureMain = r.sharedMaterial.GetTexture("_MainTex");
+                    materialLayeredEdgeTextureMask = r.sharedMaterial.GetTexture("_Emissive");
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials)
-                        DebugLogWithID ("SetTextures", "Main: " + materialLayeredEdgeTextureMain.ToString () + " | Mask: " + materialLayeredEdgeTextureMask);
+                        DebugLogWithID("SetTextures", "Main: " + materialLayeredEdgeTextureMain.ToString() + " | Mask: " + materialLayeredEdgeTextureMask);
                 }
             }
         }
 
-        #endregion
+        #endregion Materials
 
         #region Aero
 
@@ -1706,31 +1785,32 @@ namespace WingProcedural
             public Vessel vessel = null;
             public bool isUpdated = false;
 
-            public VesselStatus (Vessel v, bool state)
+            public VesselStatus(Vessel v, bool state)
             {
                 vessel = v;
                 isUpdated = state;
             }
         }
-        public static List<VesselStatus> vesselList = new List<VesselStatus> ();
+
+        public static List<VesselStatus> vesselList = new List<VesselStatus>();
 
         // Delayed aero value setup
         // Must be run after all geometry setups, otherwise FAR checks will be done before surrounding parts take shape, producing incorrect results
-        public IEnumerator SetupReorderedForFlight ()
+        public IEnumerator SetupReorderedForFlight()
         {
             // First we need to determine whether the vessel this part is attached to is included into the status list
             // If it's included, we need to fetch it's index in that list
 
             bool vesselListInclusive = false;
-            int vesselID = vessel.GetInstanceID ();
+            int vesselID = vessel.GetInstanceID();
             int vesselStatusIndex = 0;
             int vesselListCount = vesselList.Count;
             for (int i = 0; i < vesselListCount; ++i)
             {
-                if (vesselList[i].vessel.GetInstanceID () == vesselID)
+                if (vesselList[i].vessel.GetInstanceID() == vesselID)
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFlightSetup)
-                        DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " found in the status list");
+                        DebugLogWithID("SetupReorderedForFlight", "Vessel " + vesselID + " found in the status list");
                     vesselListInclusive = true;
                     vesselStatusIndex = i;
                 }
@@ -1742,8 +1822,8 @@ namespace WingProcedural
             if (!vesselListInclusive)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFlightSetup)
-                    DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " was not found in the status list, adding it");
-                vesselList.Add (new VesselStatus (vessel, false));
+                    DebugLogWithID("SetupReorderedForFlight", "Vessel " + vesselID + " was not found in the status list, adding it");
+                vesselList.Add(new VesselStatus(vessel, false));
                 vesselStatusIndex = vesselList.Count - 1;
             }
 
@@ -1753,9 +1833,9 @@ namespace WingProcedural
             if (!vesselList[vesselStatusIndex].isUpdated)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFlightSetup)
-                    DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " was not updated yet (this message should only appear once)");
+                    DebugLogWithID("SetupReorderedForFlight", "Vessel " + vesselID + " was not updated yet (this message should only appear once)");
                 vesselList[vesselStatusIndex].isUpdated = true;
-                List<WingProcedural> moduleList = new List<WingProcedural> ();
+                List<WingProcedural> moduleList = new List<WingProcedural>();
 
                 // First we get a list of all relevant parts in the vessel
                 // Found modules are added to a list
@@ -1763,80 +1843,94 @@ namespace WingProcedural
                 int vesselPartsCount = vessel.parts.Count;
                 for (int i = 0; i < vesselPartsCount; ++i)
                 {
-                    if (vessel.parts[i].Modules.Contains ("WingProcedural"))
-                        moduleList.Add ((WingProcedural) vessel.parts[i].Modules["WingProcedural"]);
+                    if (vessel.parts[i].Modules.Contains("WingProcedural"))
+                        moduleList.Add((WingProcedural)vessel.parts[i].Modules["WingProcedural"]);
                 }
 
                 // After that we make two separate runs through that list
                 // First one setting up all geometry and second one setting up aerodynamic values
 
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFlightSetup)
-                    DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " contained " + vesselPartsCount + " parts, of which " + moduleList.Count + " should be set up");
+                    DebugLogWithID("SetupReorderedForFlight", "Vessel " + vesselID + " contained " + vesselPartsCount + " parts, of which " + moduleList.Count + " should be set up");
                 int moduleListCount = moduleList.Count;
                 for (int i = 0; i < moduleListCount; ++i)
                 {
-                    moduleList[i].Setup ();
+                    moduleList[i].Setup();
                 }
 
-                yield return new WaitForFixedUpdate ();
-                yield return new WaitForFixedUpdate ();
+                yield return new WaitForFixedUpdate();
+                yield return new WaitForFixedUpdate();
 
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFlightSetup)
-                    DebugLogWithID ("SetupReorderedForFlight", "Vessel " + vesselID + " waited for updates, starting aero value calculation");
+                    DebugLogWithID("SetupReorderedForFlight", "Vessel " + vesselID + " waited for updates, starting aero value calculation");
                 for (int i = 0; i < moduleListCount; ++i)
                 {
-                    moduleList[i].CalculateAerodynamicValues ();
+                    moduleList[i].CalculateAerodynamicValues();
                 }
             }
         }
 
-
-
-
         // Aerodynamics value calculation
         // More or less lifted from pWings, so credit goes to DYJ and Taverius
 
-        [KSPField] public float aeroConstLiftFudgeNumber = 0.0775f;
-        [KSPField] public float aeroConstMassFudgeNumber = 0.015f;
-        [KSPField] public float aeroConstDragBaseValue = 0.6f;
-        [KSPField] public float aeroConstDragMultiplier = 3.3939f;
-        [KSPField] public float aeroConstConnectionFactor = 150f;
-        [KSPField] public float aeroConstConnectionMinimum = 50f; 
-        [KSPField] public float aeroConstCostDensity = 5300f;
-        [KSPField] public float aeroConstCostDensityControl = 6500f;
-        [KSPField] public float aeroConstControlSurfaceFraction = 1f;
+        [KSPField]
+        public float aeroConstLiftFudgeNumber = 0.0775f;
 
-        [KSPField (guiActiveEditor = false, guiName = "Coefficient of drag", guiFormat = "F3")]
+        [KSPField]
+        public float aeroConstMassFudgeNumber = 0.015f;
+
+        [KSPField]
+        public float aeroConstDragBaseValue = 0.6f;
+
+        [KSPField]
+        public float aeroConstDragMultiplier = 3.3939f;
+
+        [KSPField]
+        public float aeroConstConnectionFactor = 150f;
+
+        [KSPField]
+        public float aeroConstConnectionMinimum = 50f;
+
+        [KSPField]
+        public float aeroConstCostDensity = 5300f;
+
+        [KSPField]
+        public float aeroConstCostDensityControl = 6500f;
+
+        [KSPField]
+        public float aeroConstControlSurfaceFraction = 1f;
+
+        [KSPField(guiActiveEditor = false, guiName = "Coefficient of drag", guiFormat = "F3")]
         public float aeroUICd;
 
-        [KSPField (guiActiveEditor = false, guiName = "Coefficient of lift", guiFormat = "F3")]
+        [KSPField(guiActiveEditor = false, guiName = "Coefficient of lift", guiFormat = "F3")]
         public float aeroUICl;
 
-        [KSPField (guiActiveEditor = false, guiName = "Mass", guiFormat = "F3", guiUnits = "t")]
+        [KSPField(guiActiveEditor = false, guiName = "Mass", guiFormat = "F3", guiUnits = "t")]
         public float aeroUIMass;
 
-        [KSPField (guiActiveEditor = false, guiName = "Cost")] 
+        [KSPField(guiActiveEditor = false, guiName = "Cost")]
         public float aeroUICost;
 
-        [KSPField (guiActiveEditor = false, guiName = "Mean aerodynamic chord", guiFormat = "F3", guiUnits = "m")]
+        [KSPField(guiActiveEditor = false, guiName = "Mean aerodynamic chord", guiFormat = "F3", guiUnits = "m")]
         public float aeroUIMeanAerodynamicChord;
 
-        [KSPField (guiActiveEditor = false, guiName = "Semispan", guiFormat = "F3", guiUnits = "m")]
+        [KSPField(guiActiveEditor = false, guiName = "Semispan", guiFormat = "F3", guiUnits = "m")]
         public float aeroUISemispan;
 
-        [KSPField (guiActiveEditor = false, guiName = "Mid-chord sweep", guiFormat = "F3", guiUnits = "deg.")]
+        [KSPField(guiActiveEditor = false, guiName = "Mid-chord sweep", guiFormat = "F3", guiUnits = "deg.")]
         public float aeroUIMidChordSweep;
 
-        [KSPField (guiActiveEditor = false, guiName = "Taper ratio", guiFormat = "F3")]
+        [KSPField(guiActiveEditor = false, guiName = "Taper ratio", guiFormat = "F3")]
         public float aeroUITaperRatio;
 
-        [KSPField (guiActiveEditor = false, guiName = "Surface area", guiFormat = "F3", guiUnits = "m²")]
+        [KSPField(guiActiveEditor = false, guiName = "Surface area", guiFormat = "F3", guiUnits = "m²")]
         public float aeroUISurfaceArea;
 
-        [KSPField (guiActiveEditor = false, guiName = "Aspect ratio", guiFormat = "F3")]
+        [KSPField(guiActiveEditor = false, guiName = "Aspect ratio", guiFormat = "F3")]
         public float aeroUIAspectRatio;
 
-        [KSPField (guiActiveEditor = false, guiName = "Volume", guiFormat = "F3")]
+        [KSPField(guiActiveEditor = false, guiName = "Volume", guiFormat = "F3")]
         public float aeroStatVolume = 3.84f;
 
         public double aeroStatCd;
@@ -1855,24 +1949,24 @@ namespace WingProcedural
         public double aeroStatAspectRatioSweepScale;
 
         private PartModule aeroFARModuleReference;
-        private Type       aeroFARModuleType;
+        private Type aeroFARModuleType;
 
-        private FieldInfo  aeroFARFieldInfoSemispan;
+        private FieldInfo aeroFARFieldInfoSemispan;
         private FieldInfo aeroFARFieldInfoSemispan_Actual; // to handle tweakscale, wings have semispan (unscaled) and semispan_actual (tweakscaled). Need to set both (actual is the important one, and tweakscale isn't needed here, so only _actual actually needs to be set, but it would be silly to not set it)
-        private FieldInfo  aeroFARFieldInfoMAC;
-        private FieldInfo  aeroFARFieldInfoMAC_Actual; //  to handle tweakscale, wings have MAC (unscaled) and MAC_actual (tweakscaled). Need to set both (actual is the important one, and tweakscale isn't needed here, so only _actual actually needs to be set, but it would be silly to not set it)
+        private FieldInfo aeroFARFieldInfoMAC;
+        private FieldInfo aeroFARFieldInfoMAC_Actual; //  to handle tweakscale, wings have MAC (unscaled) and MAC_actual (tweakscaled). Need to set both (actual is the important one, and tweakscale isn't needed here, so only _actual actually needs to be set, but it would be silly to not set it)
         private FieldInfo aeroFARFieldInfoSurfaceArea; // calculated internally from b_2_actual and MAC_actual
-        private FieldInfo  aeroFARFieldInfoMidChordSweep;
-        private FieldInfo  aeroFARFieldInfoTaperRatio;
-        private FieldInfo  aeroFARFieldInfoControlSurfaceFraction;
-        private FieldInfo  aeroFARFieldInfoRootChordOffset;
+        private FieldInfo aeroFARFieldInfoMidChordSweep;
+        private FieldInfo aeroFARFieldInfoTaperRatio;
+        private FieldInfo aeroFARFieldInfoControlSurfaceFraction;
+        private FieldInfo aeroFARFieldInfoRootChordOffset;
         private MethodInfo aeroFARMethodInfoUsed;
 
-        public void CalculateAerodynamicValues ()
+        public void CalculateAerodynamicValues()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                DebugLogWithID ("CalculateAerodynamicValues", "Started");
-            CheckAssemblies (false);
+                DebugLogWithID("CalculateAerodynamicValues", "Started");
+            CheckAssemblies(false);
 
             float sharedWidthTipSum = sharedBaseWidthTip;
             float sharedWidthRootSum = sharedBaseWidthRoot;
@@ -1903,66 +1997,66 @@ namespace WingProcedural
             float ctrlOffsetRootLimit = (sharedBaseLength / 2f) / (sharedBaseWidthRoot + sharedEdgeWidthTrailingRoot);
             float ctrlOffsetTipLimit = (sharedBaseLength / 2f) / (sharedBaseWidthTip + sharedEdgeWidthTrailingTip);
 
-            float ctrlOffsetRootClamped = Mathf.Clamp (sharedBaseOffsetRoot, -ctrlOffsetRootLimit, ctrlOffsetRootLimit);
-            float ctrlOffsetTipClamped = Mathf.Clamp (sharedBaseOffsetTip, -ctrlOffsetTipLimit, ctrlOffsetTipLimit);
+            float ctrlOffsetRootClamped = Mathf.Clamp(sharedBaseOffsetRoot, -ctrlOffsetRootLimit, ctrlOffsetRootLimit);
+            float ctrlOffsetTipClamped = Mathf.Clamp(sharedBaseOffsetTip, -ctrlOffsetTipLimit, ctrlOffsetTipLimit);
 
             // Base four values
 
             if (!isCtrlSrf)
             {
-                aeroStatSemispan = (double) sharedBaseLength;
-                aeroStatTaperRatio = (double) sharedWidthTipSum / (double) sharedWidthRootSum;
-                aeroStatMeanAerodynamicChord = (double) (sharedWidthTipSum + sharedWidthRootSum) / 2.0;
-                aeroStatMidChordSweep = Math.Atan ((double) sharedBaseOffsetTip / (double) sharedBaseLength) * MathD.Rad2Deg;
+                aeroStatSemispan = (double)sharedBaseLength;
+                aeroStatTaperRatio = (double)sharedWidthTipSum / (double)sharedWidthRootSum;
+                aeroStatMeanAerodynamicChord = (double)(sharedWidthTipSum + sharedWidthRootSum) / 2.0;
+                aeroStatMidChordSweep = Math.Atan((double)sharedBaseOffsetTip / (double)sharedBaseLength) * MathD.Rad2Deg;
             }
             else
             {
-                aeroStatSemispan = (double) sharedBaseLength;
-                aeroStatTaperRatio = (double) (sharedBaseLength + sharedWidthTipSum * ctrlOffsetTipClamped - sharedWidthRootSum * ctrlOffsetRootClamped) / (double) sharedBaseLength;
-                aeroStatMeanAerodynamicChord = (double) (sharedWidthTipSum + sharedWidthRootSum) / 2.0;
-                aeroStatMidChordSweep = Math.Atan ((double) Mathf.Abs (sharedWidthRootSum - sharedWidthTipSum) / (double) sharedBaseLength) * MathD.Rad2Deg;
+                aeroStatSemispan = (double)sharedBaseLength;
+                aeroStatTaperRatio = (double)(sharedBaseLength + sharedWidthTipSum * ctrlOffsetTipClamped - sharedWidthRootSum * ctrlOffsetRootClamped) / (double)sharedBaseLength;
+                aeroStatMeanAerodynamicChord = (double)(sharedWidthTipSum + sharedWidthRootSum) / 2.0;
+                aeroStatMidChordSweep = Math.Atan((double)Mathf.Abs(sharedWidthRootSum - sharedWidthTipSum) / (double)sharedBaseLength) * MathD.Rad2Deg;
             }
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                DebugLogWithID ("CalculateAerodynamicValues", "Passed B2/TR/MAC/MCS");
+                DebugLogWithID("CalculateAerodynamicValues", "Passed B2/TR/MAC/MCS");
 
             // Derived values
 
             aeroStatSurfaceArea = aeroStatMeanAerodynamicChord * aeroStatSemispan;
             aeroStatAspectRatio = 2.0f * aeroStatSemispan / aeroStatMeanAerodynamicChord;
 
-            aeroStatAspectRatioSweepScale = Math.Pow (aeroStatAspectRatio / Math.Cos (MathD.Deg2Rad * aeroStatMidChordSweep), 2.0f) + 4.0f;
-            aeroStatAspectRatioSweepScale = 2.0f + Math.Sqrt (aeroStatAspectRatioSweepScale);
+            aeroStatAspectRatioSweepScale = Math.Pow(aeroStatAspectRatio / Math.Cos(MathD.Deg2Rad * aeroStatMidChordSweep), 2.0f) + 4.0f;
+            aeroStatAspectRatioSweepScale = 2.0f + Math.Sqrt(aeroStatAspectRatioSweepScale);
             aeroStatAspectRatioSweepScale = (2.0f * Math.PI) / aeroStatAspectRatioSweepScale * aeroStatAspectRatio;
 
-            aeroStatMass = MathD.Clamp (aeroConstMassFudgeNumber * aeroStatSurfaceArea * ((aeroStatAspectRatioSweepScale * 2.0) / (3.0 + aeroStatAspectRatioSweepScale)) * ((1.0 + aeroStatTaperRatio) / 2), 0.01, double.MaxValue);
+            aeroStatMass = MathD.Clamp(aeroConstMassFudgeNumber * aeroStatSurfaceArea * ((aeroStatAspectRatioSweepScale * 2.0) / (3.0 + aeroStatAspectRatioSweepScale)) * ((1.0 + aeroStatTaperRatio) / 2), 0.01, double.MaxValue);
             aeroStatCd = aeroConstDragBaseValue / aeroStatAspectRatioSweepScale * aeroConstDragMultiplier;
             aeroStatCl = aeroConstLiftFudgeNumber * aeroStatSurfaceArea * aeroStatAspectRatioSweepScale;
             GatherChildrenCl();
-            aeroStatConnectionForce = Math.Round (MathD.Clamp (Math.Sqrt (aeroStatCl + aeroStatClChildren) * (double) aeroConstConnectionFactor, (double) aeroConstConnectionMinimum, double.MaxValue));
+            aeroStatConnectionForce = Math.Round(MathD.Clamp(Math.Sqrt(aeroStatCl + aeroStatClChildren) * (double)aeroConstConnectionFactor, (double)aeroConstConnectionMinimum, double.MaxValue));
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                DebugLogWithID ("CalculateAerodynamicValues", "Passed SR/AR/ARSS/mass/Cl/Cd/connection");
+                DebugLogWithID("CalculateAerodynamicValues", "Passed SR/AR/ARSS/mass/Cl/Cd/connection");
 
             // Shared parameters
 
             if (!isCtrlSrf)
             {
-                aeroUICost = (float) aeroStatMass * (1f + (float) aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity;
-                aeroUICost = Mathf.Round (aeroUICost / 5f) * 5f;
-                part.CoMOffset = new Vector3 (sharedBaseLength / 2f, -sharedBaseOffsetTip / 2f, 0f);
+                aeroUICost = (float)aeroStatMass * (1f + (float)aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity;
+                aeroUICost = Mathf.Round(aeroUICost / 5f) * 5f;
+                part.CoMOffset = new Vector3(sharedBaseLength / 2f, -sharedBaseOffsetTip / 2f, 0f);
             }
             else
             {
-                aeroUICost = (float) aeroStatMass * (1f + (float) aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity * (1f - aeroConstControlSurfaceFraction);
-                aeroUICost += (float) aeroStatMass * (1f + (float) aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensityControl * aeroConstControlSurfaceFraction;
-                aeroUICost = Mathf.Round (aeroUICost / 5f) * 5f;
-                part.CoMOffset = new Vector3 (0f, -(sharedWidthRootSum + sharedWidthTipSum) / 4f, 0f);
+                aeroUICost = (float)aeroStatMass * (1f + (float)aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity * (1f - aeroConstControlSurfaceFraction);
+                aeroUICost += (float)aeroStatMass * (1f + (float)aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensityControl * aeroConstControlSurfaceFraction;
+                aeroUICost = Mathf.Round(aeroUICost / 5f) * 5f;
+                part.CoMOffset = new Vector3(0f, -(sharedWidthRootSum + sharedWidthTipSum) / 4f, 0f);
             }
             aeroUICost -= part.partInfo.cost; // it's additional cost
 
-            part.breakingForce = Mathf.Round ((float) aeroStatConnectionForce);
-            part.breakingTorque = Mathf.Round ((float) aeroStatConnectionForce);
+            part.breakingForce = Mathf.Round((float)aeroStatConnectionForce);
+            part.breakingTorque = Mathf.Round((float)aeroStatConnectionForce);
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                DebugLogWithID ("CalculateAerodynamicValues", "Passed cost/force/torque");
+                DebugLogWithID("CalculateAerodynamicValues", "Passed cost/force/torque");
 
             // Stock-only values
             if (!assemblyFARUsed)
@@ -1971,14 +2065,14 @@ namespace WingProcedural
                 if (!isCtrlSrf && !isWingAsCtrlSrf)
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
+                        DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
                     ((ModuleLiftingSurface)this.part.Modules["ModuleLiftingSurface"]).deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     aeroUIMass = stockLiftCoefficient * 0.1f;
                 }
                 else
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
+                        DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
                     ModuleControlSurface mCtrlSrf = FirstOfTypeOrDefault<ModuleControlSurface>(part.Modules);
                     mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
@@ -1993,44 +2087,44 @@ namespace WingProcedural
             else
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                    DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Entered segment");
+                    DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Entered segment");
                 if (aeroFARModuleReference == null)
                 {
-                    if (part.Modules.Contains ("FARControllableSurface"))
+                    if (part.Modules.Contains("FARControllableSurface"))
                         aeroFARModuleReference = part.Modules["FARControllableSurface"];
-                    else if (part.Modules.Contains ("FARWingAerodynamicModel"))
+                    else if (part.Modules.Contains("FARWingAerodynamicModel"))
                         aeroFARModuleReference = part.Modules["FARWingAerodynamicModel"];
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module reference was null, search performed, recheck result was " + (aeroFARModuleReference == null).ToString ());
+                        DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Module reference was null, search performed, recheck result was " + (aeroFARModuleReference == null).ToString());
                 }
                 if (aeroFARModuleReference != null)
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                        DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module reference present");
+                        DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Module reference present");
                     if (aeroFARModuleType == null)
-                        aeroFARModuleType = aeroFARModuleReference.GetType ();
-                    if (aeroFARModuleType != null) 
+                        aeroFARModuleType = aeroFARModuleReference.GetType();
+                    if (aeroFARModuleType != null)
                     {
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Module type present");
+                            DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Module type present");
                         if (aeroFARFieldInfoSemispan == null)
-                            aeroFARFieldInfoSemispan = aeroFARModuleType.GetField ("b_2");
+                            aeroFARFieldInfoSemispan = aeroFARModuleType.GetField("b_2");
                         if (aeroFARFieldInfoSemispan_Actual == null)
                             aeroFARFieldInfoSemispan_Actual = aeroFARModuleType.GetField("b_2_actual");
                         if (aeroFARFieldInfoMAC == null)
-                            aeroFARFieldInfoMAC = aeroFARModuleType.GetField ("MAC");
+                            aeroFARFieldInfoMAC = aeroFARModuleType.GetField("MAC");
                         if (aeroFARFieldInfoMAC_Actual == null)
                             aeroFARFieldInfoMAC_Actual = aeroFARModuleType.GetField("MAC_actual");
                         if (aeroFARFieldInfoSurfaceArea == null)
                             aeroFARFieldInfoSurfaceArea = aeroFARModuleType.GetField("S");
                         if (aeroFARFieldInfoMidChordSweep == null)
-                            aeroFARFieldInfoMidChordSweep = aeroFARModuleType.GetField ("MidChordSweep");
+                            aeroFARFieldInfoMidChordSweep = aeroFARModuleType.GetField("MidChordSweep");
                         if (aeroFARFieldInfoTaperRatio == null)
-                            aeroFARFieldInfoTaperRatio = aeroFARModuleType.GetField ("TaperRatio");
+                            aeroFARFieldInfoTaperRatio = aeroFARModuleType.GetField("TaperRatio");
                         if (isCtrlSrf)
                         {
                             if (aeroFARFieldInfoControlSurfaceFraction == null)
-                                aeroFARFieldInfoControlSurfaceFraction = aeroFARModuleType.GetField ("ctrlSurfFrac");
+                                aeroFARFieldInfoControlSurfaceFraction = aeroFARModuleType.GetField("ctrlSurfFrac");
                         }
                         else
                         {
@@ -2038,33 +2132,33 @@ namespace WingProcedural
                                 aeroFARFieldInfoRootChordOffset = aeroFARModuleType.GetField("rootMidChordOffsetFromOrig");
                         }
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                            DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Field checks and fetching passed");
+                            DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Field checks and fetching passed");
 
                         if (aeroFARMethodInfoUsed == null)
                         {
-                            aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod ("StartInitialization");
+                            aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod("StartInitialization");
                             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info was null, search performed, recheck result was " + (aeroFARMethodInfoUsed == null).ToString ());
+                                DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Method info was null, search performed, recheck result was " + (aeroFARMethodInfoUsed == null).ToString());
                         }
                         if (aeroFARMethodInfoUsed != null)
                         {
                             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | Method info present");
-                            aeroFARFieldInfoSemispan.SetValue (aeroFARModuleReference, aeroStatSemispan);
+                                DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Method info present");
+                            aeroFARFieldInfoSemispan.SetValue(aeroFARModuleReference, aeroStatSemispan);
                             aeroFARFieldInfoSemispan_Actual.SetValue(aeroFARModuleReference, aeroStatSemispan);
-                            aeroFARFieldInfoMAC.SetValue (aeroFARModuleReference, aeroStatMeanAerodynamicChord);
+                            aeroFARFieldInfoMAC.SetValue(aeroFARModuleReference, aeroStatMeanAerodynamicChord);
                             aeroFARFieldInfoMAC_Actual.SetValue(aeroFARModuleReference, aeroStatMeanAerodynamicChord);
                             //aeroFARFieldInfoSurfaceArea.SetValue (aeroFARModuleReference, aeroStatSurfaceArea);
-                            aeroFARFieldInfoMidChordSweep.SetValue (aeroFARModuleReference, aeroStatMidChordSweep);
-                            aeroFARFieldInfoTaperRatio.SetValue (aeroFARModuleReference, aeroStatTaperRatio);
+                            aeroFARFieldInfoMidChordSweep.SetValue(aeroFARModuleReference, aeroStatMidChordSweep);
+                            aeroFARFieldInfoTaperRatio.SetValue(aeroFARModuleReference, aeroStatTaperRatio);
                             if (isCtrlSrf)
-                                aeroFARFieldInfoControlSurfaceFraction.SetValue (aeroFARModuleReference, aeroConstControlSurfaceFraction);
+                                aeroFARFieldInfoControlSurfaceFraction.SetValue(aeroFARModuleReference, aeroConstControlSurfaceFraction);
                             else
                                 aeroFARFieldInfoRootChordOffset.SetValue(aeroFARModuleReference, (Vector3)aeroStatRootMidChordOffsetFromOrigin);
 
                             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                                DebugLogWithID ("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
-                            aeroFARMethodInfoUsed.Invoke (aeroFARModuleReference, null);
+                                DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
+                            aeroFARMethodInfoUsed.Invoke(aeroFARModuleReference, null);
                         }
                     }
                 }
@@ -2073,21 +2167,21 @@ namespace WingProcedural
             }
 
             // Update GUI values and finish
-            aeroUIMeanAerodynamicChord = (float) aeroStatMeanAerodynamicChord;
-            aeroUISemispan = (float) aeroStatSemispan;
-            aeroUIMidChordSweep = (float) aeroStatMidChordSweep;
-            aeroUITaperRatio = (float) aeroStatTaperRatio;
-            aeroUISurfaceArea = (float) aeroStatSurfaceArea;
-            aeroUIAspectRatio = (float) aeroStatAspectRatio;
+            aeroUIMeanAerodynamicChord = (float)aeroStatMeanAerodynamicChord;
+            aeroUISemispan = (float)aeroStatSemispan;
+            aeroUIMidChordSweep = (float)aeroStatMidChordSweep;
+            aeroUITaperRatio = (float)aeroStatTaperRatio;
+            aeroUISurfaceArea = (float)aeroStatSurfaceArea;
+            aeroUIAspectRatio = (float)aeroStatAspectRatio;
 
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
-                DebugLogWithID ("CalculateAerodynamicValues", "Finished");
+                DebugLogWithID("CalculateAerodynamicValues", "Finished");
 
             StartCoroutine(updateAeroDelayed());
         }
 
-        float updateTimeDelay = 0;
-        IEnumerator updateAeroDelayed()
+        private float updateTimeDelay = 0;
+        private IEnumerator updateAeroDelayed()
         {
             bool running = updateTimeDelay > 0;
             updateTimeDelay = 0.5f;
@@ -2120,7 +2214,7 @@ namespace WingProcedural
             updateTimeDelay = 0;
         }
 
-        public void GatherChildrenCl ()
+        public void GatherChildrenCl()
         {
             aeroStatClChildren = 0;
 
@@ -2129,7 +2223,7 @@ namespace WingProcedural
             {
                 if (part.children[i] == null)
                     continue;
-                if (part.children[i].Modules.Contains ("WingProcedural"))
+                if (part.children[i].Modules.Contains("WingProcedural"))
                 {
                     WingProcedural child = FirstOfTypeOrDefault<WingProcedural>(part.children[i].Modules);
                     if (child == null)
@@ -2140,13 +2234,13 @@ namespace WingProcedural
             }
 
             // If parent is a pWing, trickle the call to gather ChildrenCl up to them.
-            if (this.part.parent != null && this.part.parent.Modules.Contains ("WingProcedural"))
+            if (this.part.parent != null && this.part.parent.Modules.Contains("WingProcedural"))
                 FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules).GatherChildrenCl();
         }
 
         public bool showWingData = false;
-        [KSPEvent (guiActiveEditor = true, guiName = "Show wing data")]
-        public void InfoToggleEvent ()
+        [KSPEvent(guiActiveEditor = true, guiName = "Show wing data")]
+        public void InfoToggleEvent()
         {
             if (isAttached && this.part.parent != null)
             {
@@ -2177,37 +2271,37 @@ namespace WingProcedural
         }
 
         // [KSPEvent (guiActive = true, guiActiveEditor = true, guiName = "Dump interaction data")]
-        public void DumpInteractionData ()
+        public void DumpInteractionData()
         {
-            if (part.Modules.Contains ("FARWingAerodynamicModel"))
+            if (part.Modules.Contains("FARWingAerodynamicModel"))
             {
                 PartModule moduleFAR = part.Modules["FARWingAerodynamicModel"];
-                Type typeFAR = moduleFAR.GetType ();
+                Type typeFAR = moduleFAR.GetType();
 
-                var referenceInteraction = typeFAR.GetField ("wingInteraction", BindingFlags.Instance | BindingFlags.NonPublic).GetValue (moduleFAR);
+                var referenceInteraction = typeFAR.GetField("wingInteraction", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(moduleFAR);
                 if (referenceInteraction != null)
                 {
                     string report = "";
-                    Type typeInteraction = referenceInteraction.GetType ();
-                    Type runtimeListType = typeof (List<>).MakeGenericType (typeFAR);
+                    Type typeInteraction = referenceInteraction.GetType();
+                    Type runtimeListType = typeof(List<>).MakeGenericType(typeFAR);
 
-                    FieldInfo forwardExposureInfo = typeInteraction.GetField ("forwardExposure", BindingFlags.NonPublic | BindingFlags.Instance);
-                    double forwardExposure = (double) forwardExposureInfo.GetValue (referenceInteraction);
-                    FieldInfo backwardExposureInfo = typeInteraction.GetField ("backwardExposure", BindingFlags.NonPublic | BindingFlags.Instance);
-                    double backwardExposure = (double) backwardExposureInfo.GetValue (referenceInteraction);
-                    FieldInfo leftwardExposureInfo = typeInteraction.GetField ("leftwardExposure", BindingFlags.NonPublic | BindingFlags.Instance);
-                    double leftwardExposure = (double) leftwardExposureInfo.GetValue (referenceInteraction);
-                    FieldInfo rightwardExposureInfo = typeInteraction.GetField ("rightwardExposure", BindingFlags.NonPublic | BindingFlags.Instance);
-                    double rightwardExposure = (double) rightwardExposureInfo.GetValue (referenceInteraction);
-                    report += "Exposure (fwd/back/left/right): " + forwardExposure.ToString ("F2") + ", " + backwardExposure.ToString ("F2") + ", " + leftwardExposure.ToString ("F2") + ", " + rightwardExposure.ToString ("F2");
-                    DebugLogWithID ("DumpInteractionData", report);
+                    FieldInfo forwardExposureInfo = typeInteraction.GetField("forwardExposure", BindingFlags.NonPublic | BindingFlags.Instance);
+                    double forwardExposure = (double)forwardExposureInfo.GetValue(referenceInteraction);
+                    FieldInfo backwardExposureInfo = typeInteraction.GetField("backwardExposure", BindingFlags.NonPublic | BindingFlags.Instance);
+                    double backwardExposure = (double)backwardExposureInfo.GetValue(referenceInteraction);
+                    FieldInfo leftwardExposureInfo = typeInteraction.GetField("leftwardExposure", BindingFlags.NonPublic | BindingFlags.Instance);
+                    double leftwardExposure = (double)leftwardExposureInfo.GetValue(referenceInteraction);
+                    FieldInfo rightwardExposureInfo = typeInteraction.GetField("rightwardExposure", BindingFlags.NonPublic | BindingFlags.Instance);
+                    double rightwardExposure = (double)rightwardExposureInfo.GetValue(referenceInteraction);
+                    report += "Exposure (fwd/back/left/right): " + forwardExposure.ToString("F2") + ", " + backwardExposure.ToString("F2") + ", " + leftwardExposure.ToString("F2") + ", " + rightwardExposure.ToString("F2");
+                    DebugLogWithID("DumpInteractionData", report);
                 }
-                else DebugLogWithID ("DumpInteractionData", "Interaction reference is null, report failed");
+                else DebugLogWithID("DumpInteractionData", "Interaction reference is null, report failed");
             }
-            else DebugLogWithID ("DumpInteractionData", "FAR module not found, report failed");
+            else DebugLogWithID("DumpInteractionData", "FAR module not found, report failed");
         }
 
-        #endregion
+        #endregion Aero
 
         #region Alternative UI/input
 
@@ -2229,8 +2323,9 @@ namespace WingProcedural
 
         // Supposed to fix context menu updates
         // Proposed by NathanKell, if I'm not mistaken
-        UIPartActionWindow _myWindow = null;
-        UIPartActionWindow myWindow
+        private UIPartActionWindow _myWindow = null;
+
+        private UIPartActionWindow myWindow
         {
             get
             {
@@ -2253,21 +2348,21 @@ namespace WingProcedural
                 myWindow.displayDirty = true;
         }
 
-        private void OnGUI ()
+        private void OnGUI()
         {
             if (!isStarted || !HighLogic.LoadedSceneIsEditor || !uiWindowActive)
                 return;
-            
+
             if (uiInstanceIDLocal == 0)
-                uiInstanceIDLocal = part.GetInstanceID ();
+                uiInstanceIDLocal = part.GetInstanceID();
             if (uiInstanceIDTarget == uiInstanceIDLocal || uiInstanceIDTarget == 0)
             {
                 if (!UIUtility.uiStyleConfigured)
-                    UIUtility.ConfigureStyles ();
+                    UIUtility.ConfigureStyles();
 
                 UIUtility.uiRectWindowEditor = GUILayout.Window(GetInstanceID(), UIUtility.uiRectWindowEditor, OnWindow, GetWindowTitle(), UIUtility.uiStyleWindow, GUILayout.Height(uiAdjustWindow ? 0 : UIUtility.uiRectWindowEditor.height));
                 uiAdjustWindow = false;
-                
+
                 // Thanks to ferram4
                 // Following section lock the editor, preventing window clickthrough
                 if (UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos()))
@@ -2281,37 +2376,36 @@ namespace WingProcedural
             }
         }
 
-        public static Vector4 uiColorSliderBase = new Vector4 (0.25f, 0.5f, 0.4f, 1f);
-        public static Vector4 uiColorSliderEdgeL = new Vector4 (0.20f, 0.5f, 0.4f, 1f);
-        public static Vector4 uiColorSliderEdgeT = new Vector4 (0.15f, 0.5f, 0.4f, 1f);
-        public static Vector4 uiColorSliderColorsST = new Vector4 (0.10f, 0.5f, 0.4f, 1f);
-        public static Vector4 uiColorSliderColorsSB = new Vector4 (0.05f, 0.5f, 0.4f, 1f);
-        public static Vector4 uiColorSliderColorsET = new Vector4 (0.00f, 0.5f, 0.4f, 1f);
-        public static Vector4 uiColorSliderColorsEL = new Vector4 (0.95f, 0.5f, 0.4f, 1f);
+        public static Vector4 uiColorSliderBase = new Vector4(0.25f, 0.5f, 0.4f, 1f);
+        public static Vector4 uiColorSliderEdgeL = new Vector4(0.20f, 0.5f, 0.4f, 1f);
+        public static Vector4 uiColorSliderEdgeT = new Vector4(0.15f, 0.5f, 0.4f, 1f);
+        public static Vector4 uiColorSliderColorsST = new Vector4(0.10f, 0.5f, 0.4f, 1f);
+        public static Vector4 uiColorSliderColorsSB = new Vector4(0.05f, 0.5f, 0.4f, 1f);
+        public static Vector4 uiColorSliderColorsET = new Vector4(0.00f, 0.5f, 0.4f, 1f);
+        public static Vector4 uiColorSliderColorsEL = new Vector4(0.95f, 0.5f, 0.4f, 1f);
 
-        private void OnWindow (int window)
+        private void OnWindow(int window)
         {
             if (uiEditMode)
             {
-
                 bool returnEarly = false;
-                GUILayout.BeginHorizontal ();
-                GUILayout.BeginVertical ();
-                if (uiLastFieldName.Length > 0) GUILayout.Label ("Last: " + uiLastFieldName, UIUtility.uiStyleLabelMedium);
-                else GUILayout.Label ("Property editor", UIUtility.uiStyleLabelMedium);
-                if (uiLastFieldTooltip.Length > 0) GUILayout.Label (uiLastFieldTooltip + "\n_________________________", UIUtility.uiStyleLabelHint, GUILayout.MaxHeight (44f), GUILayout.MinHeight (44f)); // 58f for four lines
-                GUILayout.EndVertical ();
-                if (GUILayout.Button ("Close", UIUtility.uiStyleButton, GUILayout.MaxWidth (50f)))
+                GUILayout.BeginHorizontal();
+                GUILayout.BeginVertical();
+                if (uiLastFieldName.Length > 0) GUILayout.Label("Last: " + uiLastFieldName, UIUtility.uiStyleLabelMedium);
+                else GUILayout.Label("Property editor", UIUtility.uiStyleLabelMedium);
+                if (uiLastFieldTooltip.Length > 0) GUILayout.Label(uiLastFieldTooltip + "\n_________________________", UIUtility.uiStyleLabelHint, GUILayout.MaxHeight(44f), GUILayout.MinHeight(44f)); // 58f for four lines
+                GUILayout.EndVertical();
+                if (GUILayout.Button("Close", UIUtility.uiStyleButton, GUILayout.MaxWidth(50f)))
                 {
-                    EditorLogic.fetch.Unlock ("WingProceduralWindow");
+                    EditorLogic.fetch.Unlock("WingProceduralWindow");
                     uiWindowActive = false;
                     stockButton.SetFalse(false);
                     returnEarly = true;
                 }
-                GUILayout.EndHorizontal ();
+                GUILayout.EndHorizontal();
                 if (returnEarly) return;
 
-                DrawFieldGroupHeader (ref sharedFieldGroupBaseStatic, "Base");
+                DrawFieldGroupHeader(ref sharedFieldGroupBaseStatic, "Base");
                 if (sharedFieldGroupBaseStatic)
                 {
                     DrawField(ref sharedBaseLength, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), GetLimitsFromType(sharedBaseLengthLimits), "Length", uiColorSliderBase, 0, 0);
@@ -2326,96 +2420,96 @@ namespace WingProcedural
 
                 if (!isCtrlSrf)
                 {
-                    DrawFieldGroupHeader (ref sharedFieldGroupEdgeLeadingStatic, "Edge (leading)");
+                    DrawFieldGroupHeader(ref sharedFieldGroupEdgeLeadingStatic, "Edge (leading)");
                     if (sharedFieldGroupEdgeLeadingStatic)
                     {
-                        DrawField (ref sharedEdgeTypeLeading, sharedIncrementInt, sharedIncrementInt, GetLimitsFromType (sharedEdgeTypeLimits), "Shape", uiColorSliderEdgeL, 7, 2, false);
-                        DrawField (ref sharedEdgeWidthLeadingRoot, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (root)", uiColorSliderEdgeL, 8, 0);
-                        DrawField (ref sharedEdgeWidthLeadingTip, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (tip)", uiColorSliderEdgeL, 9, 0);
+                        DrawField(ref sharedEdgeTypeLeading, sharedIncrementInt, sharedIncrementInt, GetLimitsFromType(sharedEdgeTypeLimits), "Shape", uiColorSliderEdgeL, 7, 2, false);
+                        DrawField(ref sharedEdgeWidthLeadingRoot, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType(sharedEdgeWidthLimits), "Width (root)", uiColorSliderEdgeL, 8, 0);
+                        DrawField(ref sharedEdgeWidthLeadingTip, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType(sharedEdgeWidthLimits), "Width (tip)", uiColorSliderEdgeL, 9, 0);
                     }
                 }
 
-                DrawFieldGroupHeader (ref sharedFieldGroupEdgeTrailingStatic, "Edge (trailing)");
+                DrawFieldGroupHeader(ref sharedFieldGroupEdgeTrailingStatic, "Edge (trailing)");
                 if (sharedFieldGroupEdgeTrailingStatic)
                 {
-                    DrawField (ref sharedEdgeTypeTrailing, sharedIncrementInt, sharedIncrementInt, GetLimitsFromType (sharedEdgeTypeLimits), "Shape", uiColorSliderEdgeT, 10, isCtrlSrf ? 3 : 2, false);
-                    DrawField (ref sharedEdgeWidthTrailingRoot, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (root)", uiColorSliderEdgeT, 11, 0);
-                    DrawField (ref sharedEdgeWidthTrailingTip, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType (sharedEdgeWidthLimits), "Width (tip)", uiColorSliderEdgeT, 12, 0);
+                    DrawField(ref sharedEdgeTypeTrailing, sharedIncrementInt, sharedIncrementInt, GetLimitsFromType(sharedEdgeTypeLimits), "Shape", uiColorSliderEdgeT, 10, isCtrlSrf ? 3 : 2, false);
+                    DrawField(ref sharedEdgeWidthTrailingRoot, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType(sharedEdgeWidthLimits), "Width (root)", uiColorSliderEdgeT, 11, 0);
+                    DrawField(ref sharedEdgeWidthTrailingTip, sharedIncrementSmall, sharedIncrementSmall, GetLimitsFromType(sharedEdgeWidthLimits), "Width (tip)", uiColorSliderEdgeT, 12, 0);
                 }
 
-                DrawFieldGroupHeader (ref sharedFieldGroupColorSTStatic, "Surface (top)");
+                DrawFieldGroupHeader(ref sharedFieldGroupColorSTStatic, "Surface (top)");
                 if (sharedFieldGroupColorSTStatic)
                 {
-                    DrawField (ref sharedMaterialST, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsST, 13, 1, false);
-                    DrawField (ref sharedColorSTOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsST, 14, 0);
-                    DrawField (ref sharedColorSTHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsST, 15, 0);
-                    DrawField (ref sharedColorSTSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsST, 16, 0);
-                    DrawField (ref sharedColorSTBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsST, 17, 0);
+                    DrawField(ref sharedMaterialST, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsST, 13, 1, false);
+                    DrawField(ref sharedColorSTOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsST, 14, 0);
+                    DrawField(ref sharedColorSTHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsST, 15, 0);
+                    DrawField(ref sharedColorSTSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsST, 16, 0);
+                    DrawField(ref sharedColorSTBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsST, 17, 0);
                 }
 
-                DrawFieldGroupHeader (ref sharedFieldGroupColorSBStatic, "Surface (bottom)");
+                DrawFieldGroupHeader(ref sharedFieldGroupColorSBStatic, "Surface (bottom)");
                 if (sharedFieldGroupColorSBStatic)
                 {
-                    DrawField (ref sharedMaterialSB, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsSB, 13, 1, false);
-                    DrawField (ref sharedColorSBOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsSB, 14, 0);
-                    DrawField (ref sharedColorSBHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsSB, 15, 0);
-                    DrawField (ref sharedColorSBSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsSB, 16, 0);
-                    DrawField (ref sharedColorSBBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsSB, 17, 0);
+                    DrawField(ref sharedMaterialSB, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsSB, 13, 1, false);
+                    DrawField(ref sharedColorSBOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsSB, 14, 0);
+                    DrawField(ref sharedColorSBHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsSB, 15, 0);
+                    DrawField(ref sharedColorSBSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsSB, 16, 0);
+                    DrawField(ref sharedColorSBBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsSB, 17, 0);
                 }
 
-                DrawFieldGroupHeader (ref sharedFieldGroupColorETStatic, "Surface (trailing edge)");
+                DrawFieldGroupHeader(ref sharedFieldGroupColorETStatic, "Surface (trailing edge)");
                 if (sharedFieldGroupColorETStatic)
                 {
-                    DrawField (ref sharedMaterialET, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsET, 13, 1, false);
-                    DrawField (ref sharedColorETOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsET, 14, 0);
-                    DrawField (ref sharedColorETHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsET, 15, 0);
-                    DrawField (ref sharedColorETSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsET, 16, 0);
-                    DrawField (ref sharedColorETBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsET, 17, 0);
+                    DrawField(ref sharedMaterialET, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsET, 13, 1, false);
+                    DrawField(ref sharedColorETOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsET, 14, 0);
+                    DrawField(ref sharedColorETHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsET, 15, 0);
+                    DrawField(ref sharedColorETSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsET, 16, 0);
+                    DrawField(ref sharedColorETBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsET, 17, 0);
                 }
 
                 if (!isCtrlSrf)
                 {
-                    DrawFieldGroupHeader (ref sharedFieldGroupColorELStatic, "Surface (leading edge)");
+                    DrawFieldGroupHeader(ref sharedFieldGroupColorELStatic, "Surface (leading edge)");
                     if (sharedFieldGroupColorELStatic)
                     {
-                        DrawField (ref sharedMaterialEL, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsEL, 13, 1, false);
-                        DrawField (ref sharedColorELOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsEL, 14, 0);
-                        DrawField (ref sharedColorELHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsEL, 15, 0);
-                        DrawField (ref sharedColorELSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsEL, 16, 0);
-                        DrawField (ref sharedColorELBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsEL, 17, 0);
+                        DrawField(ref sharedMaterialEL, sharedIncrementInt, sharedIncrementInt, sharedMaterialLimits, "Material", uiColorSliderColorsEL, 13, 1, false);
+                        DrawField(ref sharedColorELOpacity, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Opacity", uiColorSliderColorsEL, 14, 0);
+                        DrawField(ref sharedColorELHue, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Hue", uiColorSliderColorsEL, 15, 0);
+                        DrawField(ref sharedColorELSaturation, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Saturation", uiColorSliderColorsEL, 16, 0);
+                        DrawField(ref sharedColorELBrightness, sharedIncrementColor, sharedIncrementColorLarge, sharedColorLimits, "Brightness", uiColorSliderColorsEL, 17, 0);
                     }
                 }
 
-                GUILayout.Label ("_________________________\n\nPress J to exit edit mode\nOptions below allow you to change default values", UIUtility.uiStyleLabelHint);
+                GUILayout.Label("_________________________\n\nPress J to exit edit mode\nOptions below allow you to change default values", UIUtility.uiStyleLabelHint);
                 if (canBeFueled && useStockFuel)
                 {
-                    if (GUILayout.Button (FuelGUIGetConfigDesc () + " | Next tank setup", UIUtility.uiStyleButton)) NextConfiguration ();
+                    if (GUILayout.Button(FuelGUIGetConfigDesc() + " | Next tank setup", UIUtility.uiStyleButton)) NextConfiguration();
                 }
 
-                GUILayout.BeginHorizontal ();
-                if (GUILayout.Button ("Save as default", UIUtility.uiStyleButton))
-                    ReplaceDefaults ();
-                if (GUILayout.Button ("Restore default", UIUtility.uiStyleButton))
-                    RestoreDefaults ();
-                GUILayout.EndHorizontal ();
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Save as default", UIUtility.uiStyleButton))
+                    ReplaceDefaults();
+                if (GUILayout.Button("Restore default", UIUtility.uiStyleButton))
+                    RestoreDefaults();
+                GUILayout.EndHorizontal();
                 if (inheritancePossibleOnShape || inheritancePossibleOnMaterials)
                 {
-                    GUILayout.Label ("_________________________\n\nOptions options allow you to match the part properties to it's parent", UIUtility.uiStyleLabelHint);
-                    GUILayout.BeginHorizontal ();
-                    if (inheritancePossibleOnShape) 
-                    { 
-                        if (GUILayout.Button ("Shape", UIUtility.uiStyleButton))
-                            InheritParentValues (0);
-                        if (GUILayout.Button ("Base", UIUtility.uiStyleButton))
-                            InheritParentValues (1);
-                        if (GUILayout.Button ("Edges", UIUtility.uiStyleButton))
-                            InheritParentValues (2); 
+                    GUILayout.Label("_________________________\n\nOptions options allow you to match the part properties to it's parent", UIUtility.uiStyleLabelHint);
+                    GUILayout.BeginHorizontal();
+                    if (inheritancePossibleOnShape)
+                    {
+                        if (GUILayout.Button("Shape", UIUtility.uiStyleButton))
+                            InheritParentValues(0);
+                        if (GUILayout.Button("Base", UIUtility.uiStyleButton))
+                            InheritParentValues(1);
+                        if (GUILayout.Button("Edges", UIUtility.uiStyleButton))
+                            InheritParentValues(2);
                     }
                     if (inheritancePossibleOnMaterials)
                     {
-                        if (GUILayout.Button ("Color", UIUtility.uiStyleButton)) InheritParentValues (3);
+                        if (GUILayout.Button("Color", UIUtility.uiStyleButton)) InheritParentValues(3);
                     }
-                    GUILayout.EndHorizontal ();
+                    GUILayout.EndHorizontal();
                 }
             }
             else
@@ -2436,7 +2530,7 @@ namespace WingProcedural
                     GUILayout.EndHorizontal();
                 }
             }
-            GUI.DragWindow ();
+            GUI.DragWindow();
         }
 
         private void SetupFields()
@@ -2500,7 +2594,7 @@ namespace WingProcedural
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="field">the value to draw</param>
         /// <param name="increment">mouse drag increment</param>
@@ -2511,141 +2605,141 @@ namespace WingProcedural
         /// <param name="fieldID">tooltip stuff</param>
         /// <param name="fieldType">tooltip stuff</param>
         /// <param name="allowFine">Whether right click drag behaves as fine control or not</param>
-        private void DrawField (ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
+        private void DrawField(ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
         {
             bool changed = false;
-            field = UIUtility.FieldSlider (field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB (hsbColor), fieldType, allowFine);
+            field = UIUtility.FieldSlider(field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB(hsbColor), fieldType, allowFine);
             if (changed)
             {
                 uiLastFieldName = name;
-                uiLastFieldTooltip = UpdateTooltipText (fieldID);
+                uiLastFieldTooltip = UpdateTooltipText(fieldID);
             }
         }
 
-        private void DrawFieldGroupHeader (ref bool fieldGroupBoolStatic, string header)
+        private void DrawFieldGroupHeader(ref bool fieldGroupBoolStatic, string header)
         {
-            GUILayout.BeginHorizontal ();
-            if (GUILayout.Button (header, UIUtility.uiStyleLabelHint))
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button(header, UIUtility.uiStyleLabelHint))
             {
                 fieldGroupBoolStatic = !fieldGroupBoolStatic;
-                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logPropertyWindow) DebugLogWithID ("DrawFieldGroupHeader", "Header of " + header + " pressed | Group state: " + fieldGroupBoolStatic);
+                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logPropertyWindow) DebugLogWithID("DrawFieldGroupHeader", "Header of " + header + " pressed | Group state: " + fieldGroupBoolStatic);
                 uiAdjustWindow = true;
             }
-            if (fieldGroupBoolStatic) GUILayout.Label ("|", UIUtility.uiStyleLabelHint, GUILayout.MaxWidth (15f));
-            else GUILayout.Label ("+", UIUtility.uiStyleLabelHint, GUILayout.MaxWidth (15f));
-            GUILayout.EndHorizontal ();
+            if (fieldGroupBoolStatic) GUILayout.Label("|", UIUtility.uiStyleLabelHint, GUILayout.MaxWidth(15f));
+            else GUILayout.Label("+", UIUtility.uiStyleLabelHint, GUILayout.MaxWidth(15f));
+            GUILayout.EndHorizontal();
         }
 
         private static string uiLastFieldName = "";
         private static string uiLastFieldTooltip = "Additional info on edited \nproperties is displayed here";
 
-        private string UpdateTooltipText (int fieldID)
+        private string UpdateTooltipText(int fieldID)
         {
             // Base descriptions
             if (fieldID == 0) // sharedBaseLength))
             {
                 if (!isCtrlSrf) return "Lateral measurement of the wing, \nalso referred to as semispan";
-                else            return "Lateral measurement of the control \nsurface at it's root";
+                else return "Lateral measurement of the control \nsurface at it's root";
             }
             else if (fieldID == 1) // sharedBaseWidthRoot))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the wing \nat the root cross section";
-                else            return "Longitudinal measurement of \nthe root chord";
+                else return "Longitudinal measurement of \nthe root chord";
             }
             else if (fieldID == 2) // sharedBaseWidthTip))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the wing \nat the tip cross section";
-                else            return "Longitudinal measurement of \nthe tip chord";
+                else return "Longitudinal measurement of \nthe tip chord";
             }
             else if (fieldID == 3) // sharedBaseOffsetRoot))
             {
                 if (!isCtrlSrf) return "This property shouldn't be accessible \non a wing";
-                else            return "Offset of the trailing edge \nroot corner on the lateral axis";
+                else return "Offset of the trailing edge \nroot corner on the lateral axis";
             }
             else if (fieldID == 4) // sharedBaseOffsetTip))
             {
                 if (!isCtrlSrf) return "Distance between midpoints of the cross \nsections on the longitudinal axis";
-                else            return "Offset of the trailing edge \ntip corner on the lateral axis";
+                else return "Offset of the trailing edge \ntip corner on the lateral axis";
             }
             else if (fieldID == 5) // sharedBaseThicknessRoot))
             {
                 if (!isCtrlSrf) return "Thickness at the root cross section \nUsually kept proportional to edge width";
-                else            return "Thickness at the root cross section \nUsually kept proportional to edge width";
+                else return "Thickness at the root cross section \nUsually kept proportional to edge width";
             }
             else if (fieldID == 6) // sharedBaseThicknessTip))
             {
                 if (!isCtrlSrf) return "Thickness at the tip cross section \nUsually kept proportional to edge width";
-                else            return "Thickness at the tip cross section \nUsually kept proportional to edge width";
+                else return "Thickness at the tip cross section \nUsually kept proportional to edge width";
             }
 
             // Edge descriptions
             else if (fieldID == 7) // sharedEdgeTypeTrailing))
             {
                 if (!isCtrlSrf) return "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
-                else            return "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
+                else return "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
             }
             else if (fieldID == 8) // sharedEdgeWidthTrailingRoot))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the trailing \nedge cross section at wing root";
-                else            return "Longitudinal measurement of the trailing \nedge cross section at with root";
+                else return "Longitudinal measurement of the trailing \nedge cross section at with root";
             }
             else if (fieldID == 9) // sharedEdgeWidthTrailingTip))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the trailing \nedge cross section at wing tip";
-                else            return "Longitudinal measurement of the trailing \nedge cross section at with tip";
+                else return "Longitudinal measurement of the trailing \nedge cross section at with tip";
             }
             else if (fieldID == 10) // sharedEdgeTypeLeading))
             {
                 if (!isCtrlSrf) return "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
-                else            return "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
+                else return "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
             }
             else if (fieldID == 11) // sharedEdgeWidthLeadingRoot))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the leading \nedge cross section at wing root";
-                else            return "Longitudinal measurement of the leading \nedge cross section at wing root";
+                else return "Longitudinal measurement of the leading \nedge cross section at wing root";
             }
             else if (fieldID == 12) // sharedEdgeWidthLeadingTip))
             {
                 if (!isCtrlSrf) return "Longitudinal measurement of the leading \nedge cross section at with tip";
-                else            return "Longitudinal measurement of the leading \nedge cross section at with tip";
+                else return "Longitudinal measurement of the leading \nedge cross section at with tip";
             }
 
             // Surface descriptions
             else if (fieldID == 13)
             {
                 if (!isCtrlSrf) return "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
-                else            return "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
+                else return "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
             }
             else if (fieldID == 14)
             {
                 if (!isCtrlSrf) return "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
-                else            return "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
+                else return "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
             }
             else if (fieldID == 15)
             {
                 if (!isCtrlSrf) return "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
-                else            return "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
+                else return "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
             }
             else if (fieldID == 16)
             {
                 if (!isCtrlSrf) return "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
-                else            return "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
+                else return "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
             }
             else if (fieldID == 17)
             {
                 if (!isCtrlSrf) return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
-                else            return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
+                else return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
             }
 
             // This should not really happen
             else return "Unknown field\n";
         }
 
-        private void OnMouseOver ()
+        private void OnMouseOver()
         {
             if (!HighLogic.LoadedSceneIsEditor)
                 return;
-            
+
             if (this.part.parent != null && isAttached && !uiEditModeTimeout)
             {
                 if (uiEditMode)
@@ -2679,9 +2773,9 @@ namespace WingProcedural
             }
         }
 
-        static KeyCode keyTranslation = KeyCode.G, keyTipWidth = KeyCode.T, keyRootWidth = KeyCode.B, keyLeading = KeyCode.LeftAlt, keyTrailing = KeyCode.LeftControl;
-        Vector3 lastMousePos;
-        int state = 0; // 0 == nothing, 1 == translate, 2 == tipScale, 3 == rootScale
+        private static KeyCode keyTranslation = KeyCode.G, keyTipWidth = KeyCode.T, keyRootWidth = KeyCode.B, keyLeading = KeyCode.LeftAlt, keyTrailing = KeyCode.LeftControl;
+        private Vector3 lastMousePos;
+        private int state = 0; // 0 == nothing, 1 == translate, 2 == tipScale, 3 == rootScale
         public static Camera editorCam;
         public void DeformWing()
         {
@@ -2708,6 +2802,7 @@ namespace WingProcedural
                         sharedBaseOffsetTip = Mathf.Clamp(sharedBaseOffsetTip, GetLimitsFromType(sharedBaseOffsetLimits).x, GetLimitsFromType(sharedBaseOffsetLimits).y);
                     }
                     break;
+
                 case 2:
                     if (!Input.GetKey(keyTipWidth))
                     {
@@ -2732,6 +2827,7 @@ namespace WingProcedural
                         sharedBaseThicknessTip = Mathf.Clamp(sharedBaseThicknessTip, sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
                     }
                     break;
+
                 case 3:
                     if (!Input.GetKey(keyRootWidth))
                     {
@@ -2759,15 +2855,15 @@ namespace WingProcedural
             }
         }
 
-        private void UpdateUI ()
+        private void UpdateUI()
         {
             if (stockButton == null)
-                OnStockButtonSetup ();
+                OnStockButtonSetup();
             if (uiEditModeTimeout && uiInstanceIDTarget == 0)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logPropertyWindow)
-                    DebugLogWithID ("UpdateUI", "Window timeout was left active on scene reload, resetting the window state");
-                StopWindowTimeout ();
+                    DebugLogWithID("UpdateUI", "Window timeout was left active on scene reload, resetting the window state");
+                StopWindowTimeout();
             }
             if (uiInstanceIDLocal != uiInstanceIDTarget)
                 return;
@@ -2776,17 +2872,17 @@ namespace WingProcedural
             {
                 uiEditModeTimer += Time.deltaTime;
                 if (uiEditModeTimer > uiEditModeTimeoutDuration)
-                    StopWindowTimeout ();
+                    StopWindowTimeout();
             }
             else if (uiEditMode)
             {
-                if (Input.GetKeyDown (uiKeyCodeEdit))
-                    ExitEditMode ();
+                if (Input.GetKeyDown(uiKeyCodeEdit))
+                    ExitEditMode();
                 else
                 {
-                    bool cursorInGUI = UIUtility.uiRectWindowEditor.Contains (UIUtility.GetMousePos ());
+                    bool cursorInGUI = UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos());
                     if (!cursorInGUI && Input.GetKeyDown(KeyCode.Mouse0))
-                        ExitEditMode ();
+                        ExitEditMode();
                 }
             }
         }
@@ -2855,22 +2951,21 @@ namespace WingProcedural
             return false;
         }
 
-        private void StopWindowTimeout ()
+        private void StopWindowTimeout()
         {
             uiAdjustWindow = true;
             uiEditModeTimeout = false;
             uiEditModeTimer = 0.0f;
-
         }
 
-        private void ExitEditMode ()
+        private void ExitEditMode()
         {
             uiEditMode = false;
             uiEditModeTimeout = true;
             uiAdjustWindow = true;
         }
 
-        private string GetWindowTitle ()
+        private string GetWindowTitle()
         {
             if (uiEditMode)
             {
@@ -2884,7 +2979,7 @@ namespace WingProcedural
             else return "Inactive";
         }
 
-        #endregion
+        #endregion Alternative UI/input
 
         #region Coloration
 
@@ -2892,27 +2987,27 @@ namespace WingProcedural
         // HSB
         // RGB
 
-        private Color GetVertexColor (int side)
+        private Color GetVertexColor(int side)
         {
-            if (side == 0) 
-                return ColorHSBToRGB (new Vector4 (sharedColorSTHue, sharedColorSTSaturation, sharedColorSTBrightness, sharedColorSTOpacity));
-            else if (side == 1) 
-                return ColorHSBToRGB (new Vector4 (sharedColorSBHue, sharedColorSBSaturation, sharedColorSBBrightness, sharedColorSBOpacity));
-            else if (side == 2) 
-                return ColorHSBToRGB (new Vector4 (sharedColorETHue, sharedColorETSaturation, sharedColorETBrightness, sharedColorETOpacity));
-            else 
-                return ColorHSBToRGB (new Vector4 (sharedColorELHue, sharedColorELSaturation, sharedColorELBrightness, sharedColorELOpacity));
+            if (side == 0)
+                return ColorHSBToRGB(new Vector4(sharedColorSTHue, sharedColorSTSaturation, sharedColorSTBrightness, sharedColorSTOpacity));
+            else if (side == 1)
+                return ColorHSBToRGB(new Vector4(sharedColorSBHue, sharedColorSBSaturation, sharedColorSBBrightness, sharedColorSBOpacity));
+            else if (side == 2)
+                return ColorHSBToRGB(new Vector4(sharedColorETHue, sharedColorETSaturation, sharedColorETBrightness, sharedColorETOpacity));
+            else
+                return ColorHSBToRGB(new Vector4(sharedColorELHue, sharedColorELSaturation, sharedColorELBrightness, sharedColorELOpacity));
         }
 
-        private Vector2 GetVertexUV2 (float selectedLayer)
+        private Vector2 GetVertexUV2(float selectedLayer)
         {
             if (selectedLayer == 0)
-                return new Vector2 (0f, 1f);
+                return new Vector2(0f, 1f);
             else
-                return new Vector2 ((selectedLayer - 1f) / 3f, 0f);
+                return new Vector2((selectedLayer - 1f) / 3f, 0f);
         }
 
-        private Color ColorHSBToRGB (Vector4 hsbColor)
+        private Color ColorHSBToRGB(Vector4 hsbColor)
         {
             float r = hsbColor.z;
             float g = hsbColor.z;
@@ -2966,12 +3061,13 @@ namespace WingProcedural
                     b = 0;
                 }
             }
-            return new Color (Mathf.Clamp01 (r), Mathf.Clamp01 (g), Mathf.Clamp01 (b), hsbColor.w);
+            return new Color(Mathf.Clamp01(r), Mathf.Clamp01(g), Mathf.Clamp01(b), hsbColor.w);
         }
 
-        #endregion
+        #endregion Coloration
 
         #region Resources
+
         // Original code by Snjo
         // Modified to remove config support and string parsing and to add support for arbitrary volumes
         // Further modified to support custom configs
@@ -2979,10 +3075,14 @@ namespace WingProcedural
         public bool fuelDisplayCurrentTankCost = false;
         public bool fuelShowInfo = false;
 
-        [KSPField (isPersistant = true)] public int fuelSelectedTankSetup = 0;
+        [KSPField(isPersistant = true)]
+        public int fuelSelectedTankSetup = 0;
 
-        [KSPField (guiActive = false, guiActiveEditor = false, guiName = "Added cost")] public float fuelAddedCost = 0f;
-        [KSPField (guiActive = false, guiActiveEditor = false, guiName = "Dry mass")] public float fuelDryMassInfo = 0f;
+        [KSPField(guiActive = false, guiActiveEditor = false, guiName = "Added cost")]
+        public float fuelAddedCost = 0f;
+
+        [KSPField(guiActive = false, guiActiveEditor = false, guiName = "Dry mass")]
+        public float fuelDryMassInfo = 0f;
 
         /// <summary>
         /// Called from setup (part of Start() for editor and flight)
@@ -3101,7 +3201,7 @@ namespace WingProcedural
         /// returns cost of max amount of fuel that the tanks can carry with the current loadout
         /// </summary>
         /// <returns></returns>
-        private float FuelGetAddedCost ()
+        private float FuelGetAddedCost()
         {
             float result = 0f;
             if (canBeFueled && useStockFuel && fuelSelectedTankSetup < StaticWingGlobals.wingTankConfigurations.Count && fuelSelectedTankSetup >= 0)
@@ -3152,13 +3252,13 @@ namespace WingProcedural
             }
         }
 
-        #endregion
+        #endregion Resources
 
         #region Interfaces
 
         public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
         {
-            return FuelGetAddedCost () + aeroUICost - part.partInfo.cost;
+            return FuelGetAddedCost() + aeroUICost - part.partInfo.cost;
         }
 
         public ModifierChangeWhen GetModuleCostChangeWhen()
@@ -3187,18 +3287,19 @@ namespace WingProcedural
         {
             return ModifierChangeWhen.FIXED;
         }
-        #endregion
+
+        #endregion Interfaces
 
         #region Stock toolbar integration
 
         public static ApplicationLauncherButton stockButton = null;
 
-        private void OnStockButtonSetup ()
+        private void OnStockButtonSetup()
         {
-            stockButton = ApplicationLauncher.Instance.AddModApplication (OnStockButtonClick, OnStockButtonClick, null, null, null, null, ApplicationLauncher.AppScenes.SPH, (Texture) GameDatabase.Instance.GetTexture ("B9_Aerospace_ProceduralWings/Plugins/icon_stock", false));
+            stockButton = ApplicationLauncher.Instance.AddModApplication(OnStockButtonClick, OnStockButtonClick, null, null, null, null, ApplicationLauncher.AppScenes.SPH, (Texture)GameDatabase.Instance.GetTexture("B9_Aerospace_ProceduralWings/Plugins/icon_stock", false));
         }
 
-        public void OnStockButtonClick ()
+        public void OnStockButtonClick()
         {
             uiWindowActive = !uiWindowActive;
         }
@@ -3227,7 +3328,8 @@ namespace WingProcedural
                 }
             }
         }
-        #endregion
+
+        #endregion Stock toolbar integration
 
         #region Dump state
 
@@ -3254,18 +3356,19 @@ namespace WingProcedural
         //    Debug.Log (report);
         //}
 
-        public void DumpExecutionTimes ()
+        public void DumpExecutionTimes()
         {
-            Debug.Log ("Dumping execution time report, message list contains " + debugMessageList.Count);
-            string report = "Execution time report on part " + this.GetInstanceID () + ":\n\n";
+            Debug.Log("Dumping execution time report, message list contains " + debugMessageList.Count);
+            string report = "Execution time report on part " + this.GetInstanceID() + ":\n\n";
             int count = debugMessageList.Count;
             for (int i = 0; i < count; ++i)
             {
-                report += "I: " + debugMessageList[i].interval + "\n> M: " + (debugMessageList[i].message.Length <= 140 ? (debugMessageList[i].message) : (debugMessageList[i].message.Substring (0, 135) + "(...)")) + "\n";
+                report += "I: " + debugMessageList[i].interval + "\n> M: " + (debugMessageList[i].message.Length <= 140 ? (debugMessageList[i].message) : (debugMessageList[i].message.Substring(0, 135) + "(...)")) + "\n";
             }
-            Debug.Log (report);
+            Debug.Log(report);
         }
-        #endregion
+
+        #endregion Dump state
 
         public T FirstOfTypeOrDefault<T>(PartModuleList moduleList) where T : PartModule
         {

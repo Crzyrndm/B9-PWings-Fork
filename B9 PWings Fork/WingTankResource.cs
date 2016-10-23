@@ -21,7 +21,9 @@
             }
         }
 
-        public void Save(ConfigNode node) { }
+        public void Save(ConfigNode node)
+        {
+        }
 
         public void SetUnitsPerVolume(float ratioTotal)
         {
