@@ -799,9 +799,10 @@ namespace WingProcedural
         public override void OnLoad(ConfigNode node)
         {
             node.TryGetValue("mirrorTexturing", ref isMirrored);
-            if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+            if (HighLogic.LoadedScene != GameScenes.LOADING && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+            {
                 DebugLogWithID("OnLoad", "Invoked");
-            //WingProceduralManager.LoadConfigs();
+            }
         }
 
         public void OnDestroy()
