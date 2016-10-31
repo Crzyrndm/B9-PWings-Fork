@@ -3117,9 +3117,13 @@ namespace WingProcedural
                 for (int i = 0; i < part.Resources.Count; ++i)
                 {
                     PartResource res = part.Resources[i];
-                    double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
-                    res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
-                    res.amount = res.maxAmount * fillPct;
+                    WingTankResource wres;
+                    if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.TryGetValue(res.resourceName, out wres))
+                    {
+                        double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
+                        res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
+                        res.amount = res.maxAmount * fillPct;
+                    }
                 }
                 UpdateWindow();
             }
