@@ -2099,9 +2099,6 @@ namespace WingProcedural
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
                         DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
                     ((ModuleLiftingSurface)this.part.Modules["ModuleLiftingSurface"]).deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
-                    float x_col = pseudotaper_ratio * sharedBaseOffsetTip;
-                    float y_col = pseudotaper_ratio * sharedBaseLength;
-                    this.part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
                     aeroUIMass = stockLiftCoefficient * 0.1f;
                 }
                 else
@@ -2113,6 +2110,9 @@ namespace WingProcedural
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
                     aeroUIMass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
                 }
+                float x_col = pseudotaper_ratio * sharedBaseOffsetTip;
+                float y_col = pseudotaper_ratio * sharedBaseLength;
+                this.part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
                 aeroUICd = (float)Math.Round(aeroStatCd, 2);
                 aeroUICl = (float)Math.Round(aeroStatCl, 2);
 
