@@ -2001,6 +2001,37 @@ namespace WingProcedural
             float ctrlOffsetRootClamped = Mathf.Clamp(sharedBaseOffsetRoot, -ctrlOffsetRootLimit, ctrlOffsetRootLimit);
             float ctrlOffsetTipClamped = Mathf.Clamp(sharedBaseOffsetTip, -ctrlOffsetTipLimit, ctrlOffsetTipLimit);
 
+            // quadratic equation to get ratio in wich to divide wing to get equal areas
+            // tip      - wigtip width
+            // 1 - x
+            // h
+            // x        - ratio in question
+            // base     - base width
+
+            // h = base + x * (tip - base)
+            // (tip + h) * (1 - x) = (base + h) * x     - aera equality
+            // tip + h - x * tip - h * x = base * x + h * x
+            // 2 * h * x + x * (base + tip) - tip - h = 0
+            // 2 * (base + x * (tip - base)) * x + x * (base + tip) - tip - base - x * (tip - base) = 0
+            // x^2 * 2 * (tip - base) + x * (2 * base + base + tip - (tip - base)) - tip - base = 0
+            // x^2 * 2 * (tip - base) + x * 4 * base - tip - base = 0
+            float a_tp = 2.0f * (sharedBaseWidthTip - sharedBaseWidthRoot);
+            float pseudotaper_ratio = 0.0f;
+            if (a_tp != 0.0f)
+            {
+                float b_tp = 4.0f * sharedBaseWidthRoot;
+                float c_tp = -sharedBaseWidthTip - sharedBaseWidthRoot;
+                float D_tp = b_tp * b_tp - 4.0f * a_tp * c_tp;
+                float x1 = (-b_tp + Mathf.Sqrt(D_tp)) / 2.0f / a_tp;
+                float x2 = (-b_tp - Mathf.Sqrt(D_tp)) / 2.0f / a_tp;
+                if ((x1 >= 0.0f) && (x1 <= 1.0f))
+                    pseudotaper_ratio = x1;
+                else
+                    pseudotaper_ratio = x2;
+            }
+            else
+                pseudotaper_ratio = 0.5f;
+
             // Base four values
 
             if (!isCtrlSrf)
@@ -2043,7 +2074,7 @@ namespace WingProcedural
             {
                 aeroUICost = (float)aeroStatMass * (1f + (float)aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity;
                 aeroUICost = Mathf.Round(aeroUICost / 5f) * 5f;
-                part.CoMOffset = new Vector3(sharedBaseLength / 2f, -sharedBaseOffsetTip / 2f, 0f);
+                part.CoMOffset = new Vector3(sharedBaseLength * pseudotaper_ratio, -sharedBaseOffsetTip * pseudotaper_ratio, 0f);
             }
             else
             {
@@ -2079,6 +2110,9 @@ namespace WingProcedural
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
                     aeroUIMass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
                 }
+                float x_col = pseudotaper_ratio * sharedBaseOffsetTip;
+                float y_col = pseudotaper_ratio * sharedBaseLength;
+                this.part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
                 aeroUICd = (float)Math.Round(aeroStatCd, 2);
                 aeroUICl = (float)Math.Round(aeroStatCl, 2);
 
