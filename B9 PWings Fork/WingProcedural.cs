@@ -559,7 +559,7 @@ namespace WingProcedural
             if (this.part.parent == null)
                 return;
 
-            if (!part.parent.Modules.Contains("WingProcedural"))
+            if (!part.parent.Modules.Contains<WingProcedural>())
                 return;
 
             WingProcedural parentModule = FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules);
@@ -579,7 +579,7 @@ namespace WingProcedural
             if (this.part.parent == null)
                 return;
 
-            if (!part.parent.Modules.Contains("WingProcedural"))
+            if (!part.parent.Modules.Contains<WingProcedural>())
                 return;
 
             WingProcedural parentModule = FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules);
@@ -853,7 +853,7 @@ namespace WingProcedural
 
         public void UpdateOnEditorDetach()
         {
-            if (this.part.parent != null && this.part.parent.Modules.Contains("WingProcedural"))
+            if (this.part.parent != null && this.part.parent.Modules.Contains<WingProcedural>())
             {
                 WingProcedural parentModule = FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules);
                 if (parentModule != null)
@@ -1844,8 +1844,8 @@ namespace WingProcedural
                 int vesselPartsCount = vessel.parts.Count;
                 for (int i = 0; i < vesselPartsCount; ++i)
                 {
-                    if (vessel.parts[i].Modules.Contains("WingProcedural"))
-                        moduleList.Add((WingProcedural)vessel.parts[i].Modules["WingProcedural"]);
+                    if (vessel.parts[i].Modules.Contains<WingProcedural>())
+                        moduleList.Add(vessel.parts[i].Modules.GetModule<WingProcedural>());
                 }
 
                 // After that we make two separate runs through that list
@@ -2100,7 +2100,7 @@ namespace WingProcedural
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
                         DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
-                    ((ModuleLiftingSurface)this.part.Modules["ModuleLiftingSurface"]).deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
+                    this.part.Modules.GetModule<ModuleLiftingSurface>().deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     aeroUIMass = stockLiftCoefficient * 0.1f;
                     this.part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
                 }
@@ -2262,7 +2262,7 @@ namespace WingProcedural
             {
                 if (part.children[i] == null)
                     continue;
-                if (part.children[i].Modules.Contains("WingProcedural"))
+                if (part.children[i].Modules.Contains<WingProcedural>())
                 {
                     WingProcedural child = FirstOfTypeOrDefault<WingProcedural>(part.children[i].Modules);
                     if (child == null)
@@ -2273,7 +2273,7 @@ namespace WingProcedural
             }
 
             // If parent is a pWing, trickle the call to gather ChildrenCl up to them.
-            if (this.part.parent != null && this.part.parent.Modules.Contains("WingProcedural"))
+            if (this.part.parent != null && this.part.parent.Modules.Contains<WingProcedural>())
                 FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules).GatherChildrenCl();
         }
 
@@ -3415,7 +3415,7 @@ namespace WingProcedural
 
         public T FirstOfTypeOrDefault<T>(PartModuleList moduleList) where T : PartModule
         {
-            for (int i = moduleList.Count - 1; i >= 0; --i)
+            for (int i = 0; i < moduleList.Count; ++i)
             {
                 if (moduleList[i] is T)
                     return (T)moduleList[i];
