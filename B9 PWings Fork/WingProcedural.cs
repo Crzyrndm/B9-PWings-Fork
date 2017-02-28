@@ -2074,14 +2074,14 @@ namespace WingProcedural
             {
                 aeroUICost = (float)aeroStatMass * (1f + (float)aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity;
                 aeroUICost = Mathf.Round(aeroUICost / 5f) * 5f;
-                part.CoMOffset = new Vector3(sharedBaseLength * pseudotaper_ratio, -sharedBaseOffsetTip * pseudotaper_ratio, 0f);
+                part.CoMOffset = part.CoLOffset = part.CoPOffset = new Vector3(sharedBaseLength * pseudotaper_ratio, -sharedBaseOffsetTip * pseudotaper_ratio, 0f);
             }
             else
             {
                 aeroUICost = (float)aeroStatMass * (1f + (float)aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensity * (1f - aeroConstControlSurfaceFraction);
                 aeroUICost += (float)aeroStatMass * (1f + (float)aeroStatAspectRatioSweepScale / 4f) * aeroConstCostDensityControl * aeroConstControlSurfaceFraction;
                 aeroUICost = Mathf.Round(aeroUICost / 5f) * 5f;
-                part.CoMOffset = new Vector3(0f, -(sharedWidthRootSum + sharedWidthTipSum) / 4f, 0f);
+                part.CoMOffset = part.CoLOffset = part.CoPOffset = new Vector3(0f, -(sharedWidthRootSum + sharedWidthTipSum) / 4f, 0f);
             }
             aeroUICost -= part.partInfo.cost; // it's additional cost
 
