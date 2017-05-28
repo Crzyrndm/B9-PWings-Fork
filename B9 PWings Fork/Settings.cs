@@ -1,4 +1,6 @@
-﻿namespace WingProcedural
+﻿using System;
+
+namespace WingProcedural
 {
     public class WPDebug : GameParameters.CustomParameterNode
     {
@@ -76,6 +78,11 @@
             {
                 return false;
             }
+        }
+
+        public override string DisplaySection
+        {
+            get { return "Graphics"; }
         }
     }
 }

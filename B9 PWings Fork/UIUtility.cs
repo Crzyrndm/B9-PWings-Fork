@@ -205,11 +205,10 @@ namespace WingProcedural
 
         public static double TextEntryForDouble(string label, int labelWidth, double prevValue)
         {
-            double temp;
             string valString = prevValue.ToString();
             UIUtility.TextEntryField(label, labelWidth, ref valString);
 
-            if (!double.TryParse(valString, out temp))
+            if (!double.TryParse(valString, out double temp))
                 return prevValue;
 
             return temp;

@@ -56,7 +56,11 @@ namespace WingProcedural
             debugTime = DateTime.UtcNow;
             string m = "WP | ID: " + part.gameObject.GetInstanceID() + " | " + method + " | " + message;
             string i = (debugTime - debugTimeLast).TotalMilliseconds + " ms.";
-            if (debugMessageList.Count <= 150) debugMessageList.Add(new DebugMessage(m, i));
+            if (debugMessageList.Count <= 150)
+            {
+                debugMessageList.Add(new DebugMessage(m, i));
+            }
+
             debugTimeLast = DateTime.UtcNow;
             Debug.Log(m);
         }
@@ -820,8 +824,8 @@ namespace WingProcedural
             UpdateUI();
 
             DeformWing();
-            bool updateGeo, updateAero;
-            CheckAllFieldValues(out updateGeo, out updateAero);
+
+            CheckAllFieldValues(out bool updateGeo, out bool updateAero);
 
             if (updateGeo)
             {
@@ -1901,38 +1905,10 @@ namespace WingProcedural
         [KSPField]
         public float aeroConstControlSurfaceFraction = 1f;
 
-        [KSPField(guiActiveEditor = false, guiName = "Coefficient of drag", guiFormat = "F3")]
-        public float aeroUICd;
-
-        [KSPField(guiActiveEditor = false, guiName = "Coefficient of lift", guiFormat = "F3")]
-        public float aeroUICl;
-
-        [KSPField(guiActiveEditor = false, guiName = "Mass", guiFormat = "F3", guiUnits = "t")]
-        public float aeroUIMass;
-
-        [KSPField(guiActiveEditor = false, guiName = "Cost")]
+        
         public float aeroUICost;
-
-        [KSPField(guiActiveEditor = false, guiName = "Mean aerodynamic chord", guiFormat = "F3", guiUnits = "m")]
-        public float aeroUIMeanAerodynamicChord;
-
-        [KSPField(guiActiveEditor = false, guiName = "Semispan", guiFormat = "F3", guiUnits = "m")]
-        public float aeroUISemispan;
-
-        [KSPField(guiActiveEditor = false, guiName = "Mid-chord sweep", guiFormat = "F3", guiUnits = "deg.")]
-        public float aeroUIMidChordSweep;
-
-        [KSPField(guiActiveEditor = false, guiName = "Taper ratio", guiFormat = "F3")]
-        public float aeroUITaperRatio;
-
-        [KSPField(guiActiveEditor = false, guiName = "Surface area", guiFormat = "F3", guiUnits = "m²")]
-        public float aeroUISurfaceArea;
-
-        [KSPField(guiActiveEditor = false, guiName = "Aspect ratio", guiFormat = "F3")]
-        public float aeroUIAspectRatio;
-
-        [KSPField(guiActiveEditor = false, guiName = "Volume", guiFormat = "F3")]
         public float aeroStatVolume = 3.84f;
+        public float aeroUIMass;
 
         public double aeroStatCd;
         public double aeroStatCl;
@@ -2117,8 +2093,6 @@ namespace WingProcedural
                     else
                         this.part.CoLOffset = new Vector3(y_col - 0.5f * sharedBaseLength, -0.25f * (sharedBaseWidthTip + sharedBaseWidthRoot), 0.0f);
                 }
-                aeroUICd = (float)Math.Round(aeroStatCd, 2);
-                aeroUICl = (float)Math.Round(aeroStatCl, 2);
 
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
                     DebugLogWithID("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
@@ -2204,14 +2178,6 @@ namespace WingProcedural
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
                     DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Segment ended");
             }
-
-            // Update GUI values and finish
-            aeroUIMeanAerodynamicChord = (float)aeroStatMeanAerodynamicChord;
-            aeroUISemispan = (float)aeroStatSemispan;
-            aeroUIMidChordSweep = (float)aeroStatMidChordSweep;
-            aeroUITaperRatio = (float)aeroStatTaperRatio;
-            aeroUISurfaceArea = (float)aeroStatSurfaceArea;
-            aeroUIAspectRatio = (float)aeroStatAspectRatio;
 
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
                 DebugLogWithID("CalculateAerodynamicValues", "Finished");
@@ -2646,8 +2612,7 @@ namespace WingProcedural
         /// <param name="allowFine">Whether right click drag behaves as fine control or not</param>
         private void DrawField(ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
         {
-            bool changed = false;
-            field = UIUtility.FieldSlider(field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB(hsbColor), fieldType, allowFine);
+            field = UIUtility.FieldSlider(field, increment, incrementLarge, limits, name, out bool changed, ColorHSBToRGB(hsbColor), fieldType, allowFine);
             if (changed)
             {
                 uiLastFieldName = name;
@@ -3155,8 +3120,7 @@ namespace WingProcedural
                 for (int i = 0; i < part.Resources.Count; ++i)
                 {
                     PartResource res = part.Resources[i];
-                    WingTankResource wres;
-                    if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.TryGetValue(res.resourceName, out wres))
+                    if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.TryGetValue(res.resourceName, out WingTankResource wres))
                     {
                         double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
                         res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
