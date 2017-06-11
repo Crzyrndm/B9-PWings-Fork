@@ -737,6 +737,10 @@ namespace WingProcedural
                 if (mod_conflict > 1 && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
                     DebugLogWithID("CheckAssemblies", "WARNING | More than one of RF, MFT and CC mods detected, this should not be the case");
                 assembliesChecked = true;
+
+                //update part events
+                if(Events != null)
+                    Events["NextConfiguration"].active = useStockFuel;
             }
         }
 
@@ -3143,7 +3147,7 @@ namespace WingProcedural
                 UpdateWindow();
             }
             else
-                FuelSetResources(); // for MFT/RF.
+                FuelSetResources(); // for MFT/RF/CC.
         }
 
         /// <summary>
@@ -3184,30 +3188,16 @@ namespace WingProcedural
 
             if (!useStockFuel)
             {
-                if(assemblyRFUsed || assemblyMFTUsed)
-                {
-                    PartModule module = part.Modules["ModuleFuelTanks"];
-                    if (module == null)
-                        return;
-
-                    Type type = module.GetType();
-
-                    double volumeRF = aeroStatVolume;
-                    if (assemblyRFUsed)
-                        volumeRF *= 1000;     // RF requests units in liters instead of cubic meters
-                    else // assemblyMFTUsed
-                        volumeRF *= 173.9;  // MFT requests volume in units
-                    type.GetField("volume").SetValue(module, volumeRF);
-                    type.GetMethod("ChangeVolume").Invoke(module, new object[] { volumeRF });
-                }
-                else //moduleCCused
-                {
-                    // send public event OnPartVolumeChanged, like ProceduralParts does
-                    var data = new BaseEventDetails(BaseEventDetails.Sender.USER);
-                    data.Set<string>("volName", "Tankage");
-                    data.Set<double> ("newTotalVolume", aeroStatVolume); //aeroStatVolume should be in m3
-                    part.SendEvent("OnPartVolumeChanged", data, 0);
-                }
+                // send public event OnPartVolumeChanged, like ProceduralParts does
+                // MFT/RT also support this event
+                var data = new BaseEventDetails(BaseEventDetails.Sender.USER);
+                // PP uses two volume types: Tankage for resources and Habitation
+                data.Set<string>("volName", "Tankage");
+                // aeroStatVolume should be in m3
+                // to change the meaning for MFT, use ModuleFuelTanks.tankVolumeConversion field in part cfg
+                // for RF this field defaults to 1000, so nothing needs to be done
+                data.Set<double> ("newTotalVolume", aeroStatVolume); 
+                part.SendEvent("OnPartVolumeChanged", data, 0);
             }
             else
             {
