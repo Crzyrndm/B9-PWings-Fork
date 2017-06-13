@@ -704,6 +704,8 @@ namespace WingProcedural
         public static bool assemblyFARUsed = false;
         public static bool assemblyRFUsed = false;
         public static bool assemblyMFTUsed = false;
+        // if current part uses one of the Configurable Container modules
+        public bool moduleCCUsed = false;
 
         public void CheckAssemblies(bool forced)
         {
@@ -720,13 +722,25 @@ namespace WingProcedural
                         assemblyMFTUsed = true;
                 }
 
+                // check for Configurable Containers modules in this part.
+                // check for .dll cannot be used because ConfigurableContainers.dll is part of AT_Utils
+                // and is destributed without MM patches that add these modules to parts
+                moduleCCUsed = part.Modules.Contains("ModuleSwitchableTank") || part.Modules.Contains("ModuleTankManager");
+
+                // check for more than one dynamic tank mod in use
+                var mod_conflict = Convert.ToInt32(assemblyMFTUsed)+Convert.ToInt32(assemblyRFUsed)+Convert.ToInt32(moduleCCUsed);
+
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
                     DebugLogWithID("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
                 if (isCtrlSrf && isWingAsCtrlSrf && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
                     DebugLogWithID("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
-                if (assemblyRFUsed && assemblyMFTUsed && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
-                    DebugLogWithID("CheckAssemblies", "WARNING | Both RF and MFT mods detected, this should not be the case");
+                if (mod_conflict > 1 && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+                    DebugLogWithID("CheckAssemblies", "WARNING | More than one of RF, MFT and CC mods detected, this should not be the case");
                 assembliesChecked = true;
+
+                //update part events
+                if(Events != null)
+                    Events["NextConfiguration"].active = useStockFuel;
             }
         }
 
@@ -825,7 +839,8 @@ namespace WingProcedural
 
             DeformWing();
 
-            CheckAllFieldValues(out bool updateGeo, out bool updateAero);
+            bool updateGeo, updateAero;
+            CheckAllFieldValues(out updateGeo, out updateAero);
 
             if (updateGeo)
             {
@@ -2612,7 +2627,8 @@ namespace WingProcedural
         /// <param name="allowFine">Whether right click drag behaves as fine control or not</param>
         private void DrawField(ref float field, float increment, float incrementLarge, Vector2 limits, string name, Vector4 hsbColor, int fieldID, int fieldType, bool allowFine = true)
         {
-            field = UIUtility.FieldSlider(field, increment, incrementLarge, limits, name, out bool changed, ColorHSBToRGB(hsbColor), fieldType, allowFine);
+            bool changed;
+            field = UIUtility.FieldSlider(field, increment, incrementLarge, limits, name, out changed, ColorHSBToRGB(hsbColor), fieldType, allowFine);
             if (changed)
             {
                 uiLastFieldName = name;
@@ -3120,7 +3136,8 @@ namespace WingProcedural
                 for (int i = 0; i < part.Resources.Count; ++i)
                 {
                     PartResource res = part.Resources[i];
-                    if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.TryGetValue(res.resourceName, out WingTankResource wres))
+                    WingTankResource wres;
+                    if (StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources.TryGetValue(res.resourceName, out wres))
                     {
                         double fillPct = res.maxAmount > 0 ? res.amount / res.maxAmount : 1.0;
                         res.maxAmount = aeroStatVolume * StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources[res.resourceName].unitsPerVolume;
@@ -3130,7 +3147,7 @@ namespace WingProcedural
                 UpdateWindow();
             }
             else
-                FuelSetResources(); // for MFT/RF.
+                FuelSetResources(); // for MFT/RF/CC.
         }
 
         /// <summary>
@@ -3171,19 +3188,16 @@ namespace WingProcedural
 
             if (!useStockFuel)
             {
-                PartModule module = part.Modules["ModuleFuelTanks"];
-                if (module == null)
-                    return;
-
-                Type type = module.GetType();
-
-                double volumeRF = aeroStatVolume;
-                if (assemblyRFUsed)
-                    volumeRF *= 1000;     // RF requests units in liters instead of cubic meters
-                else // assemblyMFTUsed
-                    volumeRF *= 173.9;  // MFT requests volume in units
-                type.GetField("volume").SetValue(module, volumeRF);
-                type.GetMethod("ChangeVolume").Invoke(module, new object[] { volumeRF });
+                // send public event OnPartVolumeChanged, like ProceduralParts does
+                // MFT/RT also support this event
+                var data = new BaseEventDetails(BaseEventDetails.Sender.USER);
+                // PP uses two volume types: Tankage for resources and Habitation
+                data.Set<string>("volName", "Tankage");
+                // aeroStatVolume should be in m3
+                // to change the meaning for MFT, use ModuleFuelTanks.tankVolumeConversion field in part cfg
+                // for RF this field defaults to 1000, so nothing needs to be done
+                data.Set<double> ("newTotalVolume", aeroStatVolume); 
+                part.SendEvent("OnPartVolumeChanged", data, 0);
             }
             else
             {
@@ -3255,7 +3269,7 @@ namespace WingProcedural
         {
             get
             {
-                return !assemblyRFUsed && !assemblyMFTUsed;
+                return !(assemblyRFUsed || assemblyMFTUsed || moduleCCUsed);
             }
         }
 
