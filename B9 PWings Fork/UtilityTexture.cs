@@ -10,10 +10,16 @@ namespace WingProcedural
         {
             int colorKey = c.ToInt();
             if (textures == null)
+            {
                 textures = new Dictionary<int, Texture2D>();
+            }
+
             if (textures.ContainsKey(colorKey) && textures[colorKey] != null)
+            {
                 return textures[colorKey];
-            Texture2D tex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            }
+
+            var tex = new Texture2D(1, 1, TextureFormat.ARGB32, false);
             tex.SetPixel(0, 0, c);
             tex.Apply();
             textures.Add(colorKey, tex);

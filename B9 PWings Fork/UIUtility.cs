@@ -29,27 +29,30 @@ namespace WingProcedural
             }
             if (uiFont != null)
             {
-                uiStyleWindow = new GUIStyle(HighLogic.Skin.window);
-                uiStyleWindow.fixedWidth = 300f;
-                uiStyleWindow.wordWrap = true;
+                uiStyleWindow = new GUIStyle(HighLogic.Skin.window) {
+                    fixedWidth = 300f,
+                    wordWrap = true
+                };
                 uiStyleWindow.normal.textColor = Color.white;
                 uiStyleWindow.font = uiFont;
                 uiStyleWindow.fontStyle = FontStyle.Normal;
                 uiStyleWindow.fontSize = 13;
                 uiStyleWindow.alignment = TextAnchor.UpperLeft;
 
-                uiStyleLabelMedium = new GUIStyle(HighLogic.Skin.label);
-                uiStyleLabelMedium.stretchWidth = true;
-                uiStyleLabelMedium.font = uiFont;
-                uiStyleLabelMedium.fontStyle = FontStyle.Normal;
-                uiStyleLabelMedium.fontSize = 13;
+                uiStyleLabelMedium = new GUIStyle(HighLogic.Skin.label) {
+                    stretchWidth = true,
+                    font = uiFont,
+                    fontStyle = FontStyle.Normal,
+                    fontSize = 13
+                };
                 uiStyleLabelMedium.normal.textColor = Color.white;
 
-                uiStyleLabelHint = new GUIStyle(HighLogic.Skin.label);
-                uiStyleLabelHint.stretchWidth = true;
-                uiStyleLabelHint.font = uiFont;
-                uiStyleLabelHint.fontStyle = FontStyle.Normal;
-                uiStyleLabelHint.fontSize = 11;
+                uiStyleLabelHint = new GUIStyle(HighLogic.Skin.label) {
+                    stretchWidth = true,
+                    font = uiFont,
+                    fontStyle = FontStyle.Normal,
+                    fontSize = 11
+                };
                 uiStyleLabelHint.normal.textColor = Color.white;
 
                 uiStyleButton = new GUIStyle(HighLogic.Skin.button);
@@ -84,10 +87,11 @@ namespace WingProcedural
                 uiStyleSliderThumb.fixedWidth = 0f;
                 uiStyleSliderThumb.fixedHeight = 16;
 
-                uiStyleToggle = new GUIStyle(HighLogic.Skin.toggle);
-                uiStyleToggle.font = uiFont;
-                uiStyleToggle.fontStyle = FontStyle.Normal;
-                uiStyleToggle.fontSize = 11;
+                uiStyleToggle = new GUIStyle(HighLogic.Skin.toggle) {
+                    font = uiFont,
+                    fontStyle = FontStyle.Normal,
+                    fontSize = 11
+                };
                 uiStyleToggle.normal.textColor = Color.white;
                 uiStyleToggle.padding = new RectOffset(4, 4, 4, 4);
                 uiStyleToggle.margin = new RectOffset(4, 4, 4, 4);
@@ -114,7 +118,10 @@ namespace WingProcedural
         public static float FieldSlider(float value, float increment, float incrementLarge, Vector2 limits, string name, out bool changed, Color backgroundColor, int valueType, bool allowFine = true)
         {
             if (!UIUtility.uiStyleConfigured)
+            {
                 UIUtility.ConfigureStyles();
+            }
+
             GUILayout.BeginHorizontal();
             double range = limits.y - limits.x;
             double value01 = (value - limits.x) / range; // rescaling value to be <0-1> of range for convenience
@@ -124,25 +131,33 @@ namespace WingProcedural
 
             GUILayout.Label(string.Empty, UIUtility.uiStyleLabelHint);
             Rect rectLast = GUILayoutUtility.GetLastRect();
-            Rect rectSlider = new Rect(rectLast.xMin + buttonWidth + spaceWidth, rectLast.yMin, rectLast.width - 2 * (buttonWidth + spaceWidth), rectLast.height);
-            Rect rectSliderValue = new Rect(rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
-            Rect rectButtonL = new Rect(rectLast.xMin, rectLast.yMin, buttonWidth, rectLast.height);
-            Rect rectButtonR = new Rect(rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
-            Rect rectLabelValue = new Rect(rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
+            var rectSlider = new Rect(rectLast.xMin + buttonWidth + spaceWidth, rectLast.yMin, rectLast.width - 2 * (buttonWidth + spaceWidth), rectLast.height);
+            var rectSliderValue = new Rect(rectSlider.xMin, rectSlider.yMin, rectSlider.width * (float)value01, rectSlider.height - 3f);
+            var rectButtonL = new Rect(rectLast.xMin, rectLast.yMin, buttonWidth, rectLast.height);
+            var rectButtonR = new Rect(rectLast.xMin + rectLast.width - buttonWidth, rectLast.yMin, buttonWidth, rectLast.height);
+            var rectLabelValue = new Rect(rectSlider.xMin + rectSlider.width * 0.75f, rectSlider.yMin, rectSlider.width * 0.25f, rectSlider.height);
 
             if (GUI.Button(rectButtonL, string.Empty, UIUtility.uiStyleButton))
             {
                 if (Input.GetMouseButtonUp(0) || !allowFine)
+                {
                     value01 -= incrementLarge / range;
+                }
                 else if (Input.GetMouseButtonUp(1) && allowFine)
+                {
                     value01 -= increment01;
+                }
             }
             if (GUI.Button(rectButtonR, string.Empty, UIUtility.uiStyleButton))
             {
                 if (Input.GetMouseButtonUp(0) || !allowFine)
+                {
                     value01 += incrementLarge / range;
+                }
                 else if (Input.GetMouseButtonUp(1) && allowFine)
+                {
                     value01 += increment01;
+                }
             }
 
             if (rectLast.Contains(Event.current.mousePosition) && (Event.current.type == EventType.MouseDrag || Event.current.type == EventType.MouseDown) // right click drag doesn't work properly without the event check
@@ -165,7 +180,9 @@ namespace WingProcedural
                 }
             }
             else
+            {
                 GUI.HorizontalSlider(rectSlider, (float)value01, 0f, 1f, UIUtility.uiStyleSlider, UIUtility.uiStyleSliderThumb);
+            }
 
             value = Mathf.Clamp((float)(value01 * range + limits.x), Mathf.Min((float)(limits.x * 0.5), limits.x), limits.y); // lower limit is halved so the fine control can reduce it further but the normal tweak still snaps. Min makes -ve values work
             changed = valueOld != value;
@@ -206,10 +223,12 @@ namespace WingProcedural
         public static double TextEntryForDouble(string label, int labelWidth, double prevValue)
         {
             string valString = prevValue.ToString();
-            UIUtility.TextEntryField(label, labelWidth, ref valString);
+            TextEntryField(label, labelWidth, ref valString);
 
             if (!double.TryParse(valString, out double temp))
+            {
                 return prevValue;
+            }
 
             return temp;
         }

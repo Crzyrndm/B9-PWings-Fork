@@ -18,7 +18,9 @@ namespace WingProcedural
             {
                 ConfigNode[] fuelNodes = node.GetNodes("FuelSet");
                 for (int i = 0; i < fuelNodes.Length; ++i)
+                {
                     wingTankConfigurations.Add(new WingTankConfiguration(fuelNodes[i]));
+                }
             }
             Debug.Log("[B9PW] start bundle load process");
             StartCoroutine(LoadBundleAssets());
@@ -27,7 +29,7 @@ namespace WingProcedural
         public IEnumerator LoadBundleAssets()
         {
             Debug.Log("[B9PW] Aquiring bundle data");
-            AssetBundle shaderBundle = AssetBundle.LoadFromFile(KSPUtil.ApplicationRootPath + "GameData" + Path.DirectorySeparatorChar + "B9_Aerospace_ProceduralWings" + Path.DirectorySeparatorChar + "wingshader");
+            var shaderBundle = AssetBundle.LoadFromFile(KSPUtil.ApplicationRootPath + "GameData" + Path.DirectorySeparatorChar + "B9_Aerospace_ProceduralWings" + Path.DirectorySeparatorChar + "wingshader");
             if (shaderBundle != null)
             {
                 Shader[] objects = shaderBundle.LoadAllAssets<Shader>();

@@ -20,7 +20,7 @@ namespace WingProcedural
             ConfigNode[] nodes = node.GetNodes("Resource");
             for (int i = 0; i < nodes.Length; ++i)
             {
-                WingTankResource res = new WingTankResource(nodes[i]);
+                var res = new WingTankResource(nodes[i]);
                 if (res.resource != null)
                 {
                     resources.Add(res.resource.name, res);
@@ -28,7 +28,9 @@ namespace WingProcedural
                 }
             }
             foreach (KeyValuePair<string, WingTankResource> kvp in resources)
+            {
                 kvp.Value.SetUnitsPerVolume(ratioTotal);
+            }
         }
 
         public void Save(ConfigNode node)

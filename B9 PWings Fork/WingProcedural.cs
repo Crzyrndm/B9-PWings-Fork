@@ -74,12 +74,16 @@ namespace WingProcedural
         private void DrawArrow(Vector3 dir)
         {
             if (pointer == null)
+            {
                 pointer = ArrowPointer.Create(part.partTransform, Vector3.zero, dir, 30, Color.red, true);
+            }
             else
+            {
                 pointer.Direction = dir;
+            }
         }
 
-        private void destroyArrow()
+        private void DestroyArrow()
         {
             if (pointer != null)
             {
@@ -127,19 +131,30 @@ namespace WingProcedural
         private Vector2 GetLimitsFromType(Vector4 set)
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logLimits)
+            {
                 DebugLogWithID("GetLimitsFromType", "Using set: " + set);
+            }
+
             if (!isCtrlSrf)
+            {
                 return new Vector2(set.x, set.y);
+            }
             else
+            {
                 return new Vector2(set.z, set.w);
+            }
         }
 
         private float GetIncrementFromType(float incrementWing, float incrementCtrl)
         {
             if (!isCtrlSrf)
+            {
                 return incrementWing;
+            }
             else
+            {
                 return incrementCtrl;
+            }
         }
 
         private static Vector4 sharedBaseLengthLimits = new Vector4(0.125f, 16f, 0.04f, 8f);
@@ -472,9 +487,13 @@ namespace WingProcedural
         private void ReplaceDefault(ref Vector4 set, float value)
         {
             if (!isCtrlSrf)
+            {
                 set = new Vector4(value, set.w, set.z, set.w);
+            }
             else
+            {
                 set = new Vector4(set.z, value, set.z, set.w);
+            }
         }
 
         private void RestoreDefaults()
@@ -527,8 +546,14 @@ namespace WingProcedural
 
         private float GetDefault(Vector4 set)
         {
-            if (!isCtrlSrf) return set.x;
-            else return set.y;
+            if (!isCtrlSrf)
+            {
+                return set.x;
+            }
+            else
+            {
+                return set.y;
+            }
         }
 
         #endregion Default values
@@ -540,15 +565,22 @@ namespace WingProcedural
         public void NextConfiguration()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFuel)
+            {
                 DebugLogWithID("NextConfiguration", "Started");
+            }
 
-            if (!(canBeFueled && useStockFuel))
+            if (!(CanBeFueled && UseStockFuel))
+            {
                 return;
+            }
 
             fuelSelectedTankSetup++;
 
             if (fuelSelectedTankSetup >= StaticWingGlobals.wingTankConfigurations.Count)
+            {
                 fuelSelectedTankSetup = 0;
+            }
+
             FuelTankTypeChanged();
         }
 
@@ -560,11 +592,15 @@ namespace WingProcedural
         private bool inheritancePossibleOnMaterials = false;
         private void InheritanceStatusUpdate()
         {
-            if (this.part.parent == null)
+            if (part.parent == null)
+            {
                 return;
+            }
 
             if (!part.parent.Modules.Contains<WingProcedural>())
+            {
                 return;
+            }
 
             WingProcedural parentModule = FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules);
             if (parentModule != null)
@@ -573,63 +609,84 @@ namespace WingProcedural
                 {
                     inheritancePossibleOnMaterials = true;
                     if (!isCtrlSrf)
+                    {
                         inheritancePossibleOnShape = true;
+                    }
                 }
             }
         }
 
         private void InheritParentValues(int mode)
         {
-            if (this.part.parent == null)
+            if (part.parent == null)
+            {
                 return;
+            }
 
             if (!part.parent.Modules.Contains<WingProcedural>())
+            {
                 return;
+            }
 
             WingProcedural parentModule = FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules);
             if (parentModule == null)
+            {
                 return;
+            }
 
             switch (mode)
             {
                 case 0:
-                    inheritShape(parentModule);
+                    InheritShape(parentModule);
                     break;
 
                 case 1:
-                    inheritBase(parentModule);
+                    InheritBase(parentModule);
                     break;
 
                 case 2:
-                    inheritEdges(parentModule);
+                    InheritEdges(parentModule);
                     break;
 
                 case 3:
-                    inheritColours(parentModule);
+                    InheritColours(parentModule);
                     break;
             }
         }
 
-        private void inheritShape(WingProcedural parent)
+        private void InheritShape(WingProcedural parent)
         {
             if (parent.isCtrlSrf || isCtrlSrf)
+            {
                 return;
+            }
 
             if (Input.GetMouseButtonUp(0))
-                inheritBase(parent);
+            {
+                InheritBase(parent);
+            }
+
             sharedBaseThicknessRoot = parent.sharedBaseThicknessTip;
 
             float tip = sharedBaseWidthRoot + ((parent.sharedBaseWidthTip - parent.sharedBaseWidthRoot) / (parent.sharedBaseLength)) * sharedBaseLength;
             if (sharedBaseWidthTip < sharedBaseWidthTipLimits.x)
+            {
                 sharedBaseLength *= (sharedBaseWidthRoot - sharedBaseWidthTipLimits.x) / (sharedBaseWidthRoot - sharedBaseWidthTip);
+            }
             else if (sharedBaseWidthTip > sharedBaseWidthTipLimits.y)
+            {
                 sharedBaseLength *= sharedBaseWidthTipLimits.y / sharedBaseWidthTip;
+            }
 
             float offset = sharedBaseLength / parent.sharedBaseLength * parent.sharedBaseOffsetTip;
             if (offset > sharedBaseOffsetLimits.y)
+            {
                 sharedBaseLength *= sharedBaseOffsetLimits.y / offset;
+            }
             else if (offset < sharedBaseOffsetLimits.x)
+            {
                 sharedBaseLength *= sharedBaseOffsetLimits.x / offset;
+            }
 
             sharedBaseLength = Mathf.Clamp(sharedBaseLength, sharedBaseLengthLimits.x, sharedBaseLengthLimits.y);
             sharedBaseWidthTip = Mathf.Clamp(tip, sharedBaseWidthTipLimits.x, sharedBaseWidthTipLimits.y);
@@ -637,13 +694,17 @@ namespace WingProcedural
             sharedBaseThicknessTip = Mathf.Clamp(sharedBaseThicknessRoot + sharedBaseLength / parent.sharedBaseLength * (parent.sharedBaseThicknessTip - parent.sharedBaseThicknessRoot), sharedBaseThicknessLimits.x, sharedBaseThicknessLimits.y);
 
             if (Input.GetMouseButtonUp(0))
-                inheritEdges(parent);
+            {
+                InheritEdges(parent);
+            }
         }
 
-        private void inheritBase(WingProcedural parent)
+        private void InheritBase(WingProcedural parent)
         {
             if (parent.isCtrlSrf || isCtrlSrf)
+            {
                 return;
+            }
 
             sharedBaseWidthRoot = parent.sharedBaseWidthTip;
             sharedBaseThicknessRoot = parent.sharedBaseThicknessTip;
@@ -655,10 +716,12 @@ namespace WingProcedural
             sharedEdgeWidthTrailingRoot = parent.sharedEdgeWidthTrailingTip;
         }
 
-        private void inheritEdges(WingProcedural parent)
+        private void InheritEdges(WingProcedural parent)
         {
             if (parent.isCtrlSrf || isCtrlSrf)
+            {
                 return;
+            }
 
             sharedEdgeTypeLeading = parent.sharedEdgeTypeLeading;
             sharedEdgeWidthLeadingRoot = parent.sharedEdgeWidthLeadingTip;
@@ -669,7 +732,7 @@ namespace WingProcedural
             sharedEdgeWidthTrailingTip = Mathf.Clamp(sharedEdgeWidthTrailingRoot + ((parent.sharedEdgeWidthTrailingTip - parent.sharedEdgeWidthTrailingRoot) / parent.sharedBaseLength) * sharedBaseLength, sharedEdgeWidthLimits.x, sharedEdgeWidthLimits.y);
         }
 
-        private void inheritColours(WingProcedural parent)
+        private void InheritColours(WingProcedural parent)
         {
             sharedMaterialST = parent.sharedMaterialST;
             sharedColorSTOpacity = parent.sharedColorSTOpacity;
@@ -707,40 +770,50 @@ namespace WingProcedural
         // if current part uses one of the Configurable Container modules
         public bool moduleCCUsed = false;
 
-        public void CheckAssemblies(bool forced)
+        public void CheckAssemblies()
         {
-            if (!assembliesChecked || forced)
+            // check for Configurable Containers modules in this part.
+            // check for .dll cannot be used because ConfigurableContainers.dll is part of AT_Utils
+            // and is destributed without MM patches that add these modules to parts
+            // per part check run every time
+            moduleCCUsed = part.Modules.Contains("ModuleSwitchableTank") || part.Modules.Contains("ModuleTankManager");
+            if (!assembliesChecked)
             {
-                for (int i = AssemblyLoader.loadedAssemblies.Count - 1; i >= 0; --i)
+                foreach (AssemblyLoader.LoadedAssembly test in AssemblyLoader.loadedAssemblies)
                 {
-                    AssemblyLoader.LoadedAssembly test = AssemblyLoader.loadedAssemblies[i];
                     if (test.assembly.GetName().Name.Equals("FerramAerospaceResearch", StringComparison.InvariantCultureIgnoreCase))
+                    {
                         assemblyFARUsed = true;
+                    }
                     else if (test.assembly.GetName().Name.Equals("RealFuels", StringComparison.InvariantCultureIgnoreCase))
+                    {
                         assemblyRFUsed = true;
+                    }
                     else if (test.assembly.GetName().Name.Equals("modularFuelTanks", StringComparison.InvariantCultureIgnoreCase))
+                    {
                         assemblyMFTUsed = true;
+                    }
                 }
-
-                // check for Configurable Containers modules in this part.
-                // check for .dll cannot be used because ConfigurableContainers.dll is part of AT_Utils
-                // and is destributed without MM patches that add these modules to parts
-                moduleCCUsed = part.Modules.Contains("ModuleSwitchableTank") || part.Modules.Contains("ModuleTankManager");
-
-                // check for more than one dynamic tank mod in use
-                var mod_conflict = Convert.ToInt32(assemblyMFTUsed)+Convert.ToInt32(assemblyRFUsed)+Convert.ToInt32(moduleCCUsed);
-
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+                {
                     DebugLogWithID("CheckAssemblies", "Search results | FAR: " + assemblyFARUsed + " | RF: " + assemblyRFUsed + " | MFT: " + assemblyMFTUsed);
-                if (isCtrlSrf && isWingAsCtrlSrf && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
-                    DebugLogWithID("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
-                if (mod_conflict > 1 && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
-                    DebugLogWithID("CheckAssemblies", "WARNING | More than one of RF, MFT and CC mods detected, this should not be the case");
+                }
                 assembliesChecked = true;
-
-                //update part events
-                if(Events != null)
-                    Events["NextConfiguration"].active = useStockFuel;
+            }
+            int mod_conflict = Convert.ToInt32(assemblyMFTUsed) + Convert.ToInt32(assemblyRFUsed) + Convert.ToInt32(moduleCCUsed);
+            // check for more than one dynamic tank mod in use
+            if (isCtrlSrf && isWingAsCtrlSrf && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+            {
+                DebugLogWithID("CheckAssemblies", "WARNING | PART IS CONFIGURED INCORRECTLY, BOTH BOOL PROPERTIES SHOULD NEVER BE SET TO TRUE");
+            }
+            if (mod_conflict > 1 && HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+            {
+                DebugLogWithID("CheckAssemblies", "WARNING | More than one of RF, MFT and CC mods detected, this should not be the case");
+            }
+            //update part events
+            if (Events != null)
+            {
+                Events["NextConfiguration"].active = UseStockFuel;
             }
         }
 
@@ -755,12 +828,17 @@ namespace WingProcedural
         public override void OnStart(PartModule.StartState state)
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+            {
                 DebugLogWithID("OnStart", "Invoked");
+            }
+
             base.OnStart(state);
-            CheckAssemblies(false);
+            CheckAssemblies();
 
             if (!HighLogic.LoadedSceneIsFlight)
+            {
                 return;
+            }
 
             DebugLogWithID("OnStart", "Setup started");
             StartCoroutine(SetupReorderedForFlight()); // does all setup neccesary for flight
@@ -774,19 +852,25 @@ namespace WingProcedural
         public void Start()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+            {
                 DebugLogWithID("Start", "Invoked");
+            }
 
             if (!HighLogic.LoadedSceneIsEditor)
+            {
                 return;
+            }
 
             uiInstanceIDLocal = uiInstanceIDTarget = 0;
 
             Setup();
-            this.part.OnEditorAttach += new Callback(UpdateOnEditorAttach);
-            this.part.OnEditorDetach += new Callback(UpdateOnEditorDetach);
+            part.OnEditorAttach += new Callback(UpdateOnEditorAttach);
+            part.OnEditorDetach += new Callback(UpdateOnEditorDetach);
 
             if (!UIUtility.uiStyleConfigured)
+            {
                 UIUtility.ConfigureStyles();
+            }
             isStarted = true;
         }
 
@@ -794,17 +878,20 @@ namespace WingProcedural
         // may resolve errors reported by Hodo
         public override void OnSave(ConfigNode node)
         {
-            node.RemoveValues("mirrorTexturing");
-            node.AddValue("mirrorTexturing", isMirrored);
-            if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
-                DebugLogWithID("OnSave", "Invoked");
+            // try...catch block for a method that just loves to throw and kill the onsave callback chain (there's nothing throwing there atm, doesn't mean it will always be the way)
             try
             {
-                for (int i = vesselList.Count - 1; i >= 0; --i)
+                node.RemoveValues("mirrorTexturing");
+                node.AddValue("mirrorTexturing", isMirrored);
+                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
                 {
-                    if (vesselList[i].vessel == vessel)
+                    DebugLogWithID("OnSave", "Invoked");
+                }
+                foreach (VesselStatus v in vesselList)
+                {
+                    if (v.vessel == vessel)
                     {
-                        vesselList[i].isUpdated = false;
+                        v.isUpdated = false;
                     }
                 }
             }
@@ -825,14 +912,16 @@ namespace WingProcedural
 
         public void OnDestroy()
         {
-            editorAppDestroy();
+            EditorAppDestroy();
             GameEvents.onGameSceneLoadRequested.Remove(OnSceneSwitch);
         }
 
         public void Update()
         {
             if (!HighLogic.LoadedSceneIsEditor || !isStarted)
+            {
                 return;
+            }
 
             DebugTimerUpdate();
             UpdateUI();
@@ -853,7 +942,9 @@ namespace WingProcedural
         public void UpdateOnEditorAttach()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+            {
                 DebugLogWithID("UpdateOnEditorAttach", "Setup started");
+            }
 
             if (part.symMethod == SymmetryMethod.Mirror)
             {
@@ -867,12 +958,14 @@ namespace WingProcedural
             isAttached = true;
             UpdateGeometry(true);
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
+            {
                 DebugLogWithID("UpdateOnEditorAttach", "Setup ended");
+            }
         }
 
         public void UpdateOnEditorDetach()
         {
-            if (this.part.parent != null && this.part.parent.Modules.Contains<WingProcedural>())
+            if (part.parent != null && part.parent.Modules.Contains<WingProcedural>())
             {
                 WingProcedural parentModule = FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules);
                 if (parentModule != null)
@@ -921,7 +1014,10 @@ namespace WingProcedural
         public void UpdateGeometry(bool updateAerodynamics)
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+            {
                 DebugLogWithID("UpdateGeometry", "Started | isCtrlSrf: " + isCtrlSrf);
+            }
+
             if (!isCtrlSrf)
             {
                 float wingThicknessDeviationRoot = sharedBaseThicknessRoot / 0.24f;
@@ -941,7 +1037,9 @@ namespace WingProcedural
                     Vector2[] uv = new Vector2[length];
                     Array.Copy(meshReferenceWingSection.uv, uv, length);
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Wing section | Passed array setup");
+                    }
 
                     for (int i = 0; i < length; ++i)
                     {
@@ -980,13 +1078,18 @@ namespace WingProcedural
 
                     MeshCollider meshCollider = meshFilterWingSection.gameObject.GetComponent<MeshCollider>();
                     if (meshCollider == null)
+                    {
                         meshCollider = meshFilterWingSection.gameObject.AddComponent<MeshCollider>();
+                    }
+
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterWingSection.mesh;
                     meshCollider.convex = true;
 
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Wing section | Finished");
+                    }
                 }
 
                 // Second, wing surfaces
@@ -1006,7 +1109,10 @@ namespace WingProcedural
                     Vector2[] uv2 = new Vector2[length];
 
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Wing surface top | Passed array setup");
+                    }
+
                     for (int i = 0; i < length; ++i)
                     {
                         // Root/tip filtering followed by leading/trailing filtering
@@ -1057,7 +1163,9 @@ namespace WingProcedural
                     meshFilterWingSurface.mesh.RecalculateBounds();
 
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Wing surface | Finished");
+                    }
                 }
 
                 // Next, time for leading and trailing edges
@@ -1070,14 +1178,22 @@ namespace WingProcedural
                 for (int i = 0; i < meshTypeCountEdgeWing; ++i)
                 {
                     if (i != wingEdgeTypeTrailingInt)
+                    {
                         meshFiltersWingEdgeTrailing[i].gameObject.SetActive(false);
+                    }
                     else
+                    {
                         meshFiltersWingEdgeTrailing[i].gameObject.SetActive(true);
+                    }
 
                     if (i != wingEdgeTypeLeadingInt)
+                    {
                         meshFiltersWingEdgeLeading[i].gameObject.SetActive(false);
+                    }
                     else
+                    {
                         meshFiltersWingEdgeLeading[i].gameObject.SetActive(true);
+                    }
                 }
 
                 // Next we calculate some values reused for all edge geometry
@@ -1105,16 +1221,25 @@ namespace WingProcedural
                     Vector2[] uv2 = new Vector2[length];
 
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Wing edge trailing | Passed array setup");
+                    }
+
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         if (vp[i].x < -0.1f)
                         {
                             vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthTrailingTipDeviation + sharedBaseWidthTip / 2f + sharedBaseOffsetTip); // Tip edge
-                            if (nm[i].x == 0f) uv[i] = new Vector2(sharedBaseLength, uv[i].y);
+                            if (nm[i].x == 0f)
+                            {
+                                uv[i] = new Vector2(sharedBaseLength, uv[i].y);
+                            }
                         }
                         else
+                        {
                             vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
+                        }
+
                         if (nm[i].x == 0f && sharedEdgeTypeTrailing != 1)
                         {
                             cl[i] = GetVertexColor(2);
@@ -1128,7 +1253,9 @@ namespace WingProcedural
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.colors = cl;
                     meshFiltersWingEdgeTrailing[wingEdgeTypeTrailingInt].mesh.RecalculateBounds();
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Wing edge trailing | Finished");
+                    }
                 }
                 if (meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt] != null)
                 {
@@ -1144,17 +1271,25 @@ namespace WingProcedural
                     Vector2[] uv2 = new Vector2[length];
 
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Wing edge leading | Passed array setup");
+                    }
+
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         if (vp[i].x < -0.1f)
                         {
                             vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthLeadingTipDeviation + sharedBaseWidthTip / 2f - sharedBaseOffsetTip); // Tip edge
                             if (nm[i].x == 0f)
+                            {
                                 uv[i] = new Vector2(sharedBaseLength, uv[i].y);
+                            }
                         }
                         else
+                        {
                             vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
+                        }
+
                         if (nm[i].x == 0f && sharedEdgeTypeLeading != 1)
                         {
                             cl[i] = GetVertexColor(3);
@@ -1168,7 +1303,9 @@ namespace WingProcedural
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.colors = cl;
                     meshFiltersWingEdgeLeading[wingEdgeTypeLeadingInt].mesh.RecalculateBounds();
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Wing edge leading | Finished");
+                    }
                 }
             }
             else
@@ -1205,12 +1342,22 @@ namespace WingProcedural
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry) DebugLogWithID("UpdateGeometry", "Control surface frame | Passed array setup");
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
+                        DebugLogWithID("UpdateGeometry", "Control surface frame | Passed array setup");
+                    }
+
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         // Thickness correction (X), edge width correction (Y) and span-based offset (Z)
-                        if (vp[i].z < 0f) vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, vp[i].y, vp[i].z + 0.5f - sharedBaseLength / 2f); // if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip), vp[i].z + 0.5f - sharedBaseLength / 2f);
-                        else vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, vp[i].y, vp[i].z - 0.5f + sharedBaseLength / 2f); // else vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot), vp[i].z - 0.5f + sharedBaseLength / 2f);
+                        if (vp[i].z < 0f)
+                        {
+                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, vp[i].y, vp[i].z + 0.5f - sharedBaseLength / 2f); // if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip), vp[i].z + 0.5f - sharedBaseLength / 2f);
+                        }
+                        else
+                        {
+                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, vp[i].y, vp[i].z - 0.5f + sharedBaseLength / 2f); // else vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot), vp[i].z - 0.5f + sharedBaseLength / 2f);
+                        }
 
                         // Left/right sides
                         if (nm[i] == new Vector3(0f, 0f, 1f) || nm[i] == new Vector3(0f, 0f, -1f))
@@ -1236,19 +1383,21 @@ namespace WingProcedural
                         }
 
                         // Root (only needs UV adjustment)
-                        else if (nm[i] == new Vector3(0f, 1f, 0f))
+                        else if (nm[i] == new Vector3(0f, 1f, 0f) && vp[i].z < 0f)
                         {
-                            if (vp[i].z < 0f) uv[i] = new Vector2(sharedBaseLength, uv[i].y);
+                            uv[i] = new Vector2(sharedBaseLength, uv[i].y);
                         }
 
                         // Trailing edge
-                        else
+                        else if (vp[i].y < -0.1f)
                         {
-                            // Filtering out root neighbours
-                            if (vp[i].y < -0.1f)
+                            if (vp[i].z < 0f)
                             {
-                                if (vp[i].z < 0f) vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z);
-                                else vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                                vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z);
+                            }
+                            else
+                            {
+                                vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
                             }
                         }
 
@@ -1256,12 +1405,18 @@ namespace WingProcedural
                         if (vp[i].z < 0f)
                         {
                             vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
-                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f)) uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
+                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f))
+                            {
+                                uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
+                            }
                         }
                         else
                         {
                             vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetRootClamped);
-                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f)) uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
+                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f))
+                            {
+                                uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
+                            }
                         }
 
                         // Just blanks
@@ -1277,12 +1432,17 @@ namespace WingProcedural
 
                     MeshCollider meshCollider = meshFilterCtrlFrame.gameObject.GetComponent<MeshCollider>();
                     if (meshCollider == null)
+                    {
                         meshCollider = meshFilterCtrlFrame.gameObject.AddComponent<MeshCollider>();
+                    }
+
                     meshCollider.sharedMesh = null;
                     meshCollider.sharedMesh = meshFilterCtrlFrame.mesh;
                     meshCollider.convex = true;
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Control surface frame | Finished");
+                    }
                 }
 
                 // Next, time for edge types
@@ -1293,8 +1453,13 @@ namespace WingProcedural
                 for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
                 {
                     if (i != ctrlEdgeTypeInt)
+                    {
                         meshFiltersCtrlEdge[i].gameObject.SetActive(false);
-                    else meshFiltersCtrlEdge[i].gameObject.SetActive(true);
+                    }
+                    else
+                    {
+                        meshFiltersCtrlEdge[i].gameObject.SetActive(true);
+                    }
                 }
 
                 // Now we can modify geometry
@@ -1313,18 +1478,34 @@ namespace WingProcedural
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry) DebugLogWithID("UpdateGeometry", "Control surface edge | Passed array setup");
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
+                        DebugLogWithID("UpdateGeometry", "Control surface edge | Passed array setup");
+                    }
+
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         // Thickness correction (X), edge width correction (Y) and span-based offset (Z)
-                        if (vp[i].z < 0f) vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip) - 0.5f, vp[i].z + 0.5f - sharedBaseLength / 2f);
-                        else vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot) - 0.5f, vp[i].z - 0.5f + sharedBaseLength / 2f);
+                        if (vp[i].z < 0f)
+                        {
+                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip) - 0.5f, vp[i].z + 0.5f - sharedBaseLength / 2f);
+                        }
+                        else
+                        {
+                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot) - 0.5f, vp[i].z - 0.5f + sharedBaseLength / 2f);
+                        }
 
                         // Left/right sides
                         if (nm[i] == new Vector3(0f, 0f, 1f) || nm[i] == new Vector3(0f, 0f, -1f))
                         {
-                            if (vp[i].z < 0f) vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z);
-                            else vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                            if (vp[i].z < 0f)
+                            {
+                                vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z);
+                            }
+                            else
+                            {
+                                vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                            }
                         }
 
                         // Trailing edge
@@ -1333,8 +1514,14 @@ namespace WingProcedural
                             // Filtering out root neighbours
                             if (vp[i].y < -0.1f)
                             {
-                                if (vp[i].z < 0f) vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z);
-                                else vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                                if (vp[i].z < 0f)
+                                {
+                                    vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlTipWidth, vp[i].z);
+                                }
+                                else
+                                {
+                                    vp[i] = new Vector3(vp[i].x, vp[i].y + 0.5f - ctrlRootWidth, vp[i].z);
+                                }
                             }
                         }
 
@@ -1342,19 +1529,31 @@ namespace WingProcedural
                         if (vp[i].z < 0f)
                         {
                             vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetTipClamped);
-                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f)) uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
+                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f))
+                            {
+                                uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetTipClamped) / 4f, uv[i].y);
+                            }
                         }
                         else
                         {
                             vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + vp[i].y * ctrlOffsetRootClamped);
-                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f)) uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
+                            if (nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f))
+                            {
+                                uv[i] = new Vector2(uv[i].x - (vp[i].y * ctrlOffsetRootClamped) / 4f, uv[i].y);
+                            }
                         }
 
                         // Trailing edge (UV adjustment, has to be the last as it's based on cumulative vertex positions)
                         if (nm[i] != new Vector3(0f, 1f, 0f) && nm[i] != new Vector3(0f, 0f, 1f) && nm[i] != new Vector3(0f, 0f, -1f) && uv[i].y < 0.3f)
                         {
-                            if (vp[i].z < 0f) uv[i] = new Vector2(vp[i].z, uv[i].y);
-                            else uv[i] = new Vector2(vp[i].z, uv[i].y);
+                            if (vp[i].z < 0f)
+                            {
+                                uv[i] = new Vector2(vp[i].z, uv[i].y);
+                            }
+                            else
+                            {
+                                uv[i] = new Vector2(vp[i].z, uv[i].y);
+                            }
 
                             // Color has to be applied there to avoid blanking out cross sections
                             cl[i] = GetVertexColor(2);
@@ -1368,7 +1567,9 @@ namespace WingProcedural
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.colors = cl;
                     meshFiltersCtrlEdge[ctrlEdgeTypeInt].mesh.RecalculateBounds();
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Control surface edge | Finished");
+                    }
                 }
 
                 // Finally, simple top/bottom surface changes
@@ -1383,7 +1584,11 @@ namespace WingProcedural
                     Color[] cl = new Color[length];
                     Vector2[] uv2 = new Vector2[length];
 
-                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry) DebugLogWithID("UpdateGeometry", "Control surface top | Passed array setup");
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
+                        DebugLogWithID("UpdateGeometry", "Control surface top | Passed array setup");
+                    }
+
                     for (int i = 0; i < vp.Length; ++i)
                     {
                         // Span-based shift
@@ -1412,7 +1617,10 @@ namespace WingProcedural
                                 uv[i] = new Vector2(uv[i].x, ctrlRootWidth / 4f);
                             }
                         }
-                        else uv[i] = new Vector2(uv[i].x, 0f);
+                        else
+                        {
+                            uv[i] = new Vector2(uv[i].x, 0f);
+                        }
 
                         // Offsets & thickness
                         if (vp[i].z < 0f)
@@ -1444,22 +1652,32 @@ namespace WingProcedural
                     meshFilterCtrlSurface.mesh.colors = cl;
                     meshFilterCtrlSurface.mesh.RecalculateBounds();
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+                    {
                         DebugLogWithID("UpdateGeometry", "Control surface top | Finished");
+                    }
                 }
             }
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateGeometry)
+            {
                 DebugLogWithID("UpdateGeometry", "Finished");
+            }
+
             if (HighLogic.LoadedSceneIsEditor)
+            {
                 FuelVolumeChanged();
+            }
+
             if (updateAerodynamics)
+            {
                 CalculateAerodynamicValues();
+            }
         }
 
         public void UpdateCounterparts()
         {
-            for (int i = part.symmetryCounterparts.Count - 1; i >= 0; --i)
+            foreach (Part p in part.symmetryCounterparts)
             {
-                WingProcedural clone = FirstOfTypeOrDefault<WingProcedural>(part.symmetryCounterparts[i].Modules);
+                WingProcedural clone = FirstOfTypeOrDefault<WingProcedural>(p.Modules);
 
                 clone.sharedBaseLength = clone.sharedBaseLengthCached = sharedBaseLength;
                 clone.sharedBaseWidthRoot = clone.sharedBaseWidthRootCached = sharedBaseWidthRoot;
@@ -1577,40 +1795,47 @@ namespace WingProcedural
             }
             if (required)
             {
-                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logMeshReferences) DebugLogWithID("SetupMeshReferences", "References missing | isCtrlSrf: " + isCtrlSrf);
+                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logMeshReferences)
+                {
+                    DebugLogWithID("SetupMeshReferences", "References missing | isCtrlSrf: " + isCtrlSrf);
+                }
+
                 SetupMeshReferencesFromScratch();
             }
-            else
+            else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logMeshReferences)
             {
-                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logMeshReferences) DebugLogWithID("SetupMeshReferences", "Skipped, all references seem to be in order");
+                DebugLogWithID("SetupMeshReferences", "Skipped, all references seem to be in order");
             }
         }
 
         public void ReportOnMeshReferences()
         {
-            if (isCtrlSrf)
+            if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logMeshReferences)
             {
-                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logMeshReferences)
+                if (isCtrlSrf)
+                {
                     DebugLogWithID("ReportOnMeshReferences", "Control surface reference length check" + " | Edge: " + meshReferenceCtrlFrame.vp.Length
                                         + " | Surface: " + meshReferenceCtrlSurface.vp.Length);
-            }
-            else
-            {
-                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logMeshReferences)
+                }
+                else
+                {
                     DebugLogWithID("ReportOnMeshReferences", "Wing reference length check" + " | Section: " + meshReferenceWingSection.vp.Length
-                                        + " | Surface: " + meshReferenceWingSurface.vp.Length
-                );
+                                        + " | Surface: " + meshReferenceWingSurface.vp.Length);
+                }
             }
         }
 
         private void SetupMeshReferencesFromScratch()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logMeshReferences)
+            {
                 DebugLogWithID("SetupMeshReferencesFromScratch", "No sources found, creating new references");
+            }
+
             if (!isCtrlSrf)
             {
-                WingProcedural.meshReferenceWingSection = FillMeshRefererence(meshFilterWingSection);
-                WingProcedural.meshReferenceWingSurface = FillMeshRefererence(meshFilterWingSurface);
+                meshReferenceWingSection = FillMeshRefererence(meshFilterWingSection);
+                meshReferenceWingSurface = FillMeshRefererence(meshFilterWingSurface);
                 for (int i = 0; i < meshTypeCountEdgeWing; ++i)
                 {
                     MeshReference meshReferenceWingEdge = FillMeshRefererence(meshFiltersWingEdgeTrailing[i]);
@@ -1619,8 +1844,8 @@ namespace WingProcedural
             }
             else
             {
-                WingProcedural.meshReferenceCtrlFrame = FillMeshRefererence(meshFilterCtrlFrame);
-                WingProcedural.meshReferenceCtrlSurface = FillMeshRefererence(meshFilterCtrlSurface);
+                meshReferenceCtrlFrame = FillMeshRefererence(meshFilterCtrlFrame);
+                meshReferenceCtrlSurface = FillMeshRefererence(meshFilterCtrlSurface);
                 for (int i = 0; i < meshTypeCountEdgeCtrl; ++i)
                 {
                     MeshReference meshReferenceCtrlEdge = FillMeshRefererence(meshFiltersCtrlEdge[i]);
@@ -1646,19 +1871,29 @@ namespace WingProcedural
             if (reference == null)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCheckMeshFilter)
+                {
                     DebugLogWithID("CheckMeshFilter", "Looking for object: " + name);
+                }
+
                 Transform parent = part.transform.GetChild(0).GetChild(0).GetChild(0).Find(name);
                 if (parent != null)
                 {
                     parent.localPosition = Vector3.zero;
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCheckMeshFilter)
+                    {
                         DebugLogWithID("CheckMeshFilter", "Object " + name + " was found");
+                    }
+
                     reference = parent.gameObject.GetComponent<MeshFilter>();
                     if (disable)
+                    {
                         parent.gameObject.SetActive(false);
+                    }
                 }
                 else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCheckMeshFilter)
+                {
                     DebugLogWithID("CheckMeshFilter", "Object " + name + " was not found!");
+                }
             }
             return reference;
         }
@@ -1671,7 +1906,7 @@ namespace WingProcedural
 
         private MeshReference FillMeshRefererence(MeshFilter source)
         {
-            MeshReference reference = new MeshReference();
+            var reference = new MeshReference();
             if (source != null)
             {
                 int length = source.mesh.vertices.Length;
@@ -1683,7 +1918,10 @@ namespace WingProcedural
                 Array.Copy(source.mesh.uv, reference.uv, length);
             }
             else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logMeshReferences)
+            {
                 DebugLogWithID("FillMeshReference", "Mesh filter reference is null, unable to set up reference arrays");
+            }
+
             return reference;
         }
 
@@ -1705,7 +1943,10 @@ namespace WingProcedural
         public void UpdateMaterials()
         {
             if (materialLayeredSurface == null || materialLayeredEdge == null)
+            {
                 SetMaterialReferences();
+            }
+
             if (materialLayeredSurface != null)
             {
                 if (!isCtrlSrf)
@@ -1728,18 +1969,31 @@ namespace WingProcedural
                 }
             }
             else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials)
+            {
                 DebugLogWithID("UpdateMaterials", "Material creation failed");
+            }
         }
 
         private void SetMaterialReferences()
         {
             if (materialLayeredSurface == null)
+            {
                 materialLayeredSurface = new Material(StaticWingGlobals.wingShader);
-            if (materialLayeredEdge == null)
-                materialLayeredEdge = new Material(StaticWingGlobals.wingShader);
+            }
 
-            if (!isCtrlSrf) SetTextures(meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
-            else SetTextures(meshFilterCtrlSurface, meshFilterCtrlFrame);
+            if (materialLayeredEdge == null)
+            {
+                materialLayeredEdge = new Material(StaticWingGlobals.wingShader);
+            }
+
+            if (!isCtrlSrf)
+            {
+                SetTextures(meshFilterWingSurface, meshFiltersWingEdgeTrailing[0]);
+            }
+            else
+            {
+                SetTextures(meshFilterCtrlSurface, meshFilterCtrlFrame);
+            }
 
             if (materialLayeredSurfaceTextureMain != null && materialLayeredSurfaceTextureMask != null)
             {
@@ -1748,7 +2002,10 @@ namespace WingProcedural
                 materialLayeredSurface.SetFloat("_Shininess", materialPropertyShininess);
                 materialLayeredSurface.SetColor("_SpecColor", materialPropertySpecular);
             }
-            else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials) DebugLogWithID("SetMaterialReferences", "Surface textures not found");
+            else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials)
+            {
+                DebugLogWithID("SetMaterialReferences", "Surface textures not found");
+            }
 
             if (materialLayeredEdgeTextureMain != null && materialLayeredEdgeTextureMask != null)
             {
@@ -1757,7 +2014,10 @@ namespace WingProcedural
                 materialLayeredEdge.SetFloat("_Shininess", materialPropertyShininess);
                 materialLayeredEdge.SetColor("_SpecColor", materialPropertySpecular);
             }
-            else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials) DebugLogWithID("SetMaterialReferences", "Edge textures not found");
+            else if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials)
+            {
+                DebugLogWithID("SetMaterialReferences", "Edge textures not found");
+            }
         }
 
         private void SetMaterial(MeshFilter target, Material material)
@@ -1766,7 +2026,9 @@ namespace WingProcedural
             {
                 Renderer r = target.gameObject.GetComponent<Renderer>();
                 if (r != null)
+                {
                     r.sharedMaterial = material;
+                }
             }
         }
 
@@ -1780,7 +2042,9 @@ namespace WingProcedural
                     materialLayeredSurfaceTextureMain = r.sharedMaterial.GetTexture("_MainTex");
                     materialLayeredSurfaceTextureMask = r.sharedMaterial.GetTexture("_Emissive");
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials)
+                    {
                         DebugLogWithID("SetTextures", "Main: " + materialLayeredSurfaceTextureMain.ToString() + " | Mask: " + materialLayeredSurfaceTextureMask);
+                    }
                 }
             }
             if (sourceEdge != null)
@@ -1791,7 +2055,9 @@ namespace WingProcedural
                     materialLayeredEdgeTextureMain = r.sharedMaterial.GetTexture("_MainTex");
                     materialLayeredEdgeTextureMask = r.sharedMaterial.GetTexture("_Emissive");
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdateMaterials)
+                    {
                         DebugLogWithID("SetTextures", "Main: " + materialLayeredEdgeTextureMain.ToString() + " | Mask: " + materialLayeredEdgeTextureMask);
+                    }
                 }
             }
         }
@@ -1830,7 +2096,10 @@ namespace WingProcedural
                 if (vesselList[i].vessel.GetInstanceID() == vesselID)
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFlightSetup)
+                    {
                         DebugLogWithID("SetupReorderedForFlight", "Vessel " + vesselID + " found in the status list");
+                    }
+
                     vesselListInclusive = true;
                     vesselStatusIndex = i;
                 }
@@ -1842,7 +2111,10 @@ namespace WingProcedural
             if (!vesselListInclusive)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFlightSetup)
+                {
                     DebugLogWithID("SetupReorderedForFlight", "Vessel " + vesselID + " was not found in the status list, adding it");
+                }
+
                 vesselList.Add(new VesselStatus(vessel, false));
                 vesselStatusIndex = vesselList.Count - 1;
             }
@@ -1853,9 +2125,12 @@ namespace WingProcedural
             if (!vesselList[vesselStatusIndex].isUpdated)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFlightSetup)
+                {
                     DebugLogWithID("SetupReorderedForFlight", "Vessel " + vesselID + " was not updated yet (this message should only appear once)");
+                }
+
                 vesselList[vesselStatusIndex].isUpdated = true;
-                List<WingProcedural> moduleList = new List<WingProcedural>();
+                var moduleList = new List<WingProcedural>();
 
                 // First we get a list of all relevant parts in the vessel
                 // Found modules are added to a list
@@ -1864,14 +2139,19 @@ namespace WingProcedural
                 for (int i = 0; i < vesselPartsCount; ++i)
                 {
                     if (vessel.parts[i].Modules.Contains<WingProcedural>())
+                    {
                         moduleList.Add(vessel.parts[i].Modules.GetModule<WingProcedural>());
+                    }
                 }
 
                 // After that we make two separate runs through that list
                 // First one setting up all geometry and second one setting up aerodynamic values
 
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFlightSetup)
+                {
                     DebugLogWithID("SetupReorderedForFlight", "Vessel " + vesselID + " contained " + vesselPartsCount + " parts, of which " + moduleList.Count + " should be set up");
+                }
+
                 int moduleListCount = moduleList.Count;
                 for (int i = 0; i < moduleListCount; ++i)
                 {
@@ -1882,7 +2162,10 @@ namespace WingProcedural
                 yield return new WaitForFixedUpdate();
 
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFlightSetup)
+                {
                     DebugLogWithID("SetupReorderedForFlight", "Vessel " + vesselID + " waited for updates, starting aero value calculation");
+                }
+
                 for (int i = 0; i < moduleListCount; ++i)
                 {
                     moduleList[i].CalculateAerodynamicValues();
@@ -1957,8 +2240,9 @@ namespace WingProcedural
         public void CalculateAerodynamicValues()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+            {
                 DebugLogWithID("CalculateAerodynamicValues", "Started");
-            CheckAssemblies(false);
+            }
 
             float sharedWidthTipSum = sharedBaseWidthTip;
             float sharedWidthRootSum = sharedBaseWidthRoot;
@@ -2016,12 +2300,18 @@ namespace WingProcedural
                 float x1 = (-b_tp + Mathf.Sqrt(D_tp)) / 2.0f / a_tp;
                 float x2 = (-b_tp - Mathf.Sqrt(D_tp)) / 2.0f / a_tp;
                 if ((x1 >= 0.0f) && (x1 <= 1.0f))
+                {
                     pseudotaper_ratio = x1;
+                }
                 else
+                {
                     pseudotaper_ratio = x2;
+                }
             }
             else
+            {
                 pseudotaper_ratio = 0.5f;
+            }
 
             // Base four values
 
@@ -2040,7 +2330,9 @@ namespace WingProcedural
                 aeroStatMidChordSweep = Math.Atan((double)Mathf.Abs(sharedWidthRootSum - sharedWidthTipSum) / (double)sharedBaseLength) * MathD.Rad2Deg;
             }
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+            {
                 DebugLogWithID("CalculateAerodynamicValues", "Passed B2/TR/MAC/MCS");
+            }
 
             // Derived values
 
@@ -2057,7 +2349,9 @@ namespace WingProcedural
             GatherChildrenCl();
             aeroStatConnectionForce = Math.Round(MathD.Clamp(Math.Sqrt(aeroStatCl + aeroStatClChildren) * (double)aeroConstConnectionFactor, (double)aeroConstConnectionMinimum, double.MaxValue));
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+            {
                 DebugLogWithID("CalculateAerodynamicValues", "Passed SR/AR/ARSS/mass/Cl/Cd/connection");
+            }
 
             // Shared parameters
 
@@ -2079,7 +2373,9 @@ namespace WingProcedural
             part.breakingForce = Mathf.Round((float)aeroStatConnectionForce);
             part.breakingTorque = Mathf.Round((float)aeroStatConnectionForce);
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+            {
                 DebugLogWithID("CalculateAerodynamicValues", "Passed cost/force/torque");
+            }
 
             // Stock-only values
             if (!assemblyFARUsed)
@@ -2090,88 +2386,127 @@ namespace WingProcedural
                 if (!isCtrlSrf && !isWingAsCtrlSrf)
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                    {
                         DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating values for winglet part type");
-                    this.part.Modules.GetModule<ModuleLiftingSurface>().deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
+                    }
+
+                    part.Modules.GetModule<ModuleLiftingSurface>().deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     aeroUIMass = stockLiftCoefficient * 0.1f;
-                    this.part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
+                    part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
                 }
                 else
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                    {
                         DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR is inactive, calculating stock control surface module values");
+                    }
+
                     ModuleControlSurface mCtrlSrf = FirstOfTypeOrDefault<ModuleControlSurface>(part.Modules);
                     mCtrlSrf.deflectionLiftCoeff = (float)Math.Round(stockLiftCoefficient, 2);
                     mCtrlSrf.ctrlSurfaceArea = aeroConstControlSurfaceFraction;
                     aeroUIMass = stockLiftCoefficient * (1 + mCtrlSrf.ctrlSurfaceArea) * 0.1f;
                     if (isWingAsCtrlSrf)
-                        this.part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
+                    {
+                        part.CoLOffset = new Vector3(y_col, -x_col, 0.0f);
+                    }
                     else
-                        this.part.CoLOffset = new Vector3(y_col - 0.5f * sharedBaseLength, -0.25f * (sharedBaseWidthTip + sharedBaseWidthRoot), 0.0f);
+                    {
+                        part.CoLOffset = new Vector3(y_col - 0.5f * sharedBaseLength, -0.25f * (sharedBaseWidthTip + sharedBaseWidthRoot), 0.0f);
+                    }
                 }
 
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                {
                     DebugLogWithID("CalculateAerodynamicValues", "Passed stock drag/deflection/area");
+                }
             }
             else
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                {
                     DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Entered segment");
+                }
+
                 if (aeroFARModuleReference == null)
                 {
                     if (part.Modules.Contains("FARControllableSurface"))
+                    {
                         aeroFARModuleReference = part.Modules["FARControllableSurface"];
+                    }
                     else if (part.Modules.Contains("FARWingAerodynamicModel"))
+                    {
                         aeroFARModuleReference = part.Modules["FARWingAerodynamicModel"];
+                    }
+
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                    {
                         DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Module reference was null, search performed, recheck result was " + (aeroFARModuleReference == null).ToString());
+                    }
                 }
                 if (aeroFARModuleReference != null)
                 {
                     if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                    {
                         DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Module reference present");
+                    }
+
                     if (aeroFARModuleType == null)
+                    {
                         aeroFARModuleType = aeroFARModuleReference.GetType();
+                    }
+
                     if (aeroFARModuleType != null)
                     {
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                        {
                             DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Module type present");
+                        }
+
                         if (aeroFARFieldInfoSemispan == null)
+                        {
                             aeroFARFieldInfoSemispan = aeroFARModuleType.GetField("b_2");
-                        if (aeroFARFieldInfoSemispan_Actual == null)
                             aeroFARFieldInfoSemispan_Actual = aeroFARModuleType.GetField("b_2_actual");
-                        if (aeroFARFieldInfoMAC == null)
                             aeroFARFieldInfoMAC = aeroFARModuleType.GetField("MAC");
-                        if (aeroFARFieldInfoMAC_Actual == null)
                             aeroFARFieldInfoMAC_Actual = aeroFARModuleType.GetField("MAC_actual");
-                        if (aeroFARFieldInfoSurfaceArea == null)
                             aeroFARFieldInfoSurfaceArea = aeroFARModuleType.GetField("S");
-                        if (aeroFARFieldInfoMidChordSweep == null)
                             aeroFARFieldInfoMidChordSweep = aeroFARModuleType.GetField("MidChordSweep");
-                        if (aeroFARFieldInfoTaperRatio == null)
                             aeroFARFieldInfoTaperRatio = aeroFARModuleType.GetField("TaperRatio");
+                        }
+
                         if (isCtrlSrf)
                         {
                             if (aeroFARFieldInfoControlSurfaceFraction == null)
+                            {
                                 aeroFARFieldInfoControlSurfaceFraction = aeroFARModuleType.GetField("ctrlSurfFrac");
+                            }
                         }
                         else
                         {
                             if (aeroFARFieldInfoRootChordOffset == null)
+                            {
                                 aeroFARFieldInfoRootChordOffset = aeroFARModuleType.GetField("rootMidChordOffsetFromOrig");
+                            }
                         }
                         if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                        {
                             DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Field checks and fetching passed");
+                        }
 
                         if (aeroFARMethodInfoUsed == null)
                         {
                             aeroFARMethodInfoUsed = aeroFARModuleType.GetMethod("StartInitialization");
                             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                            {
                                 DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Method info was null, search performed, recheck result was " + (aeroFARMethodInfoUsed == null).ToString());
+                            }
                         }
                         if (aeroFARMethodInfoUsed != null)
                         {
                             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                            {
                                 DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Method info present");
+                            }
+
                             aeroFARFieldInfoSemispan.SetValue(aeroFARModuleReference, aeroStatSemispan);
                             aeroFARFieldInfoSemispan_Actual.SetValue(aeroFARModuleReference, aeroStatSemispan);
                             aeroFARFieldInfoMAC.SetValue(aeroFARModuleReference, aeroStatMeanAerodynamicChord);
@@ -2180,33 +2515,47 @@ namespace WingProcedural
                             aeroFARFieldInfoMidChordSweep.SetValue(aeroFARModuleReference, aeroStatMidChordSweep);
                             aeroFARFieldInfoTaperRatio.SetValue(aeroFARModuleReference, aeroStatTaperRatio);
                             if (isCtrlSrf)
+                            {
                                 aeroFARFieldInfoControlSurfaceFraction.SetValue(aeroFARModuleReference, aeroConstControlSurfaceFraction);
+                            }
                             else
+                            {
                                 aeroFARFieldInfoRootChordOffset.SetValue(aeroFARModuleReference, (Vector3)aeroStatRootMidChordOffsetFromOrigin);
+                            }
 
                             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                            {
                                 DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | All values set, invoking the method");
+                            }
+
                             aeroFARMethodInfoUsed.Invoke(aeroFARModuleReference, null);
                         }
                     }
                 }
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+                {
                     DebugLogWithID("CalculateAerodynamicValues", "FAR/NEAR | Segment ended");
+                }
             }
 
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logCAV)
+            {
                 DebugLogWithID("CalculateAerodynamicValues", "Finished");
+            }
 
-            StartCoroutine(updateAeroDelayed());
+            StartCoroutine(UpdateAeroDelayed());
         }
 
         private float updateTimeDelay = 0;
-        private IEnumerator updateAeroDelayed()
+        private IEnumerator UpdateAeroDelayed()
         {
             bool running = updateTimeDelay > 0;
             updateTimeDelay = 0.5f;
             if (running)
+            {
                 yield break;
+            }
+
             while (updateTimeDelay > 0)
             {
                 updateTimeDelay -= TimeWarp.deltaTime;
@@ -2230,7 +2579,10 @@ namespace WingProcedural
                 part.DragCubes.ResetCubeWeights();
             }
             if (HighLogic.LoadedSceneIsEditor)
+            {
                 GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+            }
+
             updateTimeDelay = 0;
         }
 
@@ -2239,34 +2591,45 @@ namespace WingProcedural
             aeroStatClChildren = 0;
 
             // Add up the Cl and ChildrenCl of all our children to our ChildrenCl
-            for (int i = 0; i < part.children.Count; ++i)
+            foreach (Part p in part.children)
             {
-                if (part.children[i] == null)
-                    continue;
-                if (part.children[i].Modules.Contains<WingProcedural>())
+                if (p == null)
                 {
-                    WingProcedural child = FirstOfTypeOrDefault<WingProcedural>(part.children[i].Modules);
-                    if (child == null)
-                        continue;
-                    aeroStatClChildren += child.aeroStatCl;
-                    aeroStatClChildren += child.aeroStatClChildren;
+                    continue;
                 }
+
+                WingProcedural child = FirstOfTypeOrDefault<WingProcedural>(p.Modules);
+                if (child == null)
+                {
+                    continue;
+                }
+
+                aeroStatClChildren += child.aeroStatCl;
+                aeroStatClChildren += child.aeroStatClChildren;
             }
 
             // If parent is a pWing, trickle the call to gather ChildrenCl up to them.
-            if (this.part.parent != null && this.part.parent.Modules.Contains<WingProcedural>())
+            if (part.parent != null && part.parent.Modules.Contains<WingProcedural>())
+            {
                 FirstOfTypeOrDefault<WingProcedural>(part.parent.Modules).GatherChildrenCl();
+            }
         }
 
         public bool showWingData = false;
         [KSPEvent(guiActiveEditor = true, guiName = "Show wing data")]
         public void InfoToggleEvent()
         {
-            if (isAttached && this.part.parent != null)
+            if (isAttached && part.parent != null)
             {
                 showWingData = !showWingData;
-                if (showWingData) Events["InfoToggleEvent"].guiName = "Hide wing data";
-                else Events["InfoToggleEvent"].guiName = "Show wing data";
+                if (showWingData)
+                {
+                    Events["InfoToggleEvent"].guiName = "Hide wing data";
+                }
+                else
+                {
+                    Events["InfoToggleEvent"].guiName = "Show wing data";
+                }
 
                 // If FAR/NEAR aren't present, toggle Cl/Cd
                 if (!assemblyFARUsed)
@@ -2298,7 +2661,7 @@ namespace WingProcedural
                 PartModule moduleFAR = part.Modules["FARWingAerodynamicModel"];
                 Type typeFAR = moduleFAR.GetType();
 
-                var referenceInteraction = typeFAR.GetField("wingInteraction", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(moduleFAR);
+                object referenceInteraction = typeFAR.GetField("wingInteraction", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(moduleFAR);
                 if (referenceInteraction != null)
                 {
                     string report = "";
@@ -2316,9 +2679,15 @@ namespace WingProcedural
                     report += "Exposure (fwd/back/left/right): " + forwardExposure.ToString("F2") + ", " + backwardExposure.ToString("F2") + ", " + leftwardExposure.ToString("F2") + ", " + rightwardExposure.ToString("F2");
                     DebugLogWithID("DumpInteractionData", report);
                 }
-                else DebugLogWithID("DumpInteractionData", "Interaction reference is null, report failed");
+                else
+                {
+                    DebugLogWithID("DumpInteractionData", "Interaction reference is null, report failed");
+                }
             }
-            else DebugLogWithID("DumpInteractionData", "FAR module not found, report failed");
+            else
+            {
+                DebugLogWithID("DumpInteractionData", "FAR module not found, report failed");
+            }
         }
 
         #endregion Aero
@@ -2345,17 +2714,19 @@ namespace WingProcedural
         // Proposed by NathanKell, if I'm not mistaken
         private UIPartActionWindow _myWindow = null;
 
-        private UIPartActionWindow myWindow
+        private UIPartActionWindow MyWindow
         {
             get
             {
                 if (_myWindow == null)
                 {
-                    UIPartActionWindow[] windows = (UIPartActionWindow[])FindObjectsOfType(typeof(UIPartActionWindow));
-                    for (int i = 0; i < windows.Length; ++i)
+                    UIPartActionWindow[] windows = FindObjectsOfType<UIPartActionWindow>();
+                    foreach (UIPartActionWindow window in windows)
                     {
-                        if (windows[i].part == part)
-                            _myWindow = windows[i];
+                        if (window.part == part)
+                        {
+                            _myWindow = window;
+                        }
                     }
                 }
                 return _myWindow;
@@ -2364,21 +2735,30 @@ namespace WingProcedural
 
         private void UpdateWindow()
         {
-            if (myWindow != null)
-                myWindow.displayDirty = true;
+            if (MyWindow != null)
+            {
+                MyWindow.displayDirty = true;
+            }
         }
 
         private void OnGUI()
         {
             if (!isStarted || !HighLogic.LoadedSceneIsEditor || !uiWindowActive)
+            {
                 return;
+            }
 
             if (uiInstanceIDLocal == 0)
+            {
                 uiInstanceIDLocal = part.GetInstanceID();
+            }
+
             if (uiInstanceIDTarget == uiInstanceIDLocal || uiInstanceIDTarget == 0)
             {
                 if (!UIUtility.uiStyleConfigured)
+                {
                     UIUtility.ConfigureStyles();
+                }
 
                 UIUtility.uiRectWindowEditor = GUILayout.Window(GetInstanceID(), UIUtility.uiRectWindowEditor, OnWindow, GetWindowTitle(), UIUtility.uiStyleWindow, GUILayout.Height(uiAdjustWindow ? 0 : UIUtility.uiRectWindowEditor.height));
                 uiAdjustWindow = false;
@@ -2392,7 +2772,9 @@ namespace WingProcedural
                     //    EditorTooltip.Instance.HideToolTip ();
                 }
                 else
+                {
                     EditorLogic.fetch.Unlock("WingProceduralWindow");
+                }
             }
         }
 
@@ -2411,9 +2793,20 @@ namespace WingProcedural
                 bool returnEarly = false;
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
-                if (uiLastFieldName.Length > 0) GUILayout.Label("Last: " + uiLastFieldName, UIUtility.uiStyleLabelMedium);
-                else GUILayout.Label("Property editor", UIUtility.uiStyleLabelMedium);
-                if (uiLastFieldTooltip.Length > 0) GUILayout.Label(uiLastFieldTooltip + "\n_________________________", UIUtility.uiStyleLabelHint, GUILayout.MaxHeight(44f), GUILayout.MinHeight(44f)); // 58f for four lines
+                if (uiLastFieldName.Length > 0)
+                {
+                    GUILayout.Label("Last: " + uiLastFieldName, UIUtility.uiStyleLabelMedium);
+                }
+                else
+                {
+                    GUILayout.Label("Property editor", UIUtility.uiStyleLabelMedium);
+                }
+
+                if (uiLastFieldTooltip.Length > 0)
+                {
+                    GUILayout.Label(uiLastFieldTooltip + "\n_________________________", UIUtility.uiStyleLabelHint, GUILayout.MaxHeight(44f), GUILayout.MinHeight(44f)); // 58f for four lines
+                }
+
                 GUILayout.EndVertical();
                 if (GUILayout.Button("Close", UIUtility.uiStyleButton, GUILayout.MaxWidth(50f)))
                 {
@@ -2423,7 +2816,10 @@ namespace WingProcedural
                     returnEarly = true;
                 }
                 GUILayout.EndHorizontal();
-                if (returnEarly) return;
+                if (returnEarly)
+                {
+                    return;
+                }
 
                 DrawFieldGroupHeader(ref sharedFieldGroupBaseStatic, "Base");
                 if (sharedFieldGroupBaseStatic)
@@ -2432,7 +2828,10 @@ namespace WingProcedural
                     DrawField(ref sharedBaseWidthRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), GetLimitsFromType(sharedBaseWidthRootLimits), "Width (root)", uiColorSliderBase, 1, 0);
                     DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), GetLimitsFromType(sharedBaseWidthTipLimits), "Width (tip)", uiColorSliderBase, 2, 0);
                     if (isCtrlSrf)
+                    {
                         DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (root)", uiColorSliderBase, 3, 0);
+                    }
+
                     DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0);
                     DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, sharedBaseThicknessLimits, "Thickness (root)", uiColorSliderBase, 5, 0);
                     DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, sharedBaseThicknessLimits, "Thickness (tip)", uiColorSliderBase, 6, 0);
@@ -2501,16 +2900,22 @@ namespace WingProcedural
                 }
 
                 GUILayout.Label("_________________________\n\nPress J to exit edit mode\nOptions below allow you to change default values", UIUtility.uiStyleLabelHint);
-                if (canBeFueled && useStockFuel)
+                if (CanBeFueled && UseStockFuel && GUILayout.Button(FuelGUIGetConfigDesc() + " | Next tank setup", UIUtility.uiStyleButton))
                 {
-                    if (GUILayout.Button(FuelGUIGetConfigDesc() + " | Next tank setup", UIUtility.uiStyleButton)) NextConfiguration();
+                    NextConfiguration();
                 }
 
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Save as default", UIUtility.uiStyleButton))
+                {
                     ReplaceDefaults();
+                }
+
                 if (GUILayout.Button("Restore default", UIUtility.uiStyleButton))
+                {
                     RestoreDefaults();
+                }
+
                 GUILayout.EndHorizontal();
                 if (inheritancePossibleOnShape || inheritancePossibleOnMaterials)
                 {
@@ -2519,15 +2924,23 @@ namespace WingProcedural
                     if (inheritancePossibleOnShape)
                     {
                         if (GUILayout.Button("Shape", UIUtility.uiStyleButton))
+                        {
                             InheritParentValues(0);
+                        }
+
                         if (GUILayout.Button("Base", UIUtility.uiStyleButton))
+                        {
                             InheritParentValues(1);
+                        }
+
                         if (GUILayout.Button("Edges", UIUtility.uiStyleButton))
+                        {
                             InheritParentValues(2);
+                        }
                     }
-                    if (inheritancePossibleOnMaterials)
+                    if (inheritancePossibleOnMaterials && GUILayout.Button("Color", UIUtility.uiStyleButton))
                     {
-                        if (GUILayout.Button("Color", UIUtility.uiStyleButton)) InheritParentValues(3);
+                        InheritParentValues(3);
                     }
                     GUILayout.EndHorizontal();
                 }
@@ -2535,7 +2948,9 @@ namespace WingProcedural
             else
             {
                 if (uiEditModeTimeout)
+                {
                     GUILayout.Label("Exiting edit mode...\n", UIUtility.uiStyleLabelMedium);
+                }
                 else
                 {
                     GUILayout.BeginHorizontal();
@@ -2601,16 +3016,26 @@ namespace WingProcedural
 
         private int GetFieldMode()
         {
-            if (!isCtrlSrf) return 1;
-            else return 2;
+            if (!isCtrlSrf)
+            {
+                return 1;
+            }
+            else
+            {
+                return 2;
+            }
         }
 
         private float SetupFieldValue(float value, Vector2 limits, float defaultValue)
         {
             if (!isSetToDefaultValues)
+            {
                 return defaultValue;
+            }
             else
+            {
                 return Mathf.Clamp(value, limits.x, limits.y);
+            }
         }
 
         /// <summary>
@@ -2642,11 +3067,22 @@ namespace WingProcedural
             if (GUILayout.Button(header, UIUtility.uiStyleLabelHint))
             {
                 fieldGroupBoolStatic = !fieldGroupBoolStatic;
-                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logPropertyWindow) DebugLogWithID("DrawFieldGroupHeader", "Header of " + header + " pressed | Group state: " + fieldGroupBoolStatic);
+                if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logPropertyWindow)
+                {
+                    DebugLogWithID("DrawFieldGroupHeader", "Header of " + header + " pressed | Group state: " + fieldGroupBoolStatic);
+                }
+
                 uiAdjustWindow = true;
             }
-            if (fieldGroupBoolStatic) GUILayout.Label("|", UIUtility.uiStyleLabelHint, GUILayout.MaxWidth(15f));
-            else GUILayout.Label("+", UIUtility.uiStyleLabelHint, GUILayout.MaxWidth(15f));
+            if (fieldGroupBoolStatic)
+            {
+                GUILayout.Label("|", UIUtility.uiStyleLabelHint, GUILayout.MaxWidth(15f));
+            }
+            else
+            {
+                GUILayout.Label("+", UIUtility.uiStyleLabelHint, GUILayout.MaxWidth(15f));
+            }
+
             GUILayout.EndHorizontal();
         }
 
@@ -2658,109 +3094,220 @@ namespace WingProcedural
             // Base descriptions
             if (fieldID == 0) // sharedBaseLength))
             {
-                if (!isCtrlSrf) return "Lateral measurement of the wing, \nalso referred to as semispan";
-                else return "Lateral measurement of the control \nsurface at it's root";
+                if (!isCtrlSrf)
+                {
+                    return "Lateral measurement of the wing, \nalso referred to as semispan";
+                }
+                else
+                {
+                    return "Lateral measurement of the control \nsurface at it's root";
+                }
             }
             else if (fieldID == 1) // sharedBaseWidthRoot))
             {
-                if (!isCtrlSrf) return "Longitudinal measurement of the wing \nat the root cross section";
-                else return "Longitudinal measurement of \nthe root chord";
+                if (!isCtrlSrf)
+                {
+                    return "Longitudinal measurement of the wing \nat the root cross section";
+                }
+                else
+                {
+                    return "Longitudinal measurement of \nthe root chord";
+                }
             }
             else if (fieldID == 2) // sharedBaseWidthTip))
             {
-                if (!isCtrlSrf) return "Longitudinal measurement of the wing \nat the tip cross section";
-                else return "Longitudinal measurement of \nthe tip chord";
+                if (!isCtrlSrf)
+                {
+                    return "Longitudinal measurement of the wing \nat the tip cross section";
+                }
+                else
+                {
+                    return "Longitudinal measurement of \nthe tip chord";
+                }
             }
             else if (fieldID == 3) // sharedBaseOffsetRoot))
             {
-                if (!isCtrlSrf) return "This property shouldn't be accessible \non a wing";
-                else return "Offset of the trailing edge \nroot corner on the lateral axis";
+                if (!isCtrlSrf)
+                {
+                    return "This property shouldn't be accessible \non a wing";
+                }
+                else
+                {
+                    return "Offset of the trailing edge \nroot corner on the lateral axis";
+                }
             }
             else if (fieldID == 4) // sharedBaseOffsetTip))
             {
-                if (!isCtrlSrf) return "Distance between midpoints of the cross \nsections on the longitudinal axis";
-                else return "Offset of the trailing edge \ntip corner on the lateral axis";
+                if (!isCtrlSrf)
+                {
+                    return "Distance between midpoints of the cross \nsections on the longitudinal axis";
+                }
+                else
+                {
+                    return "Offset of the trailing edge \ntip corner on the lateral axis";
+                }
             }
             else if (fieldID == 5) // sharedBaseThicknessRoot))
             {
-                if (!isCtrlSrf) return "Thickness at the root cross section \nUsually kept proportional to edge width";
-                else return "Thickness at the root cross section \nUsually kept proportional to edge width";
+                if (!isCtrlSrf)
+                {
+                    return "Thickness at the root cross section \nUsually kept proportional to edge width";
+                }
+                else
+                {
+                    return "Thickness at the root cross section \nUsually kept proportional to edge width";
+                }
             }
             else if (fieldID == 6) // sharedBaseThicknessTip))
             {
-                if (!isCtrlSrf) return "Thickness at the tip cross section \nUsually kept proportional to edge width";
-                else return "Thickness at the tip cross section \nUsually kept proportional to edge width";
+                if (!isCtrlSrf)
+                {
+                    return "Thickness at the tip cross section \nUsually kept proportional to edge width";
+                }
+                else
+                {
+                    return "Thickness at the tip cross section \nUsually kept proportional to edge width";
+                }
             }
 
             // Edge descriptions
             else if (fieldID == 7) // sharedEdgeTypeTrailing))
             {
-                if (!isCtrlSrf) return "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
-                else return "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
+                if (!isCtrlSrf)
+                {
+                    return "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
+                }
+                else
+                {
+                    return "Shape of the trailing edge cross \nsection (round/biconvex/sharp)";
+                }
             }
             else if (fieldID == 8) // sharedEdgeWidthTrailingRoot))
             {
-                if (!isCtrlSrf) return "Longitudinal measurement of the trailing \nedge cross section at wing root";
-                else return "Longitudinal measurement of the trailing \nedge cross section at with root";
+                if (!isCtrlSrf)
+                {
+                    return "Longitudinal measurement of the trailing \nedge cross section at wing root";
+                }
+                else
+                {
+                    return "Longitudinal measurement of the trailing \nedge cross section at with root";
+                }
             }
             else if (fieldID == 9) // sharedEdgeWidthTrailingTip))
             {
-                if (!isCtrlSrf) return "Longitudinal measurement of the trailing \nedge cross section at wing tip";
-                else return "Longitudinal measurement of the trailing \nedge cross section at with tip";
+                if (!isCtrlSrf)
+                {
+                    return "Longitudinal measurement of the trailing \nedge cross section at wing tip";
+                }
+                else
+                {
+                    return "Longitudinal measurement of the trailing \nedge cross section at with tip";
+                }
             }
             else if (fieldID == 10) // sharedEdgeTypeLeading))
             {
-                if (!isCtrlSrf) return "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
-                else return "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
+                if (!isCtrlSrf)
+                {
+                    return "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
+                }
+                else
+                {
+                    return "Shape of the leading edge cross \nsection (round/biconvex/sharp)";
+                }
             }
             else if (fieldID == 11) // sharedEdgeWidthLeadingRoot))
             {
-                if (!isCtrlSrf) return "Longitudinal measurement of the leading \nedge cross section at wing root";
-                else return "Longitudinal measurement of the leading \nedge cross section at wing root";
+                if (!isCtrlSrf)
+                {
+                    return "Longitudinal measurement of the leading \nedge cross section at wing root";
+                }
+                else
+                {
+                    return "Longitudinal measurement of the leading \nedge cross section at wing root";
+                }
             }
             else if (fieldID == 12) // sharedEdgeWidthLeadingTip))
             {
-                if (!isCtrlSrf) return "Longitudinal measurement of the leading \nedge cross section at with tip";
-                else return "Longitudinal measurement of the leading \nedge cross section at with tip";
+                if (!isCtrlSrf)
+                {
+                    return "Longitudinal measurement of the leading \nedge cross section at with tip";
+                }
+                else
+                {
+                    return "Longitudinal measurement of the leading \nedge cross section at with tip";
+                }
             }
 
             // Surface descriptions
             else if (fieldID == 13)
             {
-                if (!isCtrlSrf) return "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
-                else return "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
+                if (!isCtrlSrf)
+                {
+                    return "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
+                }
+                else
+                {
+                    return "Surface material (uniform fill, plating, \nLRSI/HRSI tiles and so on)";
+                }
             }
             else if (fieldID == 14)
             {
-                if (!isCtrlSrf) return "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
-                else return "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
+                if (!isCtrlSrf)
+                {
+                    return "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
+                }
+                else
+                {
+                    return "Fairly self-explanatory, controls the paint \nopacity: no paint at 0, full coverage at 1";
+                }
             }
             else if (fieldID == 15)
             {
-                if (!isCtrlSrf) return "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
-                else return "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
+                if (!isCtrlSrf)
+                {
+                    return "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
+                }
+                else
+                {
+                    return "Controls the paint hue (HSB axis): \nvalues from zero to one make full circle";
+                }
             }
             else if (fieldID == 16)
             {
-                if (!isCtrlSrf) return "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
-                else return "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
+                if (!isCtrlSrf)
+                {
+                    return "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
+                }
+                else
+                {
+                    return "Controls the paint saturation (HSB axis): \ncolorless at 0, full color at 1";
+                }
             }
             else if (fieldID == 17)
             {
-                if (!isCtrlSrf) return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
-                else return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
+                if (!isCtrlSrf)
+                {
+                    return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
+                }
+                else
+                {
+                    return "Controls the paint brightness (HSB axis): black at 0, white at 1, primary at 0.5";
+                }
             }
-
-            // This should not really happen
-            else return "Unknown field\n";
+            else // This should not really happen
+            {
+                return "Unknown field\n";
+            }
         }
 
         private void OnMouseOver()
         {
             if (!HighLogic.LoadedSceneIsEditor)
+            {
                 return;
+            }
 
-            if (this.part.parent != null && isAttached && !uiEditModeTimeout)
+            if (part.parent != null && isAttached && !uiEditModeTimeout)
             {
                 if (uiEditMode)
                 {
@@ -2785,11 +3332,17 @@ namespace WingProcedural
             {
                 lastMousePos = Input.mousePosition;
                 if (Input.GetKeyDown(keyTranslation))
+                {
                     state = 1;
+                }
                 else if (Input.GetKeyDown(keyTipWidth))
+                {
                     state = 2;
+                }
                 else if (Input.GetKeyDown(keyRootWidth))
+                {
                     state = 3;
+                }
             }
         }
 
@@ -2800,7 +3353,9 @@ namespace WingProcedural
         public void DeformWing()
         {
             if (!isAttached || state == 0)
+            {
                 return;
+            }
 
             float depth = EditorCamera.Instance.GetComponentCached<Camera>(ref editorCam).WorldToScreenPoint(part.transform.position).z;
             Vector3 diff = depth * (Input.mousePosition - lastMousePos) / 1000;
@@ -2878,31 +3433,45 @@ namespace WingProcedural
         private void UpdateUI()
         {
             if (stockButton == null)
+            {
                 OnStockButtonSetup();
+            }
+
             if (uiEditModeTimeout && uiInstanceIDTarget == 0)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logPropertyWindow)
+                {
                     DebugLogWithID("UpdateUI", "Window timeout was left active on scene reload, resetting the window state");
+                }
+
                 StopWindowTimeout();
             }
             if (uiInstanceIDLocal != uiInstanceIDTarget)
+            {
                 return;
+            }
 
             if (uiEditModeTimeout)
             {
                 uiEditModeTimer += Time.deltaTime;
                 if (uiEditModeTimer > uiEditModeTimeoutDuration)
+                {
                     StopWindowTimeout();
+                }
             }
             else if (uiEditMode)
             {
                 if (Input.GetKeyDown(uiKeyCodeEdit))
+                {
                     ExitEditMode();
+                }
                 else
                 {
                     bool cursorInGUI = UIUtility.uiRectWindowEditor.Contains(UIUtility.GetMousePos());
                     if (!cursorInGUI && Input.GetKeyDown(KeyCode.Mouse0))
+                    {
                         ExitEditMode();
+                    }
                 }
             }
         }
@@ -2929,7 +3498,9 @@ namespace WingProcedural
             geometryUpdate |= CheckFieldValue(sharedEdgeWidthLeadingTip, ref sharedEdgeWidthLeadingTipCached);
 
             if (geometryUpdate)
+            {
                 aeroUpdate = true;
+            }
 
             // all the fields that have no aero effects
 
@@ -2963,7 +3534,10 @@ namespace WingProcedural
             if (fieldValue != fieldCache)
             {
                 if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logUpdate)
+                {
                     DebugLogWithID("Update", "Detected value change");
+                }
+
                 fieldCache = fieldValue;
                 return true;
             }
@@ -2991,12 +3565,24 @@ namespace WingProcedural
             {
                 if (!isCtrlSrf)
                 {
-                    if (isWingAsCtrlSrf) return "All-moving control surface";
-                    else return "Wing";
+                    if (isWingAsCtrlSrf)
+                    {
+                        return "All-moving control surface";
+                    }
+                    else
+                    {
+                        return "Wing";
+                    }
                 }
-                else return "Control surface";
+                else
+                {
+                    return "Control surface";
+                }
             }
-            else return "Inactive";
+            else
+            {
+                return "Inactive";
+            }
         }
 
         #endregion Alternative UI/input
@@ -3010,21 +3596,33 @@ namespace WingProcedural
         private Color GetVertexColor(int side)
         {
             if (side == 0)
+            {
                 return ColorHSBToRGB(new Vector4(sharedColorSTHue, sharedColorSTSaturation, sharedColorSTBrightness, sharedColorSTOpacity));
+            }
             else if (side == 1)
+            {
                 return ColorHSBToRGB(new Vector4(sharedColorSBHue, sharedColorSBSaturation, sharedColorSBBrightness, sharedColorSBOpacity));
+            }
             else if (side == 2)
+            {
                 return ColorHSBToRGB(new Vector4(sharedColorETHue, sharedColorETSaturation, sharedColorETBrightness, sharedColorETOpacity));
+            }
             else
+            {
                 return ColorHSBToRGB(new Vector4(sharedColorELHue, sharedColorELSaturation, sharedColorELBrightness, sharedColorELOpacity));
+            }
         }
 
         private Vector2 GetVertexUV2(float selectedLayer)
         {
             if (selectedLayer == 0)
+            {
                 return new Vector2(0f, 1f);
+            }
             else
+            {
                 return new Vector2((selectedLayer - 1f) / 3f, 0f);
+            }
         }
 
         private Color ColorHSBToRGB(Vector4 hsbColor)
@@ -3110,9 +3708,14 @@ namespace WingProcedural
         private void FuelStart()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFuel)
+            {
                 DebugLogWithID("FuelStart", "Started");
-            if (!(canBeFueled && useStockFuel))
+            }
+
+            if (!(CanBeFueled && UseStockFuel))
+            {
                 return;
+            }
 
             if (HighLogic.LoadedSceneIsEditor && fuelSelectedTankSetup < 0)
             {
@@ -3126,12 +3729,14 @@ namespace WingProcedural
         /// </summary>
         public void FuelVolumeChanged()
         {
-            if (!canBeFueled)
+            if (!CanBeFueled)
+            {
                 return;
+            }
 
             aeroStatVolume = 0.7f * sharedBaseLength * (sharedBaseWidthRoot + sharedBaseWidthTip) * (sharedBaseThicknessRoot + sharedBaseThicknessTip) / 4; // fudgeFactor * length * average thickness * average width
             // no need to worry about symmetry as all symmetric parts will experience the volume change
-            if (useStockFuel)
+            if (UseStockFuel)
             {
                 for (int i = 0; i < part.Resources.Count; ++i)
                 {
@@ -3147,7 +3752,9 @@ namespace WingProcedural
                 UpdateWindow();
             }
             else
+            {
                 FuelSetResources(); // for MFT/RF/CC.
+            }
         }
 
         /// <summary>
@@ -3156,14 +3763,19 @@ namespace WingProcedural
         public void FuelTankTypeChanged()
         {
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFuel)
+            {
                 DebugLogWithID("FuelAssignResourcesToPart", "Started");
+            }
 
             FuelSetResources();
-            for (int s = 0; s < part.symmetryCounterparts.Count; s++)
+            foreach (Part p in part.symmetryCounterparts)
             {
-                if (part.symmetryCounterparts[s] == null) // fixes nullref caused by removing mirror sym while hovering over attach location
+                if (p == null) // fixes nullref caused by removing mirror sym while hovering over attach location
+                {
                     continue;
-                WingProcedural wing = FirstOfTypeOrDefault<WingProcedural>(part.symmetryCounterparts[s].Modules);
+                }
+
+                WingProcedural wing = FirstOfTypeOrDefault<WingProcedural>(p.Modules);
                 if (wing != null)
                 {
                     wing.fuelSelectedTankSetup = fuelSelectedTankSetup;
@@ -3173,7 +3785,9 @@ namespace WingProcedural
 
             UpdateWindow();
             if (HighLogic.LoadedSceneIsEditor)
+            {
                 GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+            }
         }
 
         /// <summary>
@@ -3181,12 +3795,17 @@ namespace WingProcedural
         /// </summary>
         public void FuelSetResources()
         {
-            if (!(canBeFueled && HighLogic.LoadedSceneIsEditor))
+            if (!(CanBeFueled && HighLogic.LoadedSceneIsEditor))
+            {
                 return;
-            if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFuel)
-                DebugLogWithID("FuelSetupTankInPart", "Started");
+            }
 
-            if (!useStockFuel)
+            if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logFuel)
+            {
+                DebugLogWithID("FuelSetupTankInPart", "Started");
+            }
+
+            if (!UseStockFuel)
             {
                 // send public event OnPartVolumeChanged, like ProceduralParts does
                 // MFT/RT also support this event
@@ -3208,7 +3827,7 @@ namespace WingProcedural
 
                 foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                 {
-                    ConfigNode newResourceNode = new ConfigNode("RESOURCE");
+                    var newResourceNode = new ConfigNode("RESOURCE");
                     newResourceNode.AddValue("name", kvp.Value.resource.name);
                     newResourceNode.AddValue("amount", kvp.Value.unitsPerVolume * aeroStatVolume);
                     newResourceNode.AddValue("maxAmount", kvp.Value.unitsPerVolume * aeroStatVolume);
@@ -3225,7 +3844,7 @@ namespace WingProcedural
         private float FuelGetAddedCost()
         {
             float result = 0f;
-            if (canBeFueled && useStockFuel && fuelSelectedTankSetup < StaticWingGlobals.wingTankConfigurations.Count && fuelSelectedTankSetup >= 0)
+            if (CanBeFueled && UseStockFuel && fuelSelectedTankSetup < StaticWingGlobals.wingTankConfigurations.Count && fuelSelectedTankSetup >= 0)
             {
                 foreach (KeyValuePair<string, WingTankResource> kvp in StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].resources)
                 {
@@ -3241,7 +3860,9 @@ namespace WingProcedural
         private string FuelGUIGetConfigDesc()
         {
             if (fuelSelectedTankSetup == -1 || StaticWingGlobals.wingTankConfigurations.Count == 0)
+            {
                 return "Invalid";
+            }
             else
             {
                 string units = StaticWingGlobals.wingTankConfigurations[fuelSelectedTankSetup].GUIName + " (";
@@ -3257,7 +3878,7 @@ namespace WingProcedural
             }
         }
 
-        public bool canBeFueled
+        public bool CanBeFueled
         {
             get
             {
@@ -3265,7 +3886,7 @@ namespace WingProcedural
             }
         }
 
-        public bool useStockFuel
+        public bool UseStockFuel
         {
             get
             {
@@ -3290,7 +3911,10 @@ namespace WingProcedural
         public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
         {
             if (assemblyFARUsed)
+            {
                 return 0;
+            }
+
             return aeroUIMass - part.partInfo.partPrefab.mass;
         }
 
@@ -3325,19 +3949,26 @@ namespace WingProcedural
             uiWindowActive = !uiWindowActive;
         }
 
-        public void editorAppDestroy()
+        public void EditorAppDestroy()
         {
             if (!HighLogic.LoadedSceneIsEditor)
+            {
                 return;
+            }
 
             bool stockButtonCanBeRemoved = true;
-            WingProcedural[] components = GameObject.FindObjectsOfType<WingProcedural>();
+            WingProcedural[] components = FindObjectsOfType<WingProcedural>();
             if (HighLogic.CurrentGame.Parameters.CustomParams<WPDebug>().logEvents)
-                DebugLogWithID("OnDestroy", "Invoked, with " + components.Length + " remaining components in the scene");
-            for (int i = 0; i < components.Length; ++i)
             {
-                if (components[i] != null)
+                DebugLogWithID("OnDestroy", "Invoked, with " + components.Length + " remaining components in the scene");
+            }
+
+            foreach (WingProcedural c in components)
+            {
+                if (c != null)
+                {
                     stockButtonCanBeRemoved = false;
+                }
             }
             if (stockButtonCanBeRemoved)
             {
@@ -3352,51 +3983,14 @@ namespace WingProcedural
 
         #endregion Stock toolbar integration
 
-        #region Dump state
-
-        //public void DumpState ()
-        //{
-        //    string report = "State report on part " + this.GetInstanceID () + ":\n\n";
-        //    Type type = this.GetType ();
-        //    FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-        //    List<string> fieldNames = fields.Select(field => field.Name).ToList();
-        //    List<object> fieldValues = fields.Select(field => field.GetValue(this)).ToList();
-        //    if (fieldNames.Count == fieldValues.Count && fieldNames.Count == fields.Length)
-        //    {
-        //        for (int i = 0; i < fields.Length; ++i)
-        //        {
-        //            if (!string.IsNullOrEmpty (fieldNames[i]))
-        //            {
-        //                if (fieldValues[i] != null) report += fieldNames[i] + ": " + fieldValues[i].ToString () + "\n";
-        //                else report += fieldNames[i] + ": null\n";
-        //            }
-        //            else report += "Field " + i.ToString () + " name not available\n";
-        //        }
-        //    }
-        //    else report += "Field info size mismatch, list can't be printed";
-        //    Debug.Log (report);
-        //}
-
-        public void DumpExecutionTimes()
-        {
-            Debug.Log("Dumping execution time report, message list contains " + debugMessageList.Count);
-            string report = "Execution time report on part " + this.GetInstanceID() + ":\n\n";
-            int count = debugMessageList.Count;
-            for (int i = 0; i < count; ++i)
-            {
-                report += "I: " + debugMessageList[i].interval + "\n> M: " + (debugMessageList[i].message.Length <= 140 ? (debugMessageList[i].message) : (debugMessageList[i].message.Substring(0, 135) + "(...)")) + "\n";
-            }
-            Debug.Log(report);
-        }
-
-        #endregion Dump state
-
         public T FirstOfTypeOrDefault<T>(PartModuleList moduleList) where T : PartModule
         {
-            for (int i = 0; i < moduleList.Count; ++i)
+            foreach (PartModule pm in moduleList)
             {
-                if (moduleList[i] is T)
-                    return (T)moduleList[i];
+                if (pm is T)
+                {
+                    return (T)pm;
+                }
             }
             return default(T);
         }

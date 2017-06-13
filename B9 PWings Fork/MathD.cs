@@ -16,12 +16,17 @@ namespace WingProcedural
         {
             int length = values.Length;
             if (length == 0)
+            {
                 return 0.0d;
+            }
+
             double num = values[0];
             for (int index = 1; index < length; ++index)
             {
                 if (values[index] < num)
+                {
                     num = values[index];
+                }
             }
             return num;
         }
@@ -30,12 +35,17 @@ namespace WingProcedural
         {
             int length = values.Length;
             if (length == 0)
+            {
                 return 0;
+            }
+
             int num = values[0];
             for (int index = 1; index < length; ++index)
             {
                 if (values[index] < num)
+                {
                     num = values[index];
+                }
             }
             return num;
         }
@@ -44,12 +54,17 @@ namespace WingProcedural
         {
             int length = values.Length;
             if (length == 0)
+            {
                 return 0d;
+            }
+
             double num = values[0];
             for (int index = 1; index < length; ++index)
             {
                 if ((double)values[index] > (double)num)
+                {
                     num = values[index];
+                }
             }
             return num;
         }
@@ -58,12 +73,17 @@ namespace WingProcedural
         {
             int length = values.Length;
             if (length == 0)
+            {
                 return 0;
+            }
+
             int num = values[0];
             for (int index = 1; index < length; ++index)
             {
                 if (values[index] > num)
+                {
                     num = values[index];
+                }
             }
             return num;
         }
@@ -86,20 +106,32 @@ namespace WingProcedural
         public static T Clamp<T>(T value, T min, T max) where T : IComparable<T>
         {
             if (value.CompareTo(min) < 0)
+            {
                 value = min;
+            }
             else if (value.CompareTo(max) > 0)
+            {
                 value = max;
+            }
+
             return value;
         }
 
         public static double Clamp01(double value)
         {
             if (value < 0.0)
+            {
                 return 0.0d;
+            }
+
             if (value > 1.0)
+            {
                 return 1d;
+            }
             else
+            {
                 return value;
+            }
         }
 
         public static double Lerp(double from, double to, double t)
@@ -111,16 +143,23 @@ namespace WingProcedural
         {
             double num = MathD.Repeat(b - a, 360d);
             if (num > 180.0d)
+            {
                 num -= 360d;
+            }
+
             return a + num * MathD.Clamp01(t);
         }
 
         public static double MoveTowards(double current, double target, double maxDelta)
         {
             if (Math.Abs(target - current) <= maxDelta)
+            {
                 return target;
+            }
             else
+            {
                 return current + Math.Sign(target - current) * maxDelta;
+            }
         }
 
         public static double MoveTowardsAngle(double current, double target, double maxDelta)
@@ -140,22 +179,33 @@ namespace WingProcedural
         {
             bool flag = false;
             if (value < 0.0)
+            {
                 flag = true;
+            }
+
             double num1 = Math.Abs(value);
             if (num1 > absmax)
             {
                 if (flag)
+                {
                     return -num1;
+                }
                 else
+                {
                     return num1;
+                }
             }
             else
             {
                 double num2 = Math.Pow(num1 / absmax, gamma) * absmax;
                 if (flag)
+                {
                     return -num2;
+                }
                 else
+                {
                     return num2;
+                }
             }
         }
 
@@ -227,9 +277,15 @@ namespace WingProcedural
             if (from < to)
             {
                 if (value < from)
+                {
                     return 0d;
+                }
+
                 if (value > to)
+                {
                     return 1d;
+                }
+
                 value -= from;
                 value /= to - from;
                 return value;
@@ -237,13 +293,23 @@ namespace WingProcedural
             else
             {
                 if (from <= to)
+                {
                     return 0d;
+                }
+
                 if (value < to)
+                {
                     return 1d;
+                }
+
                 if (value > from)
+                {
                     return 0d;
+                }
                 else
+                {
                     return (1.0d - (value - to) / (from - to));
+                }
             }
         }
 
@@ -251,7 +317,10 @@ namespace WingProcedural
         {
             double num = MathD.Repeat(target - current, 360d);
             if (num > 180.0d)
+            {
                 num -= 360d;
+            }
+
             return num;
         }
     }
