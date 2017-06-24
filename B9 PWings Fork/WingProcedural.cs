@@ -1018,13 +1018,17 @@ namespace WingProcedural
                 DebugLogWithID("UpdateGeometry", "Started | isCtrlSrf: " + isCtrlSrf);
             }
 
+            float geometricLength = sharedBaseLength / part.rescaleFactor;
             if (!isCtrlSrf)
             {
-                float wingThicknessDeviationRoot = sharedBaseThicknessRoot / 0.24f;
-                float wingThicknessDeviationTip = sharedBaseThicknessTip / 0.24f;
-                float wingWidthTipBasedOffsetTrailing = sharedBaseWidthTip / 2f + sharedBaseOffsetTip;
-                float wingWidthTipBasedOffsetLeading = -sharedBaseWidthTip / 2f + sharedBaseOffsetTip;
-                float wingWidthRootBasedOffset = sharedBaseWidthRoot / 2f;
+                float wingThicknessDeviationRoot = (sharedBaseThicknessRoot / 0.24f) / part.rescaleFactor;
+                float wingThicknessDeviationTip = (sharedBaseThicknessTip / 0.24f) / part.rescaleFactor;
+                float wingWidthTipBasedOffsetTrailing = (sharedBaseWidthTip / 2f + sharedBaseOffsetTip) / part.rescaleFactor;
+                float wingWidthTipBasedOffsetLeading = (-sharedBaseWidthTip / 2f + sharedBaseOffsetTip) / part.rescaleFactor;
+                float wingWidthRootBasedOffset = (sharedBaseWidthRoot / 2f) / part.rescaleFactor;
+                float geometricWidthTip = sharedBaseWidthTip / part.rescaleFactor;
+                float geometricWidthRoot = sharedBaseWidthRoot / part.rescaleFactor;
+                float geometricOffsetTip = sharedBaseOffsetTip / part.rescaleFactor;
 
                 // First, wing cross section
                 // No need to filter vertices by normals
@@ -1048,12 +1052,12 @@ namespace WingProcedural
                         {
                             if (vp[i].z < 0f)
                             {
-                                vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetLeading);
-                                uv[i] = new Vector2(sharedBaseWidthTip, uv[i].y);
+                                vp[i] = new Vector3(-geometricLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetLeading);
+                                uv[i] = new Vector2(geometricWidthTip, uv[i].y);
                             }
                             else
                             {
-                                vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetTrailing);
+                                vp[i] = new Vector3(-geometricLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetTrailing);
                                 uv[i] = new Vector2(0f, uv[i].y);
                             }
                         }
@@ -1062,7 +1066,7 @@ namespace WingProcedural
                             if (vp[i].z < 0f)
                             {
                                 vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
-                                uv[i] = new Vector2(sharedBaseWidthRoot, uv[i].y);
+                                uv[i] = new Vector2(geometricWidthRoot, uv[i].y);
                             }
                             else
                             {
@@ -1120,13 +1124,13 @@ namespace WingProcedural
                         {
                             if (vp[i].z < 0f)
                             {
-                                vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetLeading);
-                                uv[i] = new Vector2(sharedBaseLength / 4f, 1f - 0.5f + sharedBaseWidthTip / 8f - sharedBaseOffsetTip / 4f);
+                                vp[i] = new Vector3(-geometricLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetLeading);
+                                uv[i] = new Vector2(geometricLength / 4f, 1f - 0.5f + geometricWidthTip / 8f - geometricOffsetTip / 4f);
                             }
                             else
                             {
-                                vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetTrailing);
-                                uv[i] = new Vector2(sharedBaseLength / 4f, 0f + 0.5f - sharedBaseWidthTip / 8f - sharedBaseOffsetTip / 4f);
+                                vp[i] = new Vector3(-geometricLength, vp[i].y * wingThicknessDeviationTip, wingWidthTipBasedOffsetTrailing);
+                                uv[i] = new Vector2(geometricLength / 4f, 0f + 0.5f - geometricWidthTip / 8f - geometricOffsetTip / 4f);
                             }
                         }
                         else
@@ -1134,12 +1138,12 @@ namespace WingProcedural
                             if (vp[i].z < 0f)
                             {
                                 vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, -wingWidthRootBasedOffset);
-                                uv[i] = new Vector2(0.0f, 1f - 0.5f + sharedBaseWidthRoot / 8f);
+                                uv[i] = new Vector2(0.0f, 1f - 0.5f + geometricWidthRoot / 8f);
                             }
                             else
                             {
                                 vp[i] = new Vector3(vp[i].x, vp[i].y * wingThicknessDeviationRoot, wingWidthRootBasedOffset);
-                                uv[i] = new Vector2(0f, 0f + 0.5f - sharedBaseWidthRoot / 8f);
+                                uv[i] = new Vector2(0f, 0f + 0.5f - geometricWidthRoot / 8f);
                             }
                         }
 
@@ -1198,11 +1202,11 @@ namespace WingProcedural
 
                 // Next we calculate some values reused for all edge geometry
 
-                float wingEdgeWidthLeadingRootDeviation = sharedEdgeWidthLeadingRoot / 0.24f;
-                float wingEdgeWidthLeadingTipDeviation = sharedEdgeWidthLeadingTip / 0.24f;
+                float wingEdgeWidthLeadingRootDeviation = sharedEdgeWidthLeadingRoot / 0.24f / part.rescaleFactor;
+                float wingEdgeWidthLeadingTipDeviation = sharedEdgeWidthLeadingTip / 0.24f / part.rescaleFactor;
 
-                float wingEdgeWidthTrailingRootDeviation = sharedEdgeWidthTrailingRoot / 0.24f;
-                float wingEdgeWidthTrailingTipDeviation = sharedEdgeWidthTrailingTip / 0.24f;
+                float wingEdgeWidthTrailingRootDeviation = sharedEdgeWidthTrailingRoot / 0.24f / part.rescaleFactor;
+                float wingEdgeWidthTrailingTipDeviation = sharedEdgeWidthTrailingTip / 0.24f / part.rescaleFactor;
 
                 // Next, we fetch appropriate mesh reference and mesh filter for the edges and modify the meshes
                 // Geometry is split into groups through simple vertex normal filtering
@@ -1229,15 +1233,15 @@ namespace WingProcedural
                     {
                         if (vp[i].x < -0.1f)
                         {
-                            vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthTrailingTipDeviation + sharedBaseWidthTip / 2f + sharedBaseOffsetTip); // Tip edge
+                            vp[i] = new Vector3(-geometricLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthTrailingTipDeviation + geometricWidthTip / 2f + geometricOffsetTip); // Tip edge
                             if (nm[i].x == 0f)
                             {
-                                uv[i] = new Vector2(sharedBaseLength, uv[i].y);
+                                uv[i] = new Vector2(geometricLength, uv[i].y);
                             }
                         }
                         else
                         {
-                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
+                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthTrailingRootDeviation + geometricWidthRoot / 2f); // Root edge
                         }
 
                         if (nm[i].x == 0f && sharedEdgeTypeTrailing != 1)
@@ -1279,15 +1283,15 @@ namespace WingProcedural
                     {
                         if (vp[i].x < -0.1f)
                         {
-                            vp[i] = new Vector3(-sharedBaseLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthLeadingTipDeviation + sharedBaseWidthTip / 2f - sharedBaseOffsetTip); // Tip edge
+                            vp[i] = new Vector3(-geometricLength, vp[i].y * wingThicknessDeviationTip, vp[i].z * wingEdgeWidthLeadingTipDeviation + geometricWidthTip / 2f - geometricOffsetTip); // Tip edge
                             if (nm[i].x == 0f)
                             {
-                                uv[i] = new Vector2(sharedBaseLength, uv[i].y);
+                                uv[i] = new Vector2(geometricLength, uv[i].y);
                             }
                         }
                         else
                         {
-                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + sharedBaseWidthRoot / 2f); // Root edge
+                            vp[i] = new Vector3(0f, vp[i].y * wingThicknessDeviationRoot, vp[i].z * wingEdgeWidthLeadingRootDeviation + geometricWidthRoot / 2f); // Root edge
                         }
 
                         if (nm[i].x == 0f && sharedEdgeTypeLeading != 1)
@@ -1315,17 +1319,17 @@ namespace WingProcedural
                 // float ctrlOffsetRootLimit = (sharedBaseLength / 2f) / (sharedBaseWidthRoot + sharedEdgeWidthTrailingRoot);
                 // float ctrlOffsetTipLimit = (sharedBaseLength / 2f) / (sharedBaseWidthTip + sharedEdgeWidthTrailingTip);
 
-                float ctrlOffsetRootClamped = Mathf.Clamp(isMirrored ? sharedBaseOffsetRoot : -sharedBaseOffsetTip, sharedBaseOffsetLimits.z, sharedBaseOffsetLimits.w + 0.15f); // Mathf.Clamp (sharedBaseOffsetRoot, sharedBaseOffsetLimits.z, ctrlOffsetRootLimit - 0.075f);
-                float ctrlOffsetTipClamped = Mathf.Clamp(isMirrored ? sharedBaseOffsetTip : -sharedBaseOffsetRoot, Mathf.Max(sharedBaseOffsetLimits.z - 0.15f, ctrlOffsetRootClamped - sharedBaseLength), sharedBaseOffsetLimits.w); // Mathf.Clamp (sharedBaseOffsetTip, -ctrlOffsetTipLimit + 0.075f, sharedBaseOffsetLimits.w);
+                float ctrlOffsetRootClamped = Mathf.Clamp(isMirrored ? sharedBaseOffsetRoot : -sharedBaseOffsetTip, sharedBaseOffsetLimits.z, sharedBaseOffsetLimits.w + 0.15f) / part.rescaleFactor; // Mathf.Clamp (sharedBaseOffsetRoot, sharedBaseOffsetLimits.z, ctrlOffsetRootLimit - 0.075f);
+                float ctrlOffsetTipClamped = Mathf.Clamp(isMirrored ? sharedBaseOffsetTip : -sharedBaseOffsetRoot, Mathf.Max(sharedBaseOffsetLimits.z - 0.15f, ctrlOffsetRootClamped - sharedBaseLength), sharedBaseOffsetLimits.w) / part.rescaleFactor; // Mathf.Clamp (sharedBaseOffsetTip, -ctrlOffsetTipLimit + 0.075f, sharedBaseOffsetLimits.w);
 
-                float ctrlThicknessDeviationRoot = (isMirrored ? sharedBaseThicknessRoot : sharedBaseThicknessTip) / 0.24f;
-                float ctrlThicknessDeviationTip = (isMirrored ? sharedBaseThicknessTip : sharedBaseThicknessRoot) / 0.24f;
+                float ctrlThicknessDeviationRoot = (isMirrored ? sharedBaseThicknessRoot : sharedBaseThicknessTip) / 0.24f / part.rescaleFactor;
+                float ctrlThicknessDeviationTip = (isMirrored ? sharedBaseThicknessTip : sharedBaseThicknessRoot) / 0.24f / part.rescaleFactor;
 
-                float ctrlEdgeWidthDeviationRoot = (isMirrored ? sharedEdgeWidthTrailingRoot : sharedEdgeWidthTrailingTip) / 0.24f;
-                float ctrlEdgeWidthDeviationTip = (isMirrored ? sharedEdgeWidthTrailingTip : sharedEdgeWidthTrailingRoot) / 0.24f;
+                float ctrlEdgeWidthDeviationRoot = (isMirrored ? sharedEdgeWidthTrailingRoot : sharedEdgeWidthTrailingTip) / 0.24f / part.rescaleFactor;
+                float ctrlEdgeWidthDeviationTip = (isMirrored ? sharedEdgeWidthTrailingTip : sharedEdgeWidthTrailingRoot) / 0.24f / part.rescaleFactor;
 
-                float ctrlTipWidth = (isMirrored ? sharedBaseWidthTip : sharedBaseWidthRoot);
-                float ctrlRootWidth = (isMirrored ? sharedBaseWidthRoot : sharedBaseWidthTip);
+                float ctrlTipWidth = (isMirrored ? sharedBaseWidthTip : sharedBaseWidthRoot) / part.rescaleFactor;
+                float ctrlRootWidth = (isMirrored ? sharedBaseWidthRoot : sharedBaseWidthTip) / part.rescaleFactor;
                 // float widthDifference = sharedBaseWidthRoot - sharedBaseWidthTip;
                 // float edgeLengthTrailing = Mathf.Sqrt (Mathf.Pow (sharedBaseLength, 2) + Mathf.Pow (widthDifference, 2));
                 // float sweepTrailing = 90f - Mathf.Atan (sharedBaseLength / widthDifference) * Mathf.Rad2Deg;
@@ -1352,11 +1356,11 @@ namespace WingProcedural
                         // Thickness correction (X), edge width correction (Y) and span-based offset (Z)
                         if (vp[i].z < 0f)
                         {
-                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, vp[i].y, vp[i].z + 0.5f - sharedBaseLength / 2f); // if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip), vp[i].z + 0.5f - sharedBaseLength / 2f);
+                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, vp[i].y, vp[i].z + 0.5f - geometricLength / 2f); // if (vp[i].z < 0f) vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip), vp[i].z + 0.5f - sharedBaseLength / 2f);
                         }
                         else
                         {
-                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, vp[i].y, vp[i].z - 0.5f + sharedBaseLength / 2f); // else vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot), vp[i].z - 0.5f + sharedBaseLength / 2f);
+                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, vp[i].y, vp[i].z - 0.5f + geometricLength / 2f); // else vp[i] = new Vector3 (vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot), vp[i].z - 0.5f + sharedBaseLength / 2f);
                         }
 
                         // Left/right sides
@@ -1385,7 +1389,7 @@ namespace WingProcedural
                         // Root (only needs UV adjustment)
                         else if (nm[i] == new Vector3(0f, 1f, 0f) && vp[i].z < 0f)
                         {
-                            uv[i] = new Vector2(sharedBaseLength, uv[i].y);
+                            uv[i] = new Vector2(geometricLength, uv[i].y);
                         }
 
                         // Trailing edge
@@ -1488,11 +1492,11 @@ namespace WingProcedural
                         // Thickness correction (X), edge width correction (Y) and span-based offset (Z)
                         if (vp[i].z < 0f)
                         {
-                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip) - 0.5f, vp[i].z + 0.5f - sharedBaseLength / 2f);
+                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationTip, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationTip) - 0.5f, vp[i].z + 0.5f - geometricLength / 2f);
                         }
                         else
                         {
-                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot) - 0.5f, vp[i].z - 0.5f + sharedBaseLength / 2f);
+                            vp[i] = new Vector3(vp[i].x * ctrlThicknessDeviationRoot, ((vp[i].y + 0.5f) * ctrlEdgeWidthDeviationRoot) - 0.5f, vp[i].z - 0.5f + geometricLength / 2f);
                         }
 
                         // Left/right sides
@@ -1594,13 +1598,13 @@ namespace WingProcedural
                         // Span-based shift
                         if (vp[i].z < 0f)
                         {
-                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + 0.5f - sharedBaseLength / 2f);
+                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z + 0.5f - geometricLength / 2f);
                             uv[i] = new Vector2(0f, uv[i].y);
                         }
                         else
                         {
-                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z - 0.5f + sharedBaseLength / 2f);
-                            uv[i] = new Vector2(sharedBaseLength / 4f, uv[i].y);
+                            vp[i] = new Vector3(vp[i].x, vp[i].y, vp[i].z - 0.5f + geometricLength / 2f);
+                            uv[i] = new Vector2(geometricLength / 4f, uv[i].y);
                         }
 
                         // Width-based shift
