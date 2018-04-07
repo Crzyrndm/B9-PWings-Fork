@@ -36,11 +36,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\Desktop\Kerbal Space Program Dev\KSP_x64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_141MH\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_141MH\KSP_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="KSPAssets">
-      <HintPath>..\..\..\Desktop\Kerbal Space Program Dev\KSP_Data\Managed\KSPAssets.dll</HintPath>
+      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_141MH\KSP_Data\Managed\KSPAssets.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -50,11 +54,11 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\Desktop\Kerbal Space Program Dev\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_141MH\KSP_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\Desktop\Kerbal Space Program Dev\KSP_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_141MH\KSP_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -80,11 +84,14 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="shaders\SpecularLayered.shader" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>set SOURCE="D:\Libraries\GitHub\B9-PWings-Fork\GameData"
-set DESTINATION="D:\Libraries\Desktop\Kerbal Space Program Dev\GameData"
-xcopy %25SOURCE%25 %25DESTINATION%25 /E /C /R /I /K /Y</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
