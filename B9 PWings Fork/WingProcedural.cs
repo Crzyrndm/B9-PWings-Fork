@@ -157,20 +157,21 @@ namespace WingProcedural
             }
         }
 
-        private static Vector4 sharedBaseLengthLimits = new Vector4(0.125f, 16f, 0.04f, 8f);
+        private static Vector4 sharedBaseLengthLimits = new Vector4(0.125f, 20f, 0.04f, 10f);
         private static Vector2 sharedBaseThicknessLimits = new Vector2(0.04f, 1f);
-        private static Vector4 sharedBaseWidthRootLimits = new Vector4(0.125f, 16f, 0.04f, 1.6f);
-        private static Vector4 sharedBaseWidthTipLimits = new Vector4(0.0001f, 16f, 0.04f, 1.6f);
-        private static Vector4 sharedBaseOffsetLimits = new Vector4(-8f, 8f, -2f, 2f);
+        private static Vector4 sharedBaseWidthRootLimits = new Vector4(0.125f, 20f, 0.04f, 2f);
+        private static Vector4 sharedBaseWidthTipLimits = new Vector4(0.0001f, 20f, 0.04f, 2f);
+        private static Vector4 sharedBaseOffsetLimits = new Vector4(-10f, 10f, -0.5f, 0.5f);
         private static Vector4 sharedEdgeTypeLimits = new Vector4(1f, 4f, 1f, 3f);
-        private static Vector4 sharedEdgeWidthLimits = new Vector4(0f, 1f, 0f, 1f);
+        private static Vector4 sharedEdgeWidthLimits = new Vector4(0f, 1.5f, 0f, 1.5f);
         private static Vector2 sharedMaterialLimits = new Vector2(0f, 4f);
         private static Vector2 sharedColorLimits = new Vector2(0f, 1f);
 
         private static float sharedIncrementColor = 0.01f;
         private static float sharedIncrementColorLarge = 0.10f;
         private static float sharedIncrementMain = 0.125f;
-        private static float sharedIncrementSmall = 0.04f;
+        private static float sharedIncrementSmall = 0.05f;
+        private static float sharedIncrementTiny = 0.005f;
         private static float sharedIncrementInt = 1f;
 
         #endregion Shared properties / Limits and increments
@@ -2833,10 +2834,10 @@ namespace WingProcedural
                     DrawField(ref sharedBaseWidthTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), GetIncrementFromType(1f, 0.24f), GetLimitsFromType(sharedBaseWidthTipLimits), "Width (tip)", uiColorSliderBase, 2, 0);
                     if (isCtrlSrf)
                     {
-                        DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (root)", uiColorSliderBase, 3, 0);
+                        DrawField(ref sharedBaseOffsetRoot, GetIncrementFromType(sharedIncrementSmall, sharedIncrementTiny), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (root)", uiColorSliderBase, 3, 0);
                     }
 
-                    DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementMain, sharedIncrementSmall), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0);
+                    DrawField(ref sharedBaseOffsetTip, GetIncrementFromType(sharedIncrementSmall, sharedIncrementTiny), 1f, GetLimitsFromType(sharedBaseOffsetLimits), "Offset (tip)", uiColorSliderBase, 4, 0);
                     DrawField(ref sharedBaseThicknessRoot, sharedIncrementSmall, sharedIncrementSmall, sharedBaseThicknessLimits, "Thickness (root)", uiColorSliderBase, 5, 0);
                     DrawField(ref sharedBaseThicknessTip, sharedIncrementSmall, sharedIncrementSmall, sharedBaseThicknessLimits, "Thickness (tip)", uiColorSliderBase, 6, 0);
                 }
